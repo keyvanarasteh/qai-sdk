@@ -1,3 +1,22 @@
+[package]
+name = "qai-sdk"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+qai-core = { path = "qai-core" }
+qai-anthropic = { path = "qai-anthropic" }
+qai-google = { path = "qai-google" }
+qai-openai = { path = "qai-openai" }
+qai-deepseek = { path = "qai-deepseek" }
+qai-xai = { path = "qai-xai" }
+qai-openai-compatible = { path = "qai-openai-compatible" }
+tokio = { workspace = true }
+futures = { workspace = true }
+anyhow = { workspace = true }
+dotenvy = "0.15"
+
 [workspace]
 members = ["qai-anthropic", "qai-core", "qai-deepseek", "qai-google", "qai-openai", "qai-openai-compatible", "qai-test-utils", "qai-xai"]
 resolver = "2"

@@ -5,6 +5,7 @@ use futures::StreamExt;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    dotenvy::dotenv().ok();
     let api_key = std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not set");
     let model = OpenAIModel::new(api_key);
 
@@ -32,7 +33,7 @@ async fn main() -> anyhow::Result<()> {
     println!("Usage: {} tokens in, {} tokens out", result.usage.prompt_tokens, result.usage.completion_tokens);
 
     println!("\n--- Generating (Streaming) ---");
-    let mut stream = model.generate_stream(prompt, options);
+    let mut stream = model.generate_stream(prompt, options).await?;
     while let Some(part) = stream.next().await {
         match part {
             qai_core::types::StreamPart::TextDelta { delta } => print!("{}", delta),
