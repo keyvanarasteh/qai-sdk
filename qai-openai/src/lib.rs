@@ -6,6 +6,8 @@ pub mod tools;
 pub mod completion;
 pub mod speech;
 pub mod transcription;
+pub mod responses_types;
+pub mod responses;
 #[cfg(test)]
 mod tests;
 
