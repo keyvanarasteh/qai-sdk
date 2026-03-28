@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 qai-core = { path = "../qai-core" }
+qai-openai = { path = "../qai-openai" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 reqwest = { workspace = true }
