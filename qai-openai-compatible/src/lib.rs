@@ -1,4 +1,5 @@
 pub mod embedding;
+pub mod image;
 
 use async_trait::async_trait;
 use qai_core::types::{GenerateOptions, GenerateResult, Prompt, StreamPart};

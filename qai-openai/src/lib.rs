@@ -1,5 +1,6 @@
 pub mod types;
 pub mod embedding;
+pub mod image;
 #[cfg(test)]
 mod tests;
 
