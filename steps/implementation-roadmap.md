@@ -87,3 +87,22 @@ This roadmap outlines the steps to port the AI providers from TypeScript to Rust
 ## Phase 11: Speech & Transcription
 - [x] Add `SpeechModel` and `TranscriptionModel` traits to `qai-core` [x]
 - [x] Implement for OpenAI [x]
+
+## Phase 12: Final Verification
+- [x] Workspace-wide `cargo check` and `cargo test` [x]
+
+## Phase 13: Responses API (OpenAI + xAI)
+- [x] Comprehensive `responses_types.rs` (input items, tools, output items, streaming events, usage) [x]
+- [x] `OpenAIResponsesModel` implementing `LanguageModel` with generate + streaming [x]
+- [x] `XaiResponsesModel` wrapping OpenAI responses with xAI base URL [x]
+
+## Phase 14: Provider Factory → Model Wiring
+- [x] OpenAI: embedding/image/completion/speech/transcription/responses accessors [x]
+- [x] Google: embedding/image accessors [x]
+- [x] xAI: image/responses accessors [x]
+- [x] OpenAI-Compatible: embedding/image/completion accessors [x]
+
+## Phase 15: Missing Provider Types
+- [x] DeepSeek: thinking config + model ID constants [x]
+- [x] xAI: chat/image model ID constants + settings [x]
+- [x] OpenAI-Compatible: model ID type aliases + config struct [x]
