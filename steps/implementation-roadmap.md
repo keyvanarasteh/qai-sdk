@@ -112,3 +112,6 @@ This roadmap outlines the steps to port the AI providers from TypeScript to Rust
 - [x] `XaiError` with `from_response()` parser [x]
 - [x] `OpenAICompatibleError` with `provider` field + `from_response()` [x]
 - [x] Root `src/lib.rs` re-export facade with `prelude` module [x]
+
+## Phase 17: Comprehensive Examples
+- [x] 12 example files covering all model types and variations [x]
