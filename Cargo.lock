@@ -982,6 +982,7 @@ dependencies = [
  "qai-openai",
  "qai-openai-compatible",
  "qai-xai",
+ "serde_json",
  "tokio",
 ]
 
