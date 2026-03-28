@@ -1,3 +1,5 @@
+pub mod embedding;
+
 use async_trait::async_trait;
 use qai_core::types::{GenerateOptions, GenerateResult, Prompt, StreamPart};
 use qai_openai::OpenAIModel;

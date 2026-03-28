@@ -1,4 +1,5 @@
 pub mod types;
+pub mod embedding;
 #[cfg(test)]
 mod tests;
 
