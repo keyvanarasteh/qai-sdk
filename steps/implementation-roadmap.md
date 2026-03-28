@@ -106,3 +106,9 @@ This roadmap outlines the steps to port the AI providers from TypeScript to Rust
 - [x] DeepSeek: thinking config + model ID constants [x]
 - [x] xAI: chat/image model ID constants + settings [x]
 - [x] OpenAI-Compatible: model ID type aliases + config struct [x]
+
+## Phase 16: Error Types + Re-export Facade
+- [x] `DeepSeekError` with `from_response()` parser [x]
+- [x] `XaiError` with `from_response()` parser [x]
+- [x] `OpenAICompatibleError` with `provider` field + `from_response()` [x]
+- [x] Root `src/lib.rs` re-export facade with `prelude` module [x]
