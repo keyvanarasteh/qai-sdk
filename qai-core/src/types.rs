@@ -157,3 +157,124 @@ pub enum StreamPart {
     Finish { finish_reason: String },
     Error { message: String },
 }
+
+// --- Provider Settings ---
+
+/// Common provider settings for configuring API access.
+#[derive(Debug, Clone, Default)]
+pub struct ProviderSettings {
+    /// Base URL for API calls (overrides default).
+    pub base_url: Option<String>,
+    /// API key for authentication.
+    pub api_key: Option<String>,
+    /// Custom headers to include in requests.
+    pub headers: Option<std::collections::HashMap<String, String>>,
+}
+
+// --- Embedding Types ---
+
+#[derive(Debug, Clone)]
+pub struct EmbeddingOptions {
+    pub model_id: String,
+    pub dimensions: Option<u32>,
+}
+
+#[derive(Debug, Clone)]
+pub struct EmbeddingResult {
+    pub embeddings: Vec<Vec<f32>>,
+    pub usage: Option<EmbeddingUsage>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmbeddingUsage {
+    pub prompt_tokens: u32,
+    pub total_tokens: Option<u32>,
+}
+
+// --- Image Generation Types ---
+
+#[derive(Debug, Clone)]
+pub struct ImageGenerateOptions {
+    pub model_id: String,
+    pub prompt: String,
+    pub n: Option<u32>,
+    pub size: Option<String>,
+    pub quality: Option<String>,
+    pub response_format: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ImageGenerateResult {
+    /// Base64-encoded images or URLs, depending on response_format.
+    pub images: Vec<String>,
+    pub revised_prompt: Option<String>,
+}
+
+// --- Completion Types ---
+
+#[derive(Debug, Clone)]
+pub struct CompletionOptions {
+    pub model_id: String,
+    pub prompt: String,
+    pub max_tokens: Option<u32>,
+    pub temperature: Option<f32>,
+    pub top_p: Option<f32>,
+    pub stop: Option<Vec<String>>,
+    pub suffix: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CompletionResult {
+    pub text: String,
+    pub usage: Usage,
+    pub finish_reason: String,
+}
+
+// --- Speech Types ---
+
+#[derive(Debug, Clone)]
+pub struct SpeechOptions {
+    pub model_id: String,
+    pub input: String,
+    pub voice: String,
+    pub response_format: Option<String>,
+    pub speed: Option<f32>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SpeechResult {
+    /// Raw audio bytes.
+    pub audio: Vec<u8>,
+}
+
+// --- Transcription Types ---
+
+#[derive(Debug, Clone)]
+pub struct TranscriptionOptions {
+    pub model_id: String,
+    /// Raw audio bytes to transcribe.
+    pub audio: Vec<u8>,
+    pub language: Option<String>,
+    pub prompt: Option<String>,
+    pub temperature: Option<f32>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TranscriptionResult {
+    pub text: String,
+    pub language: Option<String>,
+    pub duration: Option<f64>,
+}
+
+// --- Server-Defined Tool Types ---
+
+/// A server-defined tool that can be passed to a provider alongside user-defined tools.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ServerTool {
+    /// The tool type as the provider expects it (e.g. "computer_20241022", "code_interpreter").
+    #[serde(rename = "type")]
+    pub tool_type: String,
+    /// Provider-specific configuration for this tool, serialized as JSON.
+    #[serde(flatten)]
+    pub config: serde_json::Value,
+}

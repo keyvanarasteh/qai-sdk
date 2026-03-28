@@ -240,3 +240,36 @@ impl GoogleModel {
         })
     }
 }
+
+// --- Provider Factory ---
+
+use qai_core::types::ProviderSettings;
+
+/// Google provider with configurable settings.
+pub struct GoogleProvider {
+    settings: ProviderSettings,
+}
+
+impl GoogleProvider {
+    /// Creates a chat language model.
+    pub fn chat(&self, _model_id: &str) -> GoogleModel {
+        let api_key = self.settings.api_key.clone()
+            .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
+            .unwrap_or_default();
+        let mut model = GoogleModel::new(api_key);
+        if let Some(ref base_url) = self.settings.base_url {
+            model.base_url = base_url.clone();
+        }
+        model
+    }
+
+    /// Alias for `chat`.
+    pub fn language_model(&self, model_id: &str) -> GoogleModel {
+        self.chat(model_id)
+    }
+}
+
+/// Create a Google provider instance with the given settings.
+pub fn create_google(settings: ProviderSettings) -> GoogleProvider {
+    GoogleProvider { settings }
+}

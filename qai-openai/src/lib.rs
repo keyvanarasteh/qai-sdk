@@ -253,3 +253,44 @@ impl OpenAIModel {
         })
     }
 }
+
+// --- Provider Factory ---
+
+use qai_core::types::ProviderSettings;
+
+/// OpenAI provider with configurable settings.
+pub struct OpenAIProvider {
+    settings: ProviderSettings,
+}
+
+impl OpenAIProvider {
+    fn resolve_api_key(&self) -> String {
+        self.settings.api_key.clone()
+            .or_else(|| std::env::var("OPENAI_API_KEY").ok())
+            .unwrap_or_default()
+    }
+
+    fn resolve_base_url(&self) -> String {
+        self.settings.base_url.clone()
+            .unwrap_or_else(|| "https://api.openai.com/v1".to_string())
+    }
+
+    /// Creates a chat language model.
+    pub fn chat(&self, _model_id: &str) -> OpenAIModel {
+        OpenAIModel {
+            api_key: self.resolve_api_key(),
+            base_url: self.resolve_base_url(),
+            client: Client::new(),
+        }
+    }
+
+    /// Alias for `chat`.
+    pub fn language_model(&self, model_id: &str) -> OpenAIModel {
+        self.chat(model_id)
+    }
+}
+
+/// Create an OpenAI provider instance with the given settings.
+pub fn create_openai(settings: ProviderSettings) -> OpenAIProvider {
+    OpenAIProvider { settings }
+}

@@ -244,3 +244,36 @@ impl AnthropicModel {
         Ok((request, Vec::new())) // Tool list not used for return currently
     }
 }
+
+// --- Provider Factory ---
+
+use qai_core::types::ProviderSettings;
+
+/// Anthropic provider with configurable settings.
+pub struct AnthropicProvider {
+    settings: ProviderSettings,
+}
+
+impl AnthropicProvider {
+    /// Creates a language model with the given model ID.
+    pub fn language_model(&self, _model_id: &str) -> AnthropicModel {
+        let api_key = self.settings.api_key.clone()
+            .or_else(|| std::env::var("ANTHROPIC_API_KEY").ok())
+            .unwrap_or_default();
+        let mut model = AnthropicModel::new(api_key);
+        if let Some(ref base_url) = self.settings.base_url {
+            model.base_url = base_url.clone();
+        }
+        model
+    }
+
+    /// Alias for `language_model`.
+    pub fn chat(&self, model_id: &str) -> AnthropicModel {
+        self.language_model(model_id)
+    }
+}
+
+/// Create an Anthropic provider instance with the given settings.
+pub fn create_anthropic(settings: ProviderSettings) -> AnthropicProvider {
+    AnthropicProvider { settings }
+}

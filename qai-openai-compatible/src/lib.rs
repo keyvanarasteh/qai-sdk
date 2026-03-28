@@ -35,3 +35,41 @@ impl qai_core::LanguageModel for OpenAICompatibleModel {
         self.inner.generate_stream(prompt, options).await
     }
 }
+
+// --- Provider Factory ---
+
+/// OpenAI-compatible provider settings.
+#[derive(Debug, Clone)]
+pub struct OpenAICompatibleProviderSettings {
+    /// Base URL for the API (required).
+    pub base_url: String,
+    /// Provider name identifier.
+    pub name: String,
+    /// API key for authentication.
+    pub api_key: Option<String>,
+    /// Custom headers to include in requests.
+    pub headers: Option<std::collections::HashMap<String, String>>,
+}
+
+/// OpenAI-compatible provider with configurable settings.
+pub struct OpenAICompatibleProvider {
+    settings: OpenAICompatibleProviderSettings,
+}
+
+impl OpenAICompatibleProvider {
+    /// Creates a chat language model.
+    pub fn chat(&self, _model_id: &str) -> OpenAICompatibleModel {
+        let api_key = self.settings.api_key.clone().unwrap_or_default();
+        OpenAICompatibleModel::new(api_key, self.settings.base_url.clone())
+    }
+
+    /// Alias for `chat`.
+    pub fn language_model(&self, model_id: &str) -> OpenAICompatibleModel {
+        self.chat(model_id)
+    }
+}
+
+/// Create an OpenAI-compatible provider instance with the given settings.
+pub fn create_openai_compatible(settings: OpenAICompatibleProviderSettings) -> OpenAICompatibleProvider {
+    OpenAICompatibleProvider { settings }
+}
