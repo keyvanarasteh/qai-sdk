@@ -4,6 +4,8 @@ pub mod image;
 pub mod error;
 pub mod tools;
 pub mod completion;
+pub mod speech;
+pub mod transcription;
 #[cfg(test)]
 mod tests;
 
