@@ -1,5 +1,6 @@
 pub mod types;
 pub mod error;
+pub mod tools;
 #[cfg(test)]
 mod tests;
 

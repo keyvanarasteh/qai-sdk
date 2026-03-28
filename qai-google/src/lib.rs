@@ -2,6 +2,7 @@ pub mod types;
 pub mod embedding;
 pub mod image;
 pub mod error;
+pub mod tools;
 #[cfg(test)]
 mod tests;
 
