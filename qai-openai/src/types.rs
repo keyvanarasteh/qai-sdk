@@ -14,6 +14,36 @@ pub struct OpenAIRequest {
     pub stop: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tools: Option<Vec<OpenAITool>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_choice: Option<OpenAIToolChoice>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAITool {
+    #[serde(rename = "type")]
+    pub tool_type: String, // "function"
+    pub function: OpenAIFunctionDefinition,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAIFunctionDefinition {
+    pub name: String,
+    pub description: String,
+    pub parameters: serde_json::Value,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum OpenAIToolChoice {
+    String(String), // "none", "auto", "required"
+    Object { #[serde(rename = "type")] tool_type: String, function: OpenAIFunctionName },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAIFunctionName {
+    pub name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -88,4 +118,42 @@ pub struct OpenAIUsage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
     pub total_tokens: u32,
+}
+
+// --- Streaming Types ---
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAIStreamChunk {
+    pub id: String,
+    pub choices: Vec<OpenAIStreamChoice>,
+    pub usage: Option<OpenAIUsage>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAIStreamChoice {
+    pub delta: OpenAIStreamDelta,
+    pub finish_reason: Option<String>,
+    pub index: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAIStreamDelta {
+    pub role: Option<String>,
+    pub content: Option<String>,
+    pub tool_calls: Option<Vec<OpenAIStreamToolCall>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAIStreamToolCall {
+    pub index: u32,
+    pub id: Option<String>,
+    #[serde(rename = "type")]
+    pub call_type: Option<String>,
+    pub function: Option<OpenAIStreamFunctionCall>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAIStreamFunctionCall {
+    pub name: Option<String>,
+    pub arguments: Option<String>,
 }
