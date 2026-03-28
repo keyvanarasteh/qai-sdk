@@ -1,4 +1,6 @@
 pub mod types;
+#[cfg(test)]
+mod tests;
 
 use async_trait::async_trait;
 use qai_core::types::{Content, GenerateOptions, GenerateResult, Prompt, Role, Usage, ImageSource, FileSource, StreamPart};
@@ -42,7 +44,18 @@ impl qai_core::LanguageModel for GoogleModel {
             return Err(anyhow!("Google API error: {}", error_text));
         }
 
+        let headers = response.headers().clone();
         let google_response: GoogleResponse = response.json().await?;
+
+        let mut usage = Usage {
+            prompt_tokens: google_response.usage_metadata.prompt_token_count,
+            completion_tokens: google_response.usage_metadata.candidates_token_count,
+        };
+
+        // Header extraction as fallback/supplement
+        if let Some(header_usage) = Usage::from_headers(&headers) {
+            usage = header_usage;
+        }
 
         let candidate = google_response.candidates.get(0).ok_or_else(|| anyhow!("No candidates returned from Google"))?;
         
@@ -53,11 +66,8 @@ impl qai_core::LanguageModel for GoogleModel {
 
         Ok(GenerateResult {
             text,
-            usage: Usage {
-                prompt_tokens: google_response.usage_metadata.prompt_token_count,
-                completion_tokens: google_response.usage_metadata.candidates_token_count,
-            },
-            finish_reason: candidate.finish_reason.clone().unwrap_or_else(|| "unknown".to_string()),
+            usage,
+            finish_reason: candidate.finish_reason.clone().unwrap_or_else(|| "stop".to_string()),
         })
     }
 

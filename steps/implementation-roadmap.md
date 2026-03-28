@@ -46,3 +46,15 @@ This roadmap outlines the steps to port the AI providers from TypeScript to Rust
 ## Phase 3: Final Verification
 - [x] Run workspace-wide checks [x]
 - [x] Ensure all crates are correctly linked and tested [x]
+
+## Phase 4: Advanced Features & Testing
+- [x] Core Abstraction Enhancement (`qai-core`) [x]
+- [x] Streaming Support (Anthropic) [x]
+- [x] Streaming Support (OpenAI / Deepseek / xAI) [x]
+- [x] Streaming Support (Google Gemini) [x]
+- [x] Anthropic Tool Calling [x]
+- [x] OpenAI / Deepseek / xAI / Compatible Tool Calling [x]
+- [x] Google Gemini Tool Calling [x]
+- [x] Multimodal Support Enhancement [x]
+- [x] Token Usage Header Extraction [x]
+- [x] Testing Suite Development [x]

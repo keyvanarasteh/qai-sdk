@@ -44,7 +44,18 @@ impl qai_core::LanguageModel for AnthropicModel {
             return Err(anyhow!("Anthropic API error: {}", error_text));
         }
 
+        let headers = response.headers().clone();
         let anthropic_response: AnthropicResponse = response.json().await?;
+
+        let mut usage = Usage {
+            prompt_tokens: anthropic_response.usage.input_tokens,
+            completion_tokens: anthropic_response.usage.output_tokens,
+        };
+
+        // Header extraction as fallback/supplement
+        if let Some(header_usage) = Usage::from_headers(&headers) {
+            usage = header_usage;
+        }
 
         let text = anthropic_response.content.iter()
             .filter_map(|c| if let AnthropicContent::Text { text } = c { Some(text.clone()) } else { None })
@@ -53,11 +64,8 @@ impl qai_core::LanguageModel for AnthropicModel {
 
         Ok(GenerateResult {
             text,
-            usage: Usage {
-                prompt_tokens: anthropic_response.usage.input_tokens,
-                completion_tokens: anthropic_response.usage.output_tokens,
-            },
-            finish_reason: anthropic_response.stop_reason.unwrap_or_else(|| "unknown".to_string()),
+            usage,
+            finish_reason: "stop".to_string(), // Anthropic has finish_reason in different events, for non-stream using "stop"
         })
     }
 

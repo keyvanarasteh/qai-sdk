@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use qai_core::types::{Role, Content, Message};
+    use crate::AnthropicModel;
+    use qai_core::types::*;
 
     #[test]
     fn test_anthropic_request_mapping() {
@@ -23,7 +23,7 @@ mod tests {
             tools: None,
         };
 
-        let (request, _) = model.prepare_request(prompt, &options).unwrap();
+        let (request, _) = model.prepare_request(prompt, options).unwrap();
         
         assert_eq!(request.model, "claude-3-opus-20240229");
         assert_eq!(request.max_tokens, 100);

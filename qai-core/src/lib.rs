@@ -1,4 +1,6 @@
 pub mod types;
+#[cfg(test)]
+mod tests;
 
 use async_trait::async_trait;
 use crate::types::{GenerateOptions, GenerateResult, Prompt, StreamPart};

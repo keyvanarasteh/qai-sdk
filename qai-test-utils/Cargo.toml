@@ -1,0 +1,13 @@
+[package]
+name = "qai-test-utils"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+qai-core = { path = "../qai-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true, features = ["json"] }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }

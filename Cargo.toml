@@ -1,5 +1,5 @@
 [workspace]
-members = ["qai-anthropic", "qai-core", "qai-deepseek", "qai-google", "qai-openai", "qai-openai-compatible", "qai-xai"]
+members = ["qai-anthropic", "qai-core", "qai-deepseek", "qai-google", "qai-openai", "qai-openai-compatible", "qai-test-utils", "qai-xai"]
 resolver = "2"
 
 [workspace.dependencies]

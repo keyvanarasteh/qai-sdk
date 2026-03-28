@@ -1,4 +1,6 @@
 pub mod types;
+#[cfg(test)]
+mod tests;
 
 use async_trait::async_trait;
 use qai_core::types::{Content, GenerateOptions, GenerateResult, Prompt, Role, Usage, ImageSource, StreamPart};
@@ -41,18 +43,23 @@ impl qai_core::LanguageModel for OpenAIModel {
             return Err(anyhow!("OpenAI API error: {}", error_text));
         }
 
+        let headers = response.headers().clone();
         let openai_response: OpenAIResponse = response.json().await?;
 
-        let choice = openai_response.choices.get(0).ok_or_else(|| anyhow!("No choices returned from OpenAI"))?;
-        let text = choice.message.content.clone().unwrap_or_default();
+        let mut usage = Usage {
+            prompt_tokens: openai_response.usage.prompt_tokens,
+            completion_tokens: openai_response.usage.completion_tokens,
+        };
+
+        // Header extraction as fallback/supplement
+        if let Some(header_usage) = Usage::from_headers(&headers) {
+            usage = header_usage;
+        }
 
         Ok(GenerateResult {
-            text,
-            usage: Usage {
-                prompt_tokens: openai_response.usage.prompt_tokens,
-                completion_tokens: openai_response.usage.completion_tokens,
-            },
-            finish_reason: choice.finish_reason.clone().unwrap_or_else(|| "unknown".to_string()),
+            text: openai_response.choices[0].message.content.clone().unwrap_or_default(),
+            usage,
+            finish_reason: openai_response.choices[0].finish_reason.clone().unwrap_or_default(),
         })
     }
 

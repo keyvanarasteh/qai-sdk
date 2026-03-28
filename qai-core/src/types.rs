@@ -80,6 +80,67 @@ pub struct Usage {
     pub completion_tokens: u32,
 }
 
+impl Usage {
+    pub fn from_headers(headers: &reqwest::header::HeaderMap) -> Option<Self> {
+        let mut prompt_tokens = None;
+        let mut completion_tokens = None;
+
+        // Common Header Names (OpenAI, Anthropic, and various proxies)
+        let prompt_header_keys = [
+            "x-openai-usage-prompt-tokens",
+            "x-anthropic-usage-input-tokens",
+            "x-usage-prompt-tokens",
+            "usage-prompt-tokens",
+            "x-proxy-prompt-tokens",
+        ];
+
+        let completion_header_keys = [
+            "x-openai-usage-completion-tokens",
+            "x-anthropic-usage-output-tokens",
+            "x-usage-completion-tokens",
+            "usage-completion-tokens",
+            "x-proxy-completion-tokens",
+        ];
+
+        for key in prompt_header_keys {
+            if let Some(val) = headers.get(key).and_then(|v| v.to_str().ok()).and_then(|s| s.parse::<u32>().ok()) {
+                prompt_tokens = Some(val);
+                break;
+            }
+        }
+
+        for key in completion_header_keys {
+            if let Some(val) = headers.get(key).and_then(|v| v.to_str().ok()).and_then(|s| s.parse::<u32>().ok()) {
+                completion_tokens = Some(val);
+                break;
+            }
+        }
+
+        // Check for composite JSON header (e.g., anthropic-usage)
+        if prompt_tokens.is_none() || completion_tokens.is_none() {
+            if let Some(val) = headers.get("anthropic-usage").or_else(|| headers.get("x-ai-usage")).and_then(|v| v.to_str().ok()) {
+                if let Ok(json) = serde_json::from_str::<serde_json::Value>(val) {
+                    if let Some(p) = json.get("input_tokens").or_else(|| json.get("prompt_tokens")).and_then(|v| v.as_u64()) {
+                        prompt_tokens = Some(p as u32);
+                    }
+                    if let Some(c) = json.get("output_tokens").or_else(|| json.get("completion_tokens")).and_then(|v| v.as_u64()) {
+                        completion_tokens = Some(c as u32);
+                    }
+                }
+            }
+        }
+
+        if let (Some(p), Some(c)) = (prompt_tokens, completion_tokens) {
+            Some(Usage {
+                prompt_tokens: p,
+                completion_tokens: c,
+            })
+        } else {
+            None
+        }
+    }
+}
+
 // --- Streaming Types ---
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
