@@ -1,6 +1,7 @@
 pub mod types;
 pub mod image;
 pub mod tools;
+pub mod error;
 pub mod responses;
 
 use async_trait::async_trait;

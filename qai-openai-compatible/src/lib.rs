@@ -2,6 +2,7 @@ pub mod types;
 pub mod embedding;
 pub mod image;
 pub mod completion;
+pub mod error;
 
 use async_trait::async_trait;
 use qai_core::types::{GenerateOptions, GenerateResult, Prompt, StreamPart};
