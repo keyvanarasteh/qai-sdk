@@ -71,6 +71,24 @@ impl OpenAICompatibleProvider {
     pub fn language_model(&self, model_id: &str) -> OpenAICompatibleModel {
         self.chat(model_id)
     }
+
+    /// Creates an embedding model.
+    pub fn embedding(&self, _model_id: &str) -> crate::embedding::OpenAICompatibleEmbeddingModel {
+        let api_key = self.settings.api_key.clone().unwrap_or_default();
+        crate::embedding::OpenAICompatibleEmbeddingModel::new(api_key, self.settings.base_url.clone())
+    }
+
+    /// Creates an image generation model.
+    pub fn image(&self, _model_id: &str) -> crate::image::OpenAICompatibleImageModel {
+        let api_key = self.settings.api_key.clone().unwrap_or_default();
+        crate::image::OpenAICompatibleImageModel::new(api_key, self.settings.base_url.clone())
+    }
+
+    /// Creates a completion model.
+    pub fn completion(&self, _model_id: &str) -> crate::completion::OpenAICompatibleCompletionModel {
+        let api_key = self.settings.api_key.clone().unwrap_or_default();
+        crate::completion::OpenAICompatibleCompletionModel::new(api_key, self.settings.base_url.clone())
+    }
 }
 
 /// Create an OpenAI-compatible provider instance with the given settings.

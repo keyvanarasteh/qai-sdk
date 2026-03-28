@@ -68,6 +68,28 @@ impl XAIProvider {
     pub fn language_model(&self, model_id: &str) -> XAIModel {
         self.chat(model_id)
     }
+
+    /// Creates an image generation model.
+    pub fn image(&self, _model_id: &str) -> crate::image::XaiImageModel {
+        let api_key = self.settings.api_key.clone()
+            .or_else(|| std::env::var("XAI_API_KEY").ok())
+            .unwrap_or_default();
+        let base_url = self.settings.base_url.clone()
+            .unwrap_or_else(|| "https://api.x.ai/v1".to_string());
+        crate::image::XaiImageModel {
+            api_key,
+            base_url,
+            client: Client::new(),
+        }
+    }
+
+    /// Creates a Responses API model.
+    pub fn responses(&self, _model_id: &str) -> crate::responses::XaiResponsesModel {
+        let api_key = self.settings.api_key.clone()
+            .or_else(|| std::env::var("XAI_API_KEY").ok())
+            .unwrap_or_default();
+        crate::responses::XaiResponsesModel::new(api_key)
+    }
 }
 
 /// Create an xAI provider instance with the given settings.

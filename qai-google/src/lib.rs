@@ -271,6 +271,30 @@ impl GoogleProvider {
     pub fn language_model(&self, model_id: &str) -> GoogleModel {
         self.chat(model_id)
     }
+
+    /// Creates an embedding model.
+    pub fn embedding(&self, _model_id: &str) -> crate::embedding::GoogleEmbeddingModel {
+        let api_key = self.settings.api_key.clone()
+            .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
+            .unwrap_or_default();
+        let mut model = crate::embedding::GoogleEmbeddingModel::new(api_key);
+        if let Some(ref base_url) = self.settings.base_url {
+            model.base_url = base_url.clone();
+        }
+        model
+    }
+
+    /// Creates an image generation model.
+    pub fn image(&self, _model_id: &str) -> crate::image::GoogleImageModel {
+        let api_key = self.settings.api_key.clone()
+            .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
+            .unwrap_or_default();
+        let mut model = crate::image::GoogleImageModel::new(api_key);
+        if let Some(ref base_url) = self.settings.base_url {
+            model.base_url = base_url.clone();
+        }
+        model
+    }
 }
 
 /// Create a Google provider instance with the given settings.

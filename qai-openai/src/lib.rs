@@ -297,6 +297,60 @@ impl OpenAIProvider {
     pub fn language_model(&self, model_id: &str) -> OpenAIModel {
         self.chat(model_id)
     }
+
+    /// Creates an embedding model.
+    pub fn embedding(&self, _model_id: &str) -> crate::embedding::OpenAIEmbeddingModel {
+        crate::embedding::OpenAIEmbeddingModel {
+            api_key: self.resolve_api_key(),
+            base_url: self.resolve_base_url(),
+            client: Client::new(),
+        }
+    }
+
+    /// Creates an image generation model.
+    pub fn image(&self, _model_id: &str) -> crate::image::OpenAIImageModel {
+        crate::image::OpenAIImageModel {
+            api_key: self.resolve_api_key(),
+            base_url: self.resolve_base_url(),
+            client: Client::new(),
+        }
+    }
+
+    /// Creates a completion model.
+    pub fn completion(&self, _model_id: &str) -> crate::completion::OpenAICompletionModel {
+        crate::completion::OpenAICompletionModel {
+            api_key: self.resolve_api_key(),
+            base_url: self.resolve_base_url(),
+            client: Client::new(),
+        }
+    }
+
+    /// Creates a speech (TTS) model.
+    pub fn speech(&self, _model_id: &str) -> crate::speech::OpenAISpeechModel {
+        crate::speech::OpenAISpeechModel {
+            api_key: self.resolve_api_key(),
+            base_url: self.resolve_base_url(),
+            client: Client::new(),
+        }
+    }
+
+    /// Creates a transcription (STT) model.
+    pub fn transcription(&self, _model_id: &str) -> crate::transcription::OpenAITranscriptionModel {
+        crate::transcription::OpenAITranscriptionModel {
+            api_key: self.resolve_api_key(),
+            base_url: self.resolve_base_url(),
+            client: Client::new(),
+        }
+    }
+
+    /// Creates a Responses API model.
+    pub fn responses(&self, _model_id: &str) -> crate::responses::OpenAIResponsesModel {
+        crate::responses::OpenAIResponsesModel {
+            api_key: self.resolve_api_key(),
+            base_url: self.resolve_base_url(),
+            client: Client::new(),
+        }
+    }
 }
 
 /// Create an OpenAI provider instance with the given settings.
