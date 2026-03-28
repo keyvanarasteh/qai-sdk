@@ -3,6 +3,7 @@ pub mod embedding;
 pub mod image;
 pub mod error;
 pub mod tools;
+pub mod completion;
 #[cfg(test)]
 mod tests;
 
