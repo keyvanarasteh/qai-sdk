@@ -69,3 +69,32 @@ pub struct DeepSeekUsage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
 }
+
+// --- DeepSeek-Specific Configuration ---
+
+/// Known DeepSeek chat model IDs.
+pub const DEEPSEEK_CHAT: &str = "deepseek-chat";
+pub const DEEPSEEK_REASONER: &str = "deepseek-reasoner";
+
+/// Thinking configuration for DeepSeek reasoning models.
+/// When `thinking_type` is `enabled`, the model will produce reasoning content.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeepSeekThinkingConfig {
+    #[serde(rename = "type")]
+    pub thinking_type: DeepSeekThinkingType,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DeepSeekThinkingType {
+    Enabled,
+    Disabled,
+}
+
+impl Default for DeepSeekThinkingConfig {
+    fn default() -> Self {
+        Self {
+            thinking_type: DeepSeekThinkingType::Enabled,
+        }
+    }
+}

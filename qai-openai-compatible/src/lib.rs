@@ -1,3 +1,4 @@
+pub mod types;
 pub mod embedding;
 pub mod image;
 pub mod completion;

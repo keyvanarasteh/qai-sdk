@@ -1,3 +1,4 @@
+pub mod types;
 pub mod image;
 pub mod tools;
 pub mod responses;
