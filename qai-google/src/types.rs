@@ -7,6 +7,20 @@ pub struct GoogleRequest {
     pub system_instruction: Option<GoogleContent>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub generation_config: Option<GoogleGenerationConfig>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tools: Option<Vec<GoogleTool>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GoogleTool {
+    pub function_declarations: Vec<GoogleFunctionDeclaration>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GoogleFunctionDeclaration {
+    pub name: String,
+    pub description: String,
+    pub parameters: serde_json::Value,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

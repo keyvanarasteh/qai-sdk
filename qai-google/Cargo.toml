@@ -10,6 +10,9 @@ serde_json = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }
 futures = { workspace = true }
+futures-util = "0.3"
+eventsource-stream = "0.2"
+async-stream = "0.3"
 async-trait = { workspace = true }
 anyhow = { workspace = true }
 thiserror = { workspace = true }
