@@ -1,0 +1,15 @@
+[package]
+name = "qai-google"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+qai-core = { path = "../qai-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true }
+tokio = { workspace = true }
+futures = { workspace = true }
+async-trait = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
