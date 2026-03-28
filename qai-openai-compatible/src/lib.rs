@@ -1,7 +1,8 @@
 use async_trait::async_trait;
-use qai_core::types::{GenerateOptions, GenerateResult, Prompt};
+use qai_core::types::{GenerateOptions, GenerateResult, Prompt, StreamPart};
 use qai_openai::OpenAIModel;
 use anyhow::Result;
+use futures::stream::BoxStream;
 use reqwest::Client;
 
 pub struct OpenAICompatibleModel {
@@ -24,5 +25,13 @@ impl OpenAICompatibleModel {
 impl qai_core::LanguageModel for OpenAICompatibleModel {
     async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
         self.inner.generate(prompt, options).await
+    }
+
+    async fn generate_stream(
+        &self,
+        prompt: Prompt,
+        options: GenerateOptions,
+    ) -> Result<BoxStream<'static, StreamPart>> {
+        self.inner.generate_stream(prompt, options).await
     }
 }
