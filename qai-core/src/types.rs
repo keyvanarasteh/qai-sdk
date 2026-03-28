@@ -1,7 +1,17 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Prompt {
+    pub messages: Vec<Message>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Message {
+    pub role: Role,
+    pub content: Vec<Content>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Role {
     System,
@@ -11,45 +21,33 @@ pub enum Role {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
+#[serde(tag = "type", rename_all = "lowercase")]
 pub enum Content {
     Text { text: String },
-    Image { 
-        #[serde(rename = "source")]
-        source: ImageSource 
+    Image { source: ImageSource },
+    File { source: FileSource },
+    ToolCall { 
+        id: String, 
+        name: String, 
+        arguments: serde_json::Value 
     },
-    ToolCall {
-        id: String,
-        name: String,
-        arguments: serde_json::Value,
-    },
-    ToolResult {
-        id: String,
-        result: serde_json::Value,
+    ToolResult { 
+        id: String, 
+        result: serde_json::Value 
     },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum FileSource {
+    Base64 { media_type: String, data: String },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
 pub enum ImageSource {
-    Base64 {
-        media_type: String,
-        data: String,
-    },
-    Url {
-        url: String,
-    },
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Message {
-    pub role: Role,
-    pub content: Vec<Content>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Prompt {
-    pub messages: Vec<Message>,
+    Base64 { media_type: String, data: String },
+    Url { url: String },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -59,7 +57,14 @@ pub struct GenerateOptions {
     pub temperature: Option<f32>,
     pub top_p: Option<f32>,
     pub stop_sequences: Option<Vec<String>>,
-    pub extra_headers: Option<HashMap<String, String>>,
+    pub tools: Option<Vec<ToolDefinition>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolDefinition {
+    pub name: String,
+    pub description: String,
+    pub parameters: serde_json::Value,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,4 +78,21 @@ pub struct GenerateResult {
 pub struct Usage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
+}
+
+// --- Streaming Types ---
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum StreamPart {
+    TextDelta { delta: String },
+    ToolCallDelta { 
+        index: u32,
+        id: Option<String>,
+        name: Option<String>,
+        arguments_delta: Option<String>,
+    },
+    Usage { usage: Usage },
+    Finish { finish_reason: String },
+    Error { message: String },
 }
