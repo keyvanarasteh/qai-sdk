@@ -69,6 +69,7 @@ impl qai_core::LanguageModel for OpenAIModel {
             text: openai_response.choices[0].message.content.clone().unwrap_or_default(),
             usage,
             finish_reason: openai_response.choices[0].finish_reason.clone().unwrap_or_default(),
+            tool_calls: Vec::new(),
         })
     }
 

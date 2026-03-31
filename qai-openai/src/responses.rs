@@ -192,6 +192,7 @@ impl qai_core::LanguageModel for OpenAIResponsesModel {
             text,
             usage,
             finish_reason,
+            tool_calls: Vec::new(),
         })
     }
 

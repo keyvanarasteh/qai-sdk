@@ -67,7 +67,8 @@ impl qai_core::LanguageModel for AnthropicModel {
         Ok(GenerateResult {
             text,
             usage,
-            finish_reason: "stop".to_string(), // Anthropic has finish_reason in different events, for non-stream using "stop"
+            finish_reason: "stop".to_string(),
+            tool_calls: Vec::new(),
         })
     }
 

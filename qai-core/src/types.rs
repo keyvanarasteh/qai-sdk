@@ -67,11 +67,22 @@ pub struct ToolDefinition {
     pub parameters: serde_json::Value,
 }
 
+/// A tool call returned by the model (native function calling).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolCallResult {
+    pub name: String,
+    pub arguments: serde_json::Value,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GenerateResult {
     pub text: String,
     pub usage: Usage,
     pub finish_reason: String,
+    /// Native tool calls returned by the model (e.g., Gemini FunctionCall, OpenAI tool_calls).
+    /// Empty if the model returned only text.
+    #[serde(default)]
+    pub tool_calls: Vec<ToolCallResult>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

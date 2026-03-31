@@ -63,15 +63,31 @@ impl qai_core::LanguageModel for GoogleModel {
 
         let candidate = google_response.candidates.get(0).ok_or_else(|| anyhow!("No candidates returned from Google"))?;
         
-        let text = candidate.content.parts.iter()
-            .filter_map(|p| if let GooglePart::Text { text } = p { Some(text.clone()) } else { None })
-            .collect::<Vec<_>>()
-            .join("");
+        let mut text_parts = Vec::new();
+        let mut tool_calls = Vec::new();
+        
+        for part in &candidate.content.parts {
+            match part {
+                GooglePart::Text { text } => {
+                    text_parts.push(text.clone());
+                }
+                GooglePart::FunctionCall { name, args } => {
+                    tool_calls.push(qai_core::types::ToolCallResult {
+                        name: name.clone(),
+                        arguments: args.clone(),
+                    });
+                }
+                _ => {}
+            }
+        }
+        
+        let text = text_parts.join("");
 
         Ok(GenerateResult {
             text,
             usage,
             finish_reason: candidate.finish_reason.clone().unwrap_or_else(|| "stop".to_string()),
+            tool_calls,
         })
     }
 
