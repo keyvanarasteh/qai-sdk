@@ -32,13 +32,11 @@ qai-sdk = "0.1"
 tokio = { version = "1", features = ["full"] }
 ```
 
-Or pick individual providers:
+By default, all providers are enabled. To optimize compile times, disable default features and select only the providers you need:
 
 ```toml
 [dependencies]
-qai-core = "0.1"
-qai-openai = "0.1"
-qai-anthropic = "0.1"
+qai-sdk = { version = "0.1", default-features = false, features = ["openai", "anthropic"] }
 ```
 
 ### Basic Usage
@@ -119,15 +117,17 @@ let provider = create_openai_compatible(settings);
 
 ## Architecture
 
+`qai-sdk` is a single, monolithic crate designed with zero-cost abstractions. Providers are organically separated via modular architecture and gated by Cargo features, keeping compile times fast when you only need specific integrations:
+
 ```
-qai-sdk (umbrella re-export crate)
-├── qai-core           — Core traits: LanguageModel, EmbeddingModel, ImageModel, etc.
-├── qai-openai         — OpenAI (GPT, DALL-E, Whisper, TTS, Responses API)
-├── qai-anthropic      — Anthropic (Claude)
-├── qai-google         — Google (Gemini)
-├── qai-deepseek       — DeepSeek (via OpenAI-compatible)
-├── qai-xai            — xAI (Grok, via OpenAI-compatible)
-└── qai-openai-compatible — Any OpenAI-compatible endpoint
+qai-sdk
+├── core                — Core traits: LanguageModel, EmbeddingModel, ImageModel
+├── openai              — OpenAI API (GPT, DALL-E, Whisper, TTS, Responses)
+├── anthropic           — Anthropic API (Claude)
+├── google              — Google API (Gemini)
+├── deepseek            — DeepSeek API (via OpenAI-compatible pipeline)
+├── xai                 — xAI API (Grok, via OpenAI-compatible pipeline)
+└── openai_compatible   — Any OpenAI-compatible endpoint (Ollama, LM Studio)
 ```
 
 ## Examples
