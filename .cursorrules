@@ -1,0 +1,40 @@
+# QAI SDK Coding Rules
+
+## General
+- Rust 2021 edition
+- All library code must pass `cargo clippy --workspace --all-targets -- -D warnings`
+- Never use `unwrap()` in library code — use `?` or explicit error handling
+- Never use `println!` in library code — return values or use tracing
+- All public items need `///` doc comments
+- Feature-gate all provider modules with `#[cfg(feature = "...")]`
+
+## Naming
+- Files: `snake_case.rs`
+- Structs/Enums: `PascalCase`
+- Functions: `snake_case`
+- Constants: `SCREAMING_SNAKE_CASE`
+- Factory functions: `create_<provider>`
+
+## Error Handling
+- All provider operations return `Result<T, ProviderError>`
+- HTTP 429 → `ProviderError::RateLimit`
+- HTTP 401/403 → `ProviderError::Unauthorized`
+- Network errors → `ProviderError::Network`
+- JSON parse errors → `ProviderError::InvalidResponse`
+- Unimplemented features → `ProviderError::NotSupported`
+
+## API Design
+- Provider-specific types must be `pub(crate)`, not leaked
+- All async operations use `async_trait` for trait implementations
+- Streaming returns `BoxStream<'static, StreamPart>`
+- The `prelude` module re-exports consumer-facing types only
+
+## Testing
+- `#[tokio::test]` for async tests
+- Never hit real APIs in unit tests — use mocks from `test_utils`
+- Test both success and error variants
+
+## Documentation
+- Every module gets `docs/<name>.md` with cover image
+- Code examples must be compilable
+- Update README.md and AGENTS.md with new features
