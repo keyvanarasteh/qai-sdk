@@ -127,11 +127,33 @@ rl.on('line', (line) => {
             {
               uri: uri,
               mimeType: 'text/plain',
-              text: `[DEBUG] Mock resource content for ${uri}\n[INFO] Server running perfectly.`
+              text: `[DEBUG] Mock resource content for ${uri}\n[INFO] Server timestamp: ${new Date().toISOString()}`
             }
           ]
         }
       }));
+    } else if (req.method === 'resources/subscribe') {
+      const uri = req.params?.uri || '';
+      console.log(JSON.stringify({ jsonrpc: '2.0', id: req.id, result: {} }));
+      
+      if (!global.resourceIntervals) global.resourceIntervals = {};
+      if (global.resourceIntervals[uri]) clearInterval(global.resourceIntervals[uri]);
+      
+      global.resourceIntervals[uri] = setInterval(() => {
+        console.log(JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'notifications/resources/updated',
+          params: { uri }
+        }));
+      }, 500);
+      
+    } else if (req.method === 'resources/unsubscribe') {
+      const uri = req.params?.uri || '';
+      if (global.resourceIntervals && global.resourceIntervals[uri]) {
+          clearInterval(global.resourceIntervals[uri]);
+          delete global.resourceIntervals[uri];
+      }
+      console.log(JSON.stringify({ jsonrpc: '2.0', id: req.id, result: {} }));
     } else {
       console.log(JSON.stringify({
         jsonrpc: '2.0',

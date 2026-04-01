@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, ChildStdin, ChildStdout, Command};
-use tokio::sync::{mpsc, oneshot, Mutex};
+use tokio::sync::{broadcast, mpsc, oneshot, Mutex};
 use tracing::error;
 use eventsource_stream::Eventsource;
 use futures_util::StreamExt;
@@ -154,6 +154,7 @@ pub struct McpClient {
     next_id: Arc<AtomicUsize>,
     tx_req: mpsc::Sender<(JsonRpcRequest, oneshot::Sender<Result<Value, McpError>>)>,
     tx_notif: mpsc::Sender<JsonRpcNotification>,
+    tx_resource_updated: broadcast::Sender<String>,
     _child: Option<Child>,
 }
 
@@ -175,14 +176,16 @@ impl McpClient {
 
                 let (tx_req, rx_req) = mpsc::channel(32);
                 let (tx_notif, rx_notif) = mpsc::channel(32);
+                let (tx_resource_updated, _) = broadcast::channel(100);
                 let next_id = Arc::new(AtomicUsize::new(1));
 
-                Self::spawn_stdio_io_loops(stdin, stdout, rx_req, rx_notif);
+                Self::spawn_stdio_io_loops(stdin, stdout, rx_req, rx_notif, tx_resource_updated.clone());
 
                 Self {
                     next_id,
                     tx_req,
                     tx_notif,
+                    tx_resource_updated,
                     _child: Some(child),
                 }
             }
@@ -219,14 +222,16 @@ impl McpClient {
 
                 let (tx_req, rx_req) = mpsc::channel(32);
                 let (tx_notif, rx_notif) = mpsc::channel(32);
+                let (tx_resource_updated, _) = broadcast::channel(100);
                 let next_id = Arc::new(AtomicUsize::new(1));
 
-                Self::spawn_sse_io_loops(stream, rx_req, rx_notif, http_client, post_url);
+                Self::spawn_sse_io_loops(stream, rx_req, rx_notif, http_client, post_url, tx_resource_updated.clone());
 
                 Self {
                     next_id,
                     tx_req,
                     tx_notif,
+                    tx_resource_updated,
                     _child: None,
                 }
             }
@@ -241,6 +246,7 @@ impl McpClient {
         stdout: ChildStdout,
         mut rx_req: mpsc::Receiver<(JsonRpcRequest, oneshot::Sender<Result<Value, McpError>>)>,
         mut rx_notif: mpsc::Receiver<JsonRpcNotification>,
+        tx_resource_updated: broadcast::Sender<String>,
     ) {
         let pending_requests: Arc<Mutex<std::collections::HashMap<usize, oneshot::Sender<Result<Value, McpError>>>>> =
             Arc::new(Mutex::new(std::collections::HashMap::new()));
@@ -304,8 +310,17 @@ impl McpClient {
                                     let _ = reply_tx.send(Err(McpError::Protocol("Empty response result".to_string())));
                                 }
                             }
+                        } else {
+                            if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&line) {
+                                if notif.method == "notifications/resources/updated" {
+                                    if let Some(params) = notif.params {
+                                        if let Some(uri) = params.get("uri").and_then(|v| v.as_str()) {
+                                            let _ = tx_resource_updated.send(uri.to_string());
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        // Ignore notifications from server in this simple MWE
                     }
                     Err(e) => {
                         error!("Failed to parse JSON-RPC response from server: {} (line: {})", e, line);
@@ -321,6 +336,7 @@ impl McpClient {
         mut rx_notif: mpsc::Receiver<JsonRpcNotification>,
         client: reqwest::Client,
         post_url: String,
+        tx_resource_updated: broadcast::Sender<String>,
     ) where
         S: futures_util::Stream<Item = Result<eventsource_stream::Event, eventsource_stream::EventStreamError<reqwest::Error>>> + Unpin + Send + 'static,
     {
@@ -380,6 +396,16 @@ impl McpClient {
                                     let _ = reply_tx.send(Ok(res));
                                 } else {
                                     let _ = reply_tx.send(Err(McpError::Protocol("Empty response result".to_string())));
+                                }
+                            }
+                        } else {
+                            if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&event.data) {
+                                if notif.method == "notifications/resources/updated" {
+                                    if let Some(params) = notif.params {
+                                        if let Some(uri) = params.get("uri").and_then(|v| v.as_str()) {
+                                            let _ = tx_resource_updated.send(uri.to_string());
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -587,5 +613,26 @@ impl McpClient {
         }
         
         Ok((description, final_messages))
+    }
+
+    /// Subscribes to live updates for a specific resource URI.
+    pub async fn subscribe_resource(&self, uri: &str) -> Result<(), McpError> {
+        let mut params = serde_json::Map::new();
+        params.insert("uri".to_string(), Value::String(uri.to_string()));
+        let _ = self.send_request("resources/subscribe", Some(Value::Object(params))).await?;
+        Ok(())
+    }
+
+    /// Unsubscribes from live updates for a specific resource URI.
+    pub async fn unsubscribe_resource(&self, uri: &str) -> Result<(), McpError> {
+        let mut params = serde_json::Map::new();
+        params.insert("uri".to_string(), Value::String(uri.to_string()));
+        let _ = self.send_request("resources/unsubscribe", Some(Value::Object(params))).await?;
+        Ok(())
+    }
+
+    /// Returns a receiver that yields URI strings whenever a `notifications/resources/updated` event is received.
+    pub fn resource_updates(&self) -> broadcast::Receiver<String> {
+        self.tx_resource_updated.subscribe()
     }
 }
