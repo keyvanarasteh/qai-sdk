@@ -64,11 +64,25 @@ impl qai_core::LanguageModel for AnthropicModel {
             .collect::<Vec<_>>()
             .join("");
 
+        // Extract native tool calls from ToolUse content blocks
+        let tool_calls = anthropic_response.content.iter()
+            .filter_map(|c| {
+                if let AnthropicContent::ToolUse { id: _, name, input } = c {
+                    Some(qai_core::types::ToolCallResult {
+                        name: name.clone(),
+                        arguments: input.clone(),
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect();
+
         Ok(GenerateResult {
             text,
             usage,
-            finish_reason: "stop".to_string(),
-            tool_calls: Vec::new(),
+            finish_reason: anthropic_response.stop_reason.unwrap_or_else(|| "stop".to_string()),
+            tool_calls,
         })
     }
 

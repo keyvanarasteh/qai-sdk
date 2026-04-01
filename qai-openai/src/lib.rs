@@ -65,11 +65,23 @@ impl qai_core::LanguageModel for OpenAIModel {
             usage = header_usage;
         }
 
+        // Extract native tool calls from the response
+        let tool_calls = openai_response.choices[0].message.tool_calls
+            .as_ref()
+            .map(|tcs| {
+                tcs.iter().map(|tc| qai_core::types::ToolCallResult {
+                    name: tc.function.name.clone(),
+                    arguments: serde_json::from_str(&tc.function.arguments)
+                        .unwrap_or_else(|_| serde_json::Value::String(tc.function.arguments.clone())),
+                }).collect()
+            })
+            .unwrap_or_default();
+
         Ok(GenerateResult {
             text: openai_response.choices[0].message.content.clone().unwrap_or_default(),
             usage,
             finish_reason: openai_response.choices[0].finish_reason.clone().unwrap_or_default(),
-            tool_calls: Vec::new(),
+            tool_calls,
         })
     }
 
