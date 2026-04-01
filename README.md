@@ -28,6 +28,10 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 | Chat / Language Model | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Tool Calling | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Structured Output (`generate_object`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Provider Registry | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Middleware Layer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Universal Agent | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Vision / Multimodal | ✅ | ✅ | ✅ | — | — | — |
 | Embeddings | ✅ | — | ✅ | — | — | — |
 | Image Generation | ✅ | — | ✅ | — | — | — |
@@ -140,6 +144,83 @@ let provider = create_xai(settings.clone());
 let provider = create_openai_compatible(settings);
 ```
 
+### Provider Registry — Resolve Models by String
+
+```rust
+use qai_sdk::core::registry::ProviderRegistry;
+
+let registry = ProviderRegistry::new()
+    .register("openai", openai_provider)
+    .register("anthropic", anthropic_provider);
+
+let model = registry.language_model("openai:gpt-4o")?;
+let result = model.generate(prompt, options).await?;
+```
+
+### Structured Output — Force JSON Schema Conformance
+
+```rust
+use qai_sdk::core::structured::*;
+
+let result = generate_object(
+    &model,
+    "Generate a user profile for John Doe, age 30",
+    ObjectGenerateOptions {
+        model_id: "gpt-4o".to_string(),
+        schema: serde_json::json!({
+            "type": "object",
+            "properties": {
+                "name": { "type": "string" },
+                "age": { "type": "integer" }
+            },
+            "required": ["name", "age"]
+        }),
+        mode: OutputMode::Json,
+        ..Default::default()
+    },
+).await?;
+println!("{}", result.object); // {"name": "John Doe", "age": 30}
+```
+
+### Middleware — Composable Model Wrappers
+
+```rust
+use qai_sdk::core::middleware::*;
+
+let wrapped = wrap_language_model(
+    model,
+    vec![Box::new(DefaultSettingsMiddleware {
+        temperature: Some(0.7),
+        max_tokens: Some(2048),
+        top_p: None,
+    })],
+);
+// Every call now uses temperature=0.7 if not explicitly set
+```
+
+### Universal Agent — Multi-Step Tool Loop
+
+```rust
+use qai_sdk::core::agent::Agent;
+
+let agent = Agent::builder()
+    .model(model)
+    .tools(vec![weather_tool, search_tool])
+    .tool_handler(|name, args| async move {
+        match name.as_str() {
+            "get_weather" => Ok(serde_json::json!({"temp": "22°C"})),
+            _ => Err(anyhow::anyhow!("Unknown tool")),
+        }
+    })
+    .max_steps(10)
+    .system("You are a helpful assistant.")
+    .build()
+    .expect("agent build");
+
+let result = agent.run("What's the weather?").await?;
+println!("{}  ({} steps)", result.text, result.total_steps);
+```
+
 ## Documentation
 
 Dive deep into specific provider features and initialization parameters in our comprehensive module docs:
@@ -152,6 +233,10 @@ Dive deep into specific provider features and initialization parameters in our c
 - [xAI Grok Provider `qai_sdk::xai`](docs/xai.md)
 - [OpenAI Compatible Provider `qai_sdk::openai_compatible`](docs/openai_compatible.md)
 - [Model Context Protocol `qai_sdk::mcp`](docs/mcp.md)
+- [Structured Output `qai_sdk::core::structured`](docs/structured.md)
+- [Provider Registry `qai_sdk::core::registry`](docs/registry.md)
+- [Middleware `qai_sdk::core::middleware`](docs/middleware.md)
+- [Universal Agent `qai_sdk::core::agent`](docs/agent.md)
 
 ## Architecture
 
@@ -159,13 +244,19 @@ Dive deep into specific provider features and initialization parameters in our c
 
 ```
 qai-sdk
-├── core                — Core traits: LanguageModel, EmbeddingModel, ImageModel
+├── core
+│   ├── traits          — LanguageModel, EmbeddingModel, ImageModel, SpeechModel, TranscriptionModel
+│   ├── structured      — generate_object() / stream_object() with JSON Schema validation
+│   ├── registry        — ProviderRegistry for "provider:model" string resolution
+│   ├── middleware      — Composable LanguageModelMiddleware (DefaultSettings, ExtractReasoning)
+│   └── agent           — Universal Agent with builder pattern & max_steps tool loop
 ├── openai              — OpenAI API (GPT, DALL-E, Whisper, TTS, Responses)
 ├── anthropic           — Anthropic API (Claude)
 ├── google              — Google API (Gemini)
 ├── deepseek            — DeepSeek API (via OpenAI-compatible pipeline)
 ├── xai                 — xAI API (Grok, via OpenAI-compatible pipeline)
-└── openai_compatible   — Any OpenAI-compatible endpoint (Ollama, LM Studio)
+├── openai_compatible   — Any OpenAI-compatible endpoint (Ollama, LM Studio)
+└── mcp                 — Model Context Protocol (JSON-RPC, Stdio/SSE, resources, prompts)
 ```
 
 ## Examples
