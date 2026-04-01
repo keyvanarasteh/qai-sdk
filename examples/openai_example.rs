@@ -1,10 +1,10 @@
 use futures::StreamExt;
-use qai_core::types::{Content, GenerateOptions, Message, Prompt, Role};
-use qai_core::LanguageModel;
-use qai_openai::OpenAIModel;
+use qai_sdk::types::{Content, GenerateOptions, Message, Prompt, Role};
+use qai_sdk::OpenAIModel;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
     let api_key = std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not set");
     let model = OpenAIModel::new(api_key);
@@ -39,8 +39,8 @@ async fn main() -> qai_core::Result<()> {
     let mut stream = model.generate_stream(prompt, options).await?;
     while let Some(part) = stream.next().await {
         match part {
-            qai_core::types::StreamPart::TextDelta { delta } => print!("{}", delta),
-            qai_core::types::StreamPart::Usage { usage } => println!(
+            qai_sdk::types::StreamPart::TextDelta { delta } => print!("{}", delta),
+            qai_sdk::types::StreamPart::Usage { usage } => println!(
                 "\nUsage: {}/{}",
                 usage.prompt_tokens, usage.completion_tokens
             ),

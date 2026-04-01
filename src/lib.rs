@@ -1,69 +1,77 @@
 //! # QAI SDK
 //!
-//! A modular, type-safe Rust SDK for AI providers.
+//! Universal Rust SDK for AI Providers.
 //!
-//! This crate re-exports all provider crates for convenient single-import usage.
+//! Provides a unified trait `LanguageModel` implemented across various AI providers.
 //!
-//! ## Quick Start
-//!
-//! ```rust,no_run
-//! use qai_sdk::openai;
-//! use qai_sdk::core::types::ProviderSettings;
-//!
-//! let provider = openai::create_openai(ProviderSettings {
-//!     api_key: Some("sk-...".to_string()),
-//!     base_url: None,
-//!     headers: None,
-//! });
-//!
-//! let chat = provider.chat("gpt-4o");
-//! let embedding = provider.embedding("text-embedding-3-small");
-//! let image = provider.image("dall-e-3");
-//! let responses = provider.responses("gpt-4o");
-//! ```
+//! ## Features
+//! Enable the providers you need via Cargo features:
+//! - `openai`
+//! - `anthropic`
+//! - `google`
+//! - `deepseek`
+//! - `xai`
+//! - `openai-compatible`
 
-/// Core traits and types for all providers.
-pub use qai_core as core;
+pub mod core;
 
-/// Anthropic provider (Claude models).
-pub use qai_anthropic as anthropic;
+#[cfg(feature = "openai")]
+pub mod openai;
 
-/// OpenAI provider (GPT, DALL-E, Whisper, TTS models).
-pub use qai_openai as openai;
+#[cfg(feature = "anthropic")]
+pub mod anthropic;
 
-/// Google Generative AI provider (Gemini models).
-pub use qai_google as google;
+#[cfg(feature = "google")]
+pub mod google;
 
-/// DeepSeek provider (DeepSeek-Chat, DeepSeek-Reasoner models).
-pub use qai_deepseek as deepseek;
+#[cfg(feature = "deepseek")]
+pub mod deepseek;
 
-/// xAI provider (Grok models).
-pub use qai_xai as xai;
+#[cfg(feature = "xai")]
+pub mod xai;
 
-/// OpenAI-compatible provider (any OpenAI-compatible API endpoint).
-pub use qai_openai_compatible as openai_compatible;
+#[cfg(feature = "openai-compatible")]
+pub mod openai_compatible;
 
-// Re-export commonly used items at top level for convenience.
-pub mod prelude {
-    // Core traits
-    pub use qai_core::CompletionModel;
-    pub use qai_core::EmbeddingModel;
-    pub use qai_core::ImageModel;
-    pub use qai_core::LanguageModel;
-    pub use qai_core::SpeechModel;
-    pub use qai_core::TranscriptionModel;
+#[cfg(test)]
+pub mod test_utils;
 
-    // Core types
-    pub use qai_core::types::{
-        Content, GenerateOptions, GenerateResult, Message, Prompt, ProviderSettings, Role,
-        StreamPart, Usage,
-    };
+pub use crate::core::types::*;
+pub use crate::core::*;
 
-    // Provider factory functions
-    pub use qai_anthropic::create_anthropic;
-    pub use qai_deepseek::create_deepseek;
-    pub use qai_google::create_google;
-    pub use qai_openai::create_openai;
-    pub use qai_openai_compatible::create_openai_compatible;
-    pub use qai_xai::create_xai;
-}
+// Export all providers if their features are enabled
+#[cfg(feature = "openai")]
+pub use crate::openai::create_openai;
+
+#[cfg(feature = "anthropic")]
+pub use crate::anthropic::create_anthropic;
+
+#[cfg(feature = "google")]
+pub use crate::google::create_google;
+
+#[cfg(feature = "deepseek")]
+pub use crate::deepseek::create_deepseek;
+
+#[cfg(feature = "xai")]
+pub use crate::xai::create_xai;
+
+#[cfg(feature = "openai-compatible")]
+pub use crate::openai_compatible::{create_openai_compatible, OpenAICompatibleProviderSettings};
+
+#[cfg(feature = "openai")]
+pub use crate::openai::OpenAIModel;
+
+#[cfg(feature = "anthropic")]
+pub use crate::anthropic::AnthropicModel;
+
+#[cfg(feature = "google")]
+pub use crate::google::GoogleModel;
+
+#[cfg(feature = "deepseek")]
+pub use crate::deepseek::DeepSeekModel;
+
+#[cfg(feature = "xai")]
+pub use crate::xai::XAIModel;
+
+#[cfg(feature = "openai-compatible")]
+pub use crate::openai_compatible::OpenAICompatibleModel;

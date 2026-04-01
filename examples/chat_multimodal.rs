@@ -2,11 +2,12 @@
 //!
 //! Demonstrates sending images and files alongside text to vision-capable models.
 
-use qai_core::types::ImageSource;
-use qai_sdk::prelude::*;
+use qai_sdk::types::ImageSource;
+use qai_sdk::*;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================

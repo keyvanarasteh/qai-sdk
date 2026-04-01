@@ -6,13 +6,14 @@
 //! Anyscale, OpenRouter, local Ollama, and vLLM.
 
 use futures::StreamExt;
-use qai_core::types::EmbeddingOptions;
-use qai_core::EmbeddingModel;
 use qai_sdk::openai_compatible::OpenAICompatibleProviderSettings;
-use qai_sdk::prelude::*;
+use qai_sdk::types::EmbeddingOptions;
+use qai_sdk::EmbeddingModel;
+use qai_sdk::*;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================

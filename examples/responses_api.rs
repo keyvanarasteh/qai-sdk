@@ -5,10 +5,11 @@
 //! server-executed tools (web_search, code_interpreter, file_search).
 
 use futures::StreamExt;
-use qai_sdk::prelude::*;
+use qai_sdk::*;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================
@@ -137,7 +138,7 @@ async fn main() -> qai_core::Result<()> {
         }],
     };
 
-    let tools = vec![qai_core::types::ToolDefinition {
+    let tools = vec![qai_sdk::types::ToolDefinition {
         name: "calculate".to_string(),
         description: "Evaluate a math expression.".to_string(),
         parameters: json!({

@@ -3,11 +3,12 @@
 //! Demonstrates image generation using the `ImageModel` trait
 //! across OpenAI (DALL-E), Google (Imagen), and xAI (Grok Imagine).
 
-use qai_core::types::{ImageGenerateOptions, ProviderSettings};
-use qai_core::ImageModel;
+use qai_sdk::types::{ImageGenerateOptions, ProviderSettings};
+use qai_sdk::ImageModel;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================

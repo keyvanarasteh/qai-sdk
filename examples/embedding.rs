@@ -3,11 +3,12 @@
 //! Demonstrates text embedding generation using the `EmbeddingModel` trait
 //! across OpenAI, Google, and OpenAI-Compatible providers.
 
-use qai_core::types::{EmbeddingOptions, ProviderSettings};
-use qai_core::EmbeddingModel;
+use qai_sdk::types::{EmbeddingOptions, ProviderSettings};
+use qai_sdk::EmbeddingModel;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     let texts = vec![

@@ -3,11 +3,12 @@
 //! Demonstrates the legacy completion API (non-chat) using the `CompletionModel` trait.
 //! This is used for code infill, text completion, and similar tasks.
 
-use qai_core::types::{CompletionOptions, ProviderSettings};
-use qai_core::CompletionModel;
+use qai_sdk::types::{CompletionOptions, ProviderSettings};
+use qai_sdk::CompletionModel;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================

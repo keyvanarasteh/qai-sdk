@@ -3,10 +3,11 @@
 //! Demonstrates typed error handling for each provider using the
 //! provider-specific error types with `from_response()` parsers.
 
-use qai_sdk::prelude::*;
+use qai_sdk::*;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================

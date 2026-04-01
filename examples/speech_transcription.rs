@@ -3,11 +3,12 @@
 //! Demonstrates Text-to-Speech (TTS) and Speech-to-Text (STT) using
 //! the `SpeechModel` and `TranscriptionModel` traits. Currently OpenAI-only.
 
-use qai_core::types::{ProviderSettings, SpeechOptions, TranscriptionOptions};
-use qai_core::{SpeechModel, TranscriptionModel};
+use qai_sdk::types::{ProviderSettings, SpeechOptions, TranscriptionOptions};
+use qai_sdk::{SpeechModel, TranscriptionModel};
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     let provider = qai_sdk::openai::create_openai(ProviderSettings {

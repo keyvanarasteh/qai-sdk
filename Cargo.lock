@@ -935,160 +935,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "qai-anthropic"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-stream",
- "async-trait",
- "eventsource-stream",
- "futures",
- "futures-util",
- "qai-core",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qai-core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qai-deepseek"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "qai-core",
- "qai-openai",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qai-google"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-stream",
- "async-trait",
- "eventsource-stream",
- "futures",
- "futures-util",
- "qai-core",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qai-openai"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-stream",
- "async-trait",
- "eventsource-stream",
- "futures",
- "futures-util",
- "qai-core",
- "qai-test-utils",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qai-openai-compatible"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "qai-core",
- "qai-openai",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "qai-sdk"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
- "dotenvy",
- "futures",
- "qai-anthropic",
- "qai-core",
- "qai-deepseek",
- "qai-google",
- "qai-openai",
- "qai-openai-compatible",
- "qai-xai",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "qai-test-utils"
-version = "0.1.0"
-dependencies = [
- "anyhow",
+ "async-stream",
  "async-trait",
- "qai-core",
+ "base64",
+ "dotenvy",
+ "eventsource-stream",
+ "futures",
+ "futures-util",
  "reqwest",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
  "tracing",
  "wiremock",
-]
-
-[[package]]
-name = "qai-xai"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "qai-core",
- "qai-openai",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
 ]
 
 [[package]]

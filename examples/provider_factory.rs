@@ -3,10 +3,11 @@
 //! Demonstrates creating providers with `ProviderSettings` and accessing
 //! all model types through the factory pattern.
 
-use qai_sdk::prelude::*;
+use qai_sdk::*;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================

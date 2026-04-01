@@ -3,17 +3,18 @@
 //! Demonstrates function tool calling with definition, invocation,
 //! and result handling across OpenAI and Anthropic.
 
-use qai_sdk::prelude::*;
+use qai_sdk::*;
 use serde_json::json;
 
+use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_core::Result<()> {
+async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================
     // Define tools
     // ===================================================================
-    let weather_tool = qai_core::types::ToolDefinition {
+    let weather_tool = qai_sdk::types::ToolDefinition {
         name: "get_weather".to_string(),
         description: "Get the current weather for a given location.".to_string(),
         parameters: json!({
@@ -33,7 +34,7 @@ async fn main() -> qai_core::Result<()> {
         }),
     };
 
-    let calculator_tool = qai_core::types::ToolDefinition {
+    let calculator_tool = qai_sdk::types::ToolDefinition {
         name: "calculate".to_string(),
         description: "Perform a mathematical calculation.".to_string(),
         parameters: json!({
