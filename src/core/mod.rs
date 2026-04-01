@@ -15,6 +15,10 @@
 //! All shared types live in the [`types`] module.
 
 pub mod error;
+pub mod agent;
+pub mod middleware;
+pub mod registry;
+pub mod structured;
 #[cfg(test)]
 mod tests;
 pub mod types;
