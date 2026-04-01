@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAI SDK - Unified AI Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff9d00;
+            --bg: #0b0e14;
+            --surface: #161b22;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #c9d1d9;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .mono { font-family: 'Fira Code', monospace; }
+
+        /* Background Neural Effect */
+        #canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+        }
+
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .provider-btn {
+            transition: all 0.3s ease;
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+        .provider-btn.active {
+            filter: grayscale(0);
+            opacity: 1;
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .terminal-header {
+            background: rgba(48, 54, 61, 0.5);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+
+        /* Scanning Line */
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary), transparent);
+            top: 0;
+            left: 0;
+            animation: scan 4s linear infinite;
+            z-index: 20;
+            opacity: 0.3;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .code-container {
+            background: #0d1117;
+            border-radius: 6px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        .feature-tag:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Syntax Highlighting */
+        .kw { color: #ff7b72; }
+        .fn { color: #d2a8ff; }
+        .str { color: #a5d6ff; }
+        .typ { color: #ffa657; }
+        .cmt { color: #8b949e; }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="glass-panel w-full max-w-4xl rounded-2xl overflow-hidden flex flex-col md:flex-row">
+        <div class="scan-line"></div>
+        
+        <!-- Sidebar: Stats & Info -->
+        <div class="w-full md:w-1/3 p-8 border-r border-white/5 flex flex-col justify-between">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tighter text-white mb-2">QAI SDK</h1>
+                <p class="text-sm text-gray-400 mb-6">Modular, type-safe Rust SDK for unified AI orchestration.</p>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs uppercase tracking-widest text-gray-500">Stability</span>
+                        <span class="text-xs mono text-green-400">Production Ready</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs uppercase tracking-widest text-gray-500">Version</span>
+                        <span class="text-xs mono text-orange-400">v0.1.0</span>
+                    </div>
+                </div>
+
+                <div class="mt-10">
+                    <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-4">Capabilities</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="feature-tag">Chat</span>
+                        <span class="feature-tag">Streaming</span>
+                        <span class="feature-tag">Tool Calling</span>
+                        <span class="feature-tag">Vision</span>
+                        <span class="feature-tag">TTS/STT</span>
+                        <span class="feature-tag">MCP</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 pt-6 border-t border-white/5">
+                <div class="flex gap-4">
+                    <div class="bg-white/5 rounded p-2 flex-1 text-center">
+                        <div class="text-lg font-bold text-white">6+</div>
+                        <div class="text-[10px] uppercase text-gray-500">Providers</div>
+                    </div>
+                    <div class="bg-white/5 rounded p-2 flex-1 text-center">
+                        <div class="text-lg font-bold text-white">0</div>
+                        <div class="text-[10px] uppercase text-gray-500">Cost Abstraction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content: Interactive Terminal -->
+        <div class="flex-1 flex flex-col bg-black/20 p-6">
+            <!-- Provider Selector -->
+            <div class="flex justify-between items-center mb-6 overflow-x-auto pb-2 gap-4">
+                <button onclick="updateTheme('openai')" class="provider-btn active px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-openai">
+                    <span class="text-[10px] font-bold uppercase">OpenAI</span>
+                </button>
+                <button onclick="updateTheme('anthropic')" class="provider-btn px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-anthropic">
+                    <span class="text-[10px] font-bold uppercase">Claude</span>
+                </button>
+                <button onclick="updateTheme('google')" class="provider-btn px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-google">
+                    <span class="text-[10px] font-bold uppercase">Gemini</span>
+                </button>
+                <button onclick="updateTheme('deepseek')" class="provider-btn px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-deepseek">
+                    <span class="text-[10px] font-bold uppercase">DeepSeek</span>
+                </button>
+                <button onclick="updateTheme('xai')" class="provider-btn px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-xai">
+                    <span class="text-[10px] font-bold uppercase">Grok</span>
+                </button>
+            </div>
+
+            <div class="flex-1 flex flex-col">
+                <div class="terminal-header rounded-t-lg">
+                    <div class="dot bg-red-500"></div>
+                    <div class="dot bg-yellow-500"></div>
+                    <div class="dot bg-green-500"></div>
+                    <span class="ml-auto text-[10px] mono text-gray-500">main.rs</span>
+                </div>
+                <div class="code-container flex-1 rounded-b-lg mono text-sm relative overflow-hidden">
+                    <pre id="code-snippet" class="whitespace-pre-wrap leading-relaxed"><span class="cmt">// Single unified API for all providers</span>
+<span class="kw">let</span> provider = <span id="code-fn" class="fn">create_openai</span>(settings);
+<span class="kw">let</span> model = provider.<span class="fn">chat</span>(<span id="code-model" class="str">"gpt-4o"</span>);
+
+<span class="kw">let</span> res = model.<span class="fn">generate</span>(prompt, options).<span class="kw">await</span>?;
+<span class="fn">println!</span>(<span class="str">"{}"</span>, res.text);</pre>
+                </div>
+            </div>
+
+            <div class="mt-6 flex items-center justify-between text-[11px] mono text-gray-500">
+                <div class="flex items-center gap-4">
+                    <span><span class="text-green-500">●</span> System: Ready</span>
+                    <span><span class="text-blue-500">●</span> Network: Connected</span>
+                </div>
+                <div class="p-2 px-4 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 cursor-pointer transition-colors">
+                    $ cargo build --release
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const providers = {
+            openai: { color: '#ff9d00', fn: 'create_openai', model: 'gpt-4o' },
+            anthropic: { color: '#d2a8ff', fn: 'create_anthropic', model: 'claude-3-opus' },
+            google: { color: '#4285f4', fn: 'create_google', model: 'gemini-1.5-pro' },
+            deepseek: { color: '#6ab0ff', fn: 'create_deepseek', model: 'deepseek-chat' },
+            xai: { color: '#ffffff', fn: 'create_xai', model: 'grok-beta' }
+        };
+
+        function updateTheme(key) {
+            const data = providers[key];
+            document.documentElement.style.setProperty('--primary', data.color);
+            
+            // Update buttons
+            document.querySelectorAll('.provider-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${key}`).classList.add('active');
+
+            // Update Code Snippet with a small fade effect
+            const codeFn = document.getElementById('code-fn');
+            const codeModel = document.getElementById('code-model');
+            
+            codeFn.style.opacity = 0;
+            codeModel.style.opacity = 0;
+            
+            setTimeout(() => {
+                codeFn.innerText = data.fn;
+                codeModel.innerText = `"${data.model}"`;
+                codeFn.style.opacity = 1;
+                codeModel.style.opacity = 1;
+            }, 150);
+        }
+
+        // --- Neural Background Simulation ---
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            resize();
+            for (let i = 0; i < 80; i++) particles.push(new Particle());
+            animate();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.update();
+                p.draw();
+                // Draw lines
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist/100})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        window.onload = init;
+    </script>
+</body>
+</html>
