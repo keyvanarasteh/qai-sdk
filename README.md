@@ -37,6 +37,16 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 | Responses API | ✅ | — | — | — | — | — |
 | Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
+## Unified API Demo
+
+<p align="center">
+  <a href="playground.html">
+    <img src="assets/qai_playground_demo.webp" alt="QAI SDK Playground Interactive Demo" width="100%"/>
+  </a>
+</p>
+
+*The `playground.html` showcase demonstrates the lightning-fast API flexibility. [Open it locally](playground.html) to interact with it directly.*
+
 ## Quick Start
 
 Add to your `Cargo.toml`:
