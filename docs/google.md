@@ -1,5 +1,9 @@
 # Google Gemini Provider (`qai_sdk::google`)
 
+<p align="center">
+  <img src="../assets/google_cover.png" alt="Google Module Banner" width="100%"/>
+</p>
+
 The Google module implements the Google Generative AI API, supporting the highly capable Gemini multimodal family (e.g. `gemini-1.5-pro` and `gemini-1.5-flash`).
 
 ## Implemented Traits

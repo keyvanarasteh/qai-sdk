@@ -1,5 +1,9 @@
 # xAI Provider (`qai_sdk::xai`)
 
+<p align="center">
+  <img src="../assets/xai_cover.png" alt="xAI Module Banner" width="100%"/>
+</p>
+
 The xAI module provides access to Grok models developed by xAI (`grok-beta`, `grok-vision`, etc.).
 
 ## Implemented Traits

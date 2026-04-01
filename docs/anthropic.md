@@ -1,5 +1,9 @@
 # Anthropic Provider (`qai_sdk::anthropic`)
 
+<p align="center">
+  <img src="../assets/anthropic_cover.png" alt="Anthropic Module Banner" width="100%"/>
+</p>
+
 The Anthropic module integrates Claude models (Opus, Sonnet, Haiku) and correctly translates the `qai-sdk` standard `Prompt` structures into the highly-specific structural requirements of the Anthropic Messages API.
 
 ## Implemented Traits

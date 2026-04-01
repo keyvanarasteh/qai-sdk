@@ -1,5 +1,9 @@
 # DeepSeek Provider (`qai_sdk::deepseek`)
 
+<p align="center">
+  <img src="../assets/deepseek_cover.png" alt="DeepSeek Module Banner" width="100%"/>
+</p>
+
 The DeepSeek module implements the fast, open-weights derived `deepseek-chat` and `deepseek-coder` LLMs. DeepSeek's official API is almost entirely compatible with OpenAI's API. Thus, the implementation acts as a customized wrapping over the internal OpenAI-compatible protocol while explicitly handling DeepSeek's nuanced base URLs.
 
 ## Implemented Traits

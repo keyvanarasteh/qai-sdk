@@ -1,5 +1,9 @@
 # OpenAI Provider (`qai_sdk::openai`)
 
+<p align="center">
+  <img src="../assets/openai_cover.png" alt="OpenAI Module Banner" width="100%"/>
+</p>
+
 The OpenAI module provides a comprehensive implementation of the OpenAI API surface, fully covering GPT models, DALL-E, Whisper, TTS, and the specialized Responses API.
 
 ## Implemented Traits

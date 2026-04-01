@@ -1,5 +1,9 @@
 # Model Context Protocol (MCP)
 
+<p align="center">
+  <img src="../assets/mcp_cover.png" alt="MCP Module Banner" width="100%"/>
+</p>
+
 `qai-sdk` provides robust, feature-complete integration with the **Model Context Protocol (MCP)**, abstracting away JSON-RPC parsing, cursor-based pagination, and Tool JSON Schema synchronization. Using our `run_mcp_agent`, developers can natively bind connected MCP servers with standard LanguageModels automatically.
 
 ## Architectural Overview

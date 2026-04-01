@@ -1,5 +1,9 @@
 # Core Interoperability (`qai_sdk::core`)
 
+<p align="center">
+  <img src="../assets/core_cover.png" alt="Core Module Banner" width="100%"/>
+</p>
+
 At the heart of the `qai-sdk` architecture is the `core` module. This module defines the common traits and data structures that all providers implement, ensuring 100% API compatibility across every supported AI model.
 
 ## Key Abstractions

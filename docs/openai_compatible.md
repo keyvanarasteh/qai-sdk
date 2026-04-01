@@ -1,5 +1,9 @@
 # OpenAI Compatible Provider (`qai_sdk::openai_compatible`)
 
+<p align="center">
+  <img src="../assets/openaic_cover.png" alt="OpenAI Compatible Module Banner" width="100%"/>
+</p>
+
 The OpenAI-Compatible Provider is the ultimate escape-hatch for AI engineering. Since the OpenAI REST API format `chat/completions` has essentially become an industry standard, many local inference engines mock it.
 
 This module lets you easily target:
