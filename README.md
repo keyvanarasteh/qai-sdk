@@ -1,5 +1,9 @@
 # QAI SDK
 
+<p align="center">
+  <img src="assets/cover.png" alt="QAI-SDK Cover Art" width="100%"/>
+</p>
+
 <div align="center">
   
 [![Crates.io Version](https://img.shields.io/crates/v/qai-sdk.svg?style=flat-square&color=orange)](https://crates.io/crates/qai-sdk)
@@ -31,6 +35,7 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 | Transcription (STT) | ✅ | — | — | — | — | — |
 | Text Completion | ✅ | — | — | — | — | — |
 | Responses API | ✅ | — | — | — | — | — |
+| Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ## Quick Start
 
@@ -136,6 +141,7 @@ Dive deep into specific provider features and initialization parameters in our c
 - [DeepSeek Provider `qai_sdk::deepseek`](docs/deepseek.md)
 - [xAI Grok Provider `qai_sdk::xai`](docs/xai.md)
 - [OpenAI Compatible Provider `qai_sdk::openai_compatible`](docs/openai_compatible.md)
+- [Model Context Protocol `qai_sdk::mcp`](docs/mcp.md)
 
 ## Architecture
 
