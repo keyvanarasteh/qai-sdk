@@ -27,7 +27,7 @@ use crate::types::{
     AnthropicContent, AnthropicImageSource, AnthropicMessage, AnthropicRequest, AnthropicResponse,
     AnthropicStreamEvent, AnthropicSystemContent, AnthropicTool,
 };
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use eventsource_stream::Eventsource;
 use futures::stream::BoxStream;
@@ -56,7 +56,8 @@ impl AnthropicModel {
 
 #[async_trait]
 impl qai_core::LanguageModel for AnthropicModel {
-    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
+    #[tracing::instrument(skip(self, prompt), fields(model = options.model_id))]
+    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> qai_core::Result<GenerateResult> {
         let (request, _) = self.prepare_request(prompt, options)?;
 
         let response = self
@@ -70,7 +71,7 @@ impl qai_core::LanguageModel for AnthropicModel {
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
-            return Err(anyhow!("Anthropic API error: {}", error_text));
+            return Err(anyhow!("Anthropic API error: {}", error_text).into());
         }
 
         let headers = response.headers().clone();
@@ -129,7 +130,7 @@ impl qai_core::LanguageModel for AnthropicModel {
         &self,
         prompt: Prompt,
         options: GenerateOptions,
-    ) -> Result<BoxStream<'static, StreamPart>> {
+    ) -> qai_core::Result<BoxStream<'static, StreamPart>> {
         let (mut request, _) = self.prepare_request(prompt, options)?;
         request.stream = Some(true);
 
@@ -144,7 +145,7 @@ impl qai_core::LanguageModel for AnthropicModel {
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
-            return Err(anyhow!("Anthropic API error: {}", error_text));
+            return Err(anyhow!("Anthropic API error: {}", error_text).into());
         }
 
         let mut event_stream = response.bytes_stream().eventsource();
@@ -154,7 +155,7 @@ impl qai_core::LanguageModel for AnthropicModel {
             while let Some(event) = event_stream.next().await {
                 match event {
                     Ok(event) => {
-                        let parsed: Result<AnthropicStreamEvent, _> = serde_json::from_str(&event.data);
+                        let parsed: std::result::Result<AnthropicStreamEvent, _> = serde_json::from_str(&event.data);
                         match parsed {
                             Ok(AnthropicStreamEvent::MessageStart { message }) => {
                                 prompt_tokens = message.usage.input_tokens;
@@ -203,7 +204,7 @@ impl AnthropicModel {
         &self,
         prompt: Prompt,
         options: GenerateOptions,
-    ) -> Result<(AnthropicRequest, Vec<qai_core::types::ToolDefinition>)> {
+    ) -> qai_core::Result<(AnthropicRequest, Vec<qai_core::types::ToolDefinition>)> {
         let mut system_content = Vec::new();
         let mut messages = Vec::new();
 
@@ -236,7 +237,7 @@ impl AnthropicModel {
                                         },
                                     });
                                 } else {
-                                    return Err(anyhow!("Unsupported image source for Anthropic"));
+                                    return Err(anyhow!("Unsupported image source for Anthropic").into());
                                 }
                             }
                             Content::File { source } => {

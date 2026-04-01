@@ -7,7 +7,7 @@ use qai_core::types::{ProviderSettings, SpeechOptions, TranscriptionOptions};
 use qai_core::{SpeechModel, TranscriptionModel};
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> qai_core::Result<()> {
     dotenvy::dotenv().ok();
 
     let provider = qai_sdk::openai::create_openai(ProviderSettings {

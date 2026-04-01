@@ -37,7 +37,8 @@ use crate::types::{
     OpenAIContent, OpenAIFunctionCall, OpenAIFunctionDefinition, OpenAIImageUrl, OpenAIMessage,
     OpenAIRequest, OpenAIResponse, OpenAIStreamChunk, OpenAITool, OpenAIToolCall,
 };
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
+use qai_core::Result;
 use async_trait::async_trait;
 use eventsource_stream::Eventsource;
 use futures::stream::BoxStream;
@@ -65,7 +66,8 @@ impl OpenAIModel {
 
 #[async_trait]
 impl qai_core::LanguageModel for OpenAIModel {
-    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
+    #[tracing::instrument(skip(self, prompt), fields(model = options.model_id))]
+    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> qai_core::Result<GenerateResult> {
         let request = self.prepare_request(prompt, options)?;
 
         let response = self
@@ -78,7 +80,7 @@ impl qai_core::LanguageModel for OpenAIModel {
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
-            return Err(anyhow!("OpenAI API error: {}", error_text));
+            return Err(anyhow!("OpenAI API error: {}", error_text).into());
         }
 
         let headers = response.headers().clone();
@@ -130,7 +132,7 @@ impl qai_core::LanguageModel for OpenAIModel {
         &self,
         prompt: Prompt,
         options: GenerateOptions,
-    ) -> Result<BoxStream<'static, StreamPart>> {
+    ) -> qai_core::Result<BoxStream<'static, StreamPart>> {
         let mut request = self.prepare_request(prompt, options)?;
         request.stream = Some(true);
 
@@ -144,7 +146,7 @@ impl qai_core::LanguageModel for OpenAIModel {
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
-            return Err(anyhow!("OpenAI API error: {}", error_text));
+            return Err(anyhow!("OpenAI API error: {}", error_text).into());
         }
 
         let mut event_stream = response.bytes_stream().eventsource();
@@ -157,7 +159,7 @@ impl qai_core::LanguageModel for OpenAIModel {
                             break;
                         }
 
-                        let parsed: Result<OpenAIStreamChunk, _> = serde_json::from_str(&event.data);
+                        let parsed: std::result::Result<OpenAIStreamChunk, _> = serde_json::from_str(&event.data);
                         match parsed {
                             Ok(chunk) => {
                                 if let Some(usage) = chunk.usage {
@@ -207,7 +209,7 @@ impl qai_core::LanguageModel for OpenAIModel {
 }
 
 impl OpenAIModel {
-    fn prepare_request(&self, prompt: Prompt, options: GenerateOptions) -> Result<OpenAIRequest> {
+    fn prepare_request(&self, prompt: Prompt, options: GenerateOptions) -> qai_core::Result<OpenAIRequest> {
         let mut messages = Vec::new();
 
         for msg in prompt.messages {
@@ -247,7 +249,7 @@ impl OpenAIModel {
                             Content::File { .. } => {
                                 return Err(anyhow!(
                                     "File content is not yet supported for OpenAI"
-                                ));
+                                ).into());
                             }
                             _ => {}
                         }

@@ -1,6 +1,7 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use qai_core::types::{ImageGenerateOptions, ImageGenerateResult};
+use qai_core::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -52,7 +53,10 @@ struct OpenAIImageData {
 
 #[async_trait]
 impl qai_core::ImageModel for OpenAIImageModel {
-    async fn generate(&self, options: ImageGenerateOptions) -> Result<ImageGenerateResult> {
+    async fn generate(
+        &self,
+        options: ImageGenerateOptions,
+    ) -> qai_core::Result<ImageGenerateResult> {
         let response_format = options
             .response_format
             .clone()
@@ -77,7 +81,7 @@ impl qai_core::ImageModel for OpenAIImageModel {
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
-            return Err(anyhow!("OpenAI Image API error: {}", error_text));
+            return Err(anyhow!("OpenAI Image API error: {}", error_text).into());
         }
 
         let img_resp: OpenAIImageResponse = resp.json().await?;

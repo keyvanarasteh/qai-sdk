@@ -20,7 +20,6 @@
 pub mod error;
 pub mod types;
 
-use anyhow::Result;
 use async_trait::async_trait;
 use futures::stream::BoxStream;
 use qai_core::types::{GenerateOptions, GenerateResult, Prompt, ProviderSettings, StreamPart};
@@ -45,7 +44,8 @@ impl DeepSeekModel {
 
 #[async_trait]
 impl qai_core::LanguageModel for DeepSeekModel {
-    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
+    #[tracing::instrument(skip(self, prompt), fields(model = options.model_id))]
+    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> qai_core::Result<GenerateResult> {
         self.inner.generate(prompt, options).await
     }
 
@@ -53,7 +53,7 @@ impl qai_core::LanguageModel for DeepSeekModel {
         &self,
         prompt: Prompt,
         options: GenerateOptions,
-    ) -> Result<BoxStream<'static, StreamPart>> {
+    ) -> qai_core::Result<BoxStream<'static, StreamPart>> {
         self.inner.generate_stream(prompt, options).await
     }
 }

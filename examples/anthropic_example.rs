@@ -4,7 +4,7 @@ use qai_core::types::{Content, GenerateOptions, Message, Prompt, Role};
 use qai_core::LanguageModel;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> qai_core::Result<()> {
     dotenvy::dotenv().ok();
     let api_key = std::env::var("ANTHROPIC_API_KEY").expect("ANTHROPIC_API_KEY not set");
     let model = AnthropicModel::new(api_key);

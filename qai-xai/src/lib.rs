@@ -24,7 +24,7 @@ pub mod responses;
 pub mod tools;
 pub mod types;
 
-use anyhow::Result;
+use qai_core::Result;
 use async_trait::async_trait;
 use futures::stream::BoxStream;
 use qai_core::types::{GenerateOptions, GenerateResult, Prompt, ProviderSettings, StreamPart};
@@ -49,7 +49,8 @@ impl XAIModel {
 
 #[async_trait]
 impl qai_core::LanguageModel for XAIModel {
-    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
+    #[tracing::instrument(skip(self, prompt), fields(model = options.model_id))]
+    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> qai_core::Result<GenerateResult> {
         self.inner.generate(prompt, options).await
     }
 
@@ -57,7 +58,7 @@ impl qai_core::LanguageModel for XAIModel {
         &self,
         prompt: Prompt,
         options: GenerateOptions,
-    ) -> Result<BoxStream<'static, StreamPart>> {
+    ) -> qai_core::Result<BoxStream<'static, StreamPart>> {
         self.inner.generate_stream(prompt, options).await
     }
 }

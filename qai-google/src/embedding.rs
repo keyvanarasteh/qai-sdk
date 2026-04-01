@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use qai_core::types::{EmbeddingOptions, EmbeddingResult};
 use reqwest::Client;
@@ -79,7 +79,7 @@ impl qai_core::EmbeddingModel for GoogleEmbeddingModel {
         &self,
         values: Vec<String>,
         options: EmbeddingOptions,
-    ) -> Result<EmbeddingResult> {
+    ) -> qai_core::Result<EmbeddingResult> {
         if values.len() == 1 {
             // Single embedding
             let request = GoogleEmbedContentRequest {
@@ -100,7 +100,7 @@ impl qai_core::EmbeddingModel for GoogleEmbeddingModel {
 
             if !response.status().is_success() {
                 let error_text = response.text().await?;
-                return Err(anyhow!("Google Embedding API error: {}", error_text));
+                return Err(anyhow!("Google Embedding API error: {}", error_text).into());
             }
 
             let resp: GoogleSingleEmbeddingResponse = response.json().await?;
@@ -131,7 +131,7 @@ impl qai_core::EmbeddingModel for GoogleEmbeddingModel {
 
             if !response.status().is_success() {
                 let error_text = response.text().await?;
-                return Err(anyhow!("Google Embedding API error: {}", error_text));
+                return Err(anyhow!("Google Embedding API error: {}", error_text).into());
             }
 
             let resp: GoogleBatchEmbeddingResponse = response.json().await?;

@@ -4,7 +4,7 @@ use qai_core::LanguageModel;
 use qai_deepseek::DeepSeekModel;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> qai_core::Result<()> {
     dotenvy::dotenv().ok();
     let api_key = std::env::var("DEEPSEEK_API_KEY").expect("DEEPSEEK_API_KEY not set");
     let model = DeepSeekModel::new(api_key);

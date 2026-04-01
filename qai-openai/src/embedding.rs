@@ -1,6 +1,7 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use qai_core::types::{EmbeddingOptions, EmbeddingResult, EmbeddingUsage};
+use qai_core::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -53,7 +54,7 @@ impl qai_core::EmbeddingModel for OpenAIEmbeddingModel {
         &self,
         values: Vec<String>,
         options: EmbeddingOptions,
-    ) -> Result<EmbeddingResult> {
+    ) -> qai_core::Result<EmbeddingResult> {
         let request = OpenAIEmbeddingRequest {
             model: options.model_id,
             input: values,
@@ -71,7 +72,7 @@ impl qai_core::EmbeddingModel for OpenAIEmbeddingModel {
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
-            return Err(anyhow!("OpenAI Embedding API error: {}", error_text));
+            return Err(anyhow!("OpenAI Embedding API error: {}", error_text).into());
         }
 
         let resp: OpenAIEmbeddingResponse = response.json().await?;

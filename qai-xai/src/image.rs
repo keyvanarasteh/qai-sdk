@@ -1,4 +1,5 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
+use qai_core::Result;
 use async_trait::async_trait;
 use qai_core::types::{ImageGenerateOptions, ImageGenerateResult};
 use reqwest::Client;
@@ -47,7 +48,7 @@ struct XaiImageData {
 
 #[async_trait]
 impl qai_core::ImageModel for XaiImageModel {
-    async fn generate(&self, options: ImageGenerateOptions) -> Result<ImageGenerateResult> {
+    async fn generate(&self, options: ImageGenerateOptions) -> qai_core::Result<ImageGenerateResult> {
         let response_format = options
             .response_format
             .clone()
@@ -71,7 +72,7 @@ impl qai_core::ImageModel for XaiImageModel {
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
-            return Err(anyhow!("xAI Image API error: {}", error_text));
+            return Err(anyhow!("xAI Image API error: {}", error_text).into());
         }
 
         let img_resp: XaiImageResponse = resp.json().await?;

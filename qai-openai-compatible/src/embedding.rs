@@ -1,4 +1,3 @@
-use anyhow::Result;
 use async_trait::async_trait;
 use qai_core::types::{EmbeddingOptions, EmbeddingResult};
 use qai_openai::embedding::OpenAIEmbeddingModel;
@@ -27,7 +26,7 @@ impl qai_core::EmbeddingModel for OpenAICompatibleEmbeddingModel {
         &self,
         values: Vec<String>,
         options: EmbeddingOptions,
-    ) -> Result<EmbeddingResult> {
+    ) -> qai_core::Result<EmbeddingResult> {
         self.inner.embed(values, options).await
     }
 }

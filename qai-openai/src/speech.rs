@@ -1,6 +1,7 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use qai_core::types::{SpeechOptions, SpeechResult};
+use qai_core::Result;
 use reqwest::Client;
 use serde::Serialize;
 
@@ -34,7 +35,7 @@ struct OpenAISpeechRequest {
 
 #[async_trait]
 impl qai_core::SpeechModel for OpenAISpeechModel {
-    async fn synthesize(&self, options: SpeechOptions) -> Result<SpeechResult> {
+    async fn synthesize(&self, options: SpeechOptions) -> qai_core::Result<SpeechResult> {
         let request = OpenAISpeechRequest {
             model: options.model_id,
             input: options.input,
@@ -53,7 +54,7 @@ impl qai_core::SpeechModel for OpenAISpeechModel {
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
-            return Err(anyhow!("OpenAI Speech API error: {}", error_text));
+            return Err(anyhow!("OpenAI Speech API error: {}", error_text).into());
         }
 
         let audio = resp.bytes().await?.to_vec();

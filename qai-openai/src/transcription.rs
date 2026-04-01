@@ -1,6 +1,7 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use qai_core::types::{TranscriptionOptions, TranscriptionResult};
+use qai_core::Result;
 use reqwest::multipart::{Form, Part};
 use reqwest::Client;
 use serde::Deserialize;
@@ -33,7 +34,10 @@ struct OpenAITranscriptionResponse {
 
 #[async_trait]
 impl qai_core::TranscriptionModel for OpenAITranscriptionModel {
-    async fn transcribe(&self, options: TranscriptionOptions) -> Result<TranscriptionResult> {
+    async fn transcribe(
+        &self,
+        options: TranscriptionOptions,
+    ) -> qai_core::Result<TranscriptionResult> {
         let audio_part = Part::bytes(options.audio)
             .file_name("audio.mp3")
             .mime_str("audio/mpeg")?;
@@ -63,7 +67,7 @@ impl qai_core::TranscriptionModel for OpenAITranscriptionModel {
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
-            return Err(anyhow!("OpenAI Transcription API error: {}", error_text));
+            return Err(anyhow!("OpenAI Transcription API error: {}", error_text).into());
         }
 
         let transcription: OpenAITranscriptionResponse = resp.json().await?;

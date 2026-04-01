@@ -17,3 +17,6 @@ reqwest = { workspace = true, features = ["json"] }
 tokio = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
+
+tracing = { workspace = true }
+wiremock = "0.6"

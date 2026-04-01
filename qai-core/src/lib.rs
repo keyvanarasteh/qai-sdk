@@ -16,14 +16,17 @@
 
 #[cfg(test)]
 mod tests;
+pub mod error;
 pub mod types;
+
+pub use error::ProviderError;
+pub type Result<T> = std::result::Result<T, ProviderError>;
 
 use crate::types::{
     CompletionOptions, CompletionResult, EmbeddingOptions, EmbeddingResult, GenerateOptions,
     GenerateResult, ImageGenerateOptions, ImageGenerateResult, Prompt, SpeechOptions, SpeechResult,
     StreamPart, TranscriptionOptions, TranscriptionResult,
 };
-use anyhow::Result;
 use async_trait::async_trait;
 use futures::stream::BoxStream;
 
@@ -38,7 +41,7 @@ pub trait LanguageModel: Send + Sync {
         _prompt: Prompt,
         _options: GenerateOptions,
     ) -> Result<BoxStream<'static, StreamPart>> {
-        Err(anyhow::anyhow!("Streaming not implemented for this model"))
+        Err(ProviderError::NotSupported("Streaming not implemented for this model".to_string()))
     }
 }
 

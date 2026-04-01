@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use qai_core::types::{ImageGenerateOptions, ImageGenerateResult};
 use reqwest::Client;
@@ -56,7 +56,10 @@ struct GoogleImagePrediction {
 
 #[async_trait]
 impl qai_core::ImageModel for GoogleImageModel {
-    async fn generate(&self, options: ImageGenerateOptions) -> Result<ImageGenerateResult> {
+    async fn generate(
+        &self,
+        options: ImageGenerateOptions,
+    ) -> qai_core::Result<ImageGenerateResult> {
         let n = options.n.unwrap_or(1);
 
         let request = GoogleImageRequest {
@@ -78,7 +81,7 @@ impl qai_core::ImageModel for GoogleImageModel {
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
-            return Err(anyhow!("Google Image API error: {}", error_text));
+            return Err(anyhow!("Google Image API error: {}", error_text).into());
         }
 
         let img_resp: GoogleImageResponse = resp.json().await?;

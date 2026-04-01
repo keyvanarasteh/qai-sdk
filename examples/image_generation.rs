@@ -7,7 +7,7 @@ use qai_core::types::{ImageGenerateOptions, ProviderSettings};
 use qai_core::ImageModel;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> qai_core::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================

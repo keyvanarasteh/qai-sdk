@@ -4,7 +4,7 @@ use qai_core::LanguageModel;
 use qai_google::GoogleModel;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> qai_core::Result<()> {
     dotenvy::dotenv().ok();
     let api_key = std::env::var("GOOGLE_API_KEY").expect("GOOGLE_API_KEY not set");
     let model = GoogleModel::new(api_key);

@@ -1,4 +1,3 @@
-use anyhow::Result;
 use async_trait::async_trait;
 use qai_core::types::{ImageGenerateOptions, ImageGenerateResult};
 use qai_openai::image::OpenAIImageModel;
@@ -23,7 +22,7 @@ impl OpenAICompatibleImageModel {
 
 #[async_trait]
 impl qai_core::ImageModel for OpenAICompatibleImageModel {
-    async fn generate(&self, options: ImageGenerateOptions) -> Result<ImageGenerateResult> {
+    async fn generate(&self, options: ImageGenerateOptions) -> qai_core::Result<ImageGenerateResult> {
         self.inner.generate(options).await
     }
 }

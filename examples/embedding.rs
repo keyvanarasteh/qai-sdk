@@ -7,7 +7,7 @@ use qai_core::types::{EmbeddingOptions, ProviderSettings};
 use qai_core::EmbeddingModel;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> qai_core::Result<()> {
     dotenvy::dotenv().ok();
 
     let texts = vec![

@@ -1,6 +1,7 @@
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use qai_core::types::{CompletionOptions, CompletionResult, Usage};
+use qai_core::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -57,7 +58,7 @@ struct OpenAICompletionUsage {
 
 #[async_trait]
 impl qai_core::CompletionModel for OpenAICompletionModel {
-    async fn complete(&self, options: CompletionOptions) -> Result<CompletionResult> {
+    async fn complete(&self, options: CompletionOptions) -> qai_core::Result<CompletionResult> {
         let request = OpenAICompletionRequest {
             model: options.model_id,
             prompt: options.prompt,
@@ -78,14 +79,19 @@ impl qai_core::CompletionModel for OpenAICompletionModel {
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
-            return Err(anyhow!("OpenAI Completion API error: {}", error_text));
+            return Err(anyhow!("OpenAI Completion API error: {}", error_text).into());
         }
 
         let completion_resp: OpenAICompletionResponse = resp.json().await?;
-        let choice = completion_resp
-            .choices
-            .first()
-            .ok_or_else(|| anyhow!("No completion choices returned"))?;
+        let choice =
+            completion_resp
+                .choices
+                .first()
+                .ok_or_else(|| -> qai_core::ProviderError {
+                    qai_core::ProviderError::Other(anyhow::anyhow!(
+                        "No completion choices returned"
+                    ))
+                })?;
 
         Ok(CompletionResult {
             text: choice.text.clone(),

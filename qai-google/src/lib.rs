@@ -30,7 +30,7 @@ use crate::types::{
     GoogleContent, GoogleFunctionDeclaration, GoogleGenerationConfig, GooglePart, GoogleRequest,
     GoogleResponse, GoogleTool,
 };
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use eventsource_stream::Eventsource;
 use futures::stream::BoxStream;
@@ -59,7 +59,8 @@ impl GoogleModel {
 
 #[async_trait]
 impl qai_core::LanguageModel for GoogleModel {
-    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
+    #[tracing::instrument(skip(self, prompt), fields(model = options.model_id))]
+    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> qai_core::Result<GenerateResult> {
         let request = self.prepare_request(prompt, &options)?;
 
         let url = format!(
@@ -71,7 +72,7 @@ impl qai_core::LanguageModel for GoogleModel {
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
-            return Err(anyhow!("Google API error: {}", error_text));
+            return Err(anyhow!("Google API error: {}", error_text).into());
         }
 
         let headers = response.headers().clone();
@@ -90,7 +91,7 @@ impl qai_core::LanguageModel for GoogleModel {
         let candidate = google_response
             .candidates
             .first()
-            .ok_or_else(|| anyhow!("No candidates returned from Google"))?;
+            .ok_or_else(|| -> qai_core::ProviderError { qai_core::ProviderError::Other(anyhow::anyhow!("No candidates returned from Google")) })?;
 
         let mut text_parts = Vec::new();
         let mut tool_calls = Vec::new();
@@ -127,7 +128,7 @@ impl qai_core::LanguageModel for GoogleModel {
         &self,
         prompt: Prompt,
         options: GenerateOptions,
-    ) -> Result<BoxStream<'static, StreamPart>> {
+    ) -> qai_core::Result<BoxStream<'static, StreamPart>> {
         let request = self.prepare_request(prompt, &options)?;
         let url = format!(
             "{}/models/{}:streamGenerateContent?alt=sse&key={}",
@@ -138,7 +139,7 @@ impl qai_core::LanguageModel for GoogleModel {
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
-            return Err(anyhow!("Google API error: {}", error_text));
+            return Err(anyhow!("Google API error: {}", error_text).into());
         }
 
         let mut event_stream = response.bytes_stream().eventsource();
@@ -147,7 +148,7 @@ impl qai_core::LanguageModel for GoogleModel {
             while let Some(event) = event_stream.next().await {
                 match event {
                     Ok(event) => {
-                        let parsed: Result<GoogleResponse, _> = serde_json::from_str(&event.data);
+                        let parsed: std::result::Result<GoogleResponse, _> = serde_json::from_str(&event.data);
                         match parsed {
                             Ok(google_response) => {
                                 // Gemini sends usage in the last chunk or sometimes in every chunk
@@ -198,7 +199,7 @@ impl qai_core::LanguageModel for GoogleModel {
 }
 
 impl GoogleModel {
-    fn prepare_request(&self, prompt: Prompt, options: &GenerateOptions) -> Result<GoogleRequest> {
+    fn prepare_request(&self, prompt: Prompt, options: &GenerateOptions) -> qai_core::Result<GoogleRequest> {
         let mut contents = Vec::new();
         let mut system_instruction = None;
 
@@ -231,7 +232,7 @@ impl GoogleModel {
                     Content::Image { source } => {
                         let (mime_type, data) = match source {
                             ImageSource::Base64 { media_type, data } => (media_type, data),
-                            _ => return Err(anyhow!("Unsupported image source for Google")),
+                            _ => return Err(anyhow!("Unsupported image source for Google").into()),
                         };
                         parts.push(GooglePart::InlineData { mime_type, data });
                     }

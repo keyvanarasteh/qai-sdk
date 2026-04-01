@@ -8,7 +8,7 @@ use futures::StreamExt;
 use qai_sdk::prelude::*;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> qai_core::Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================

@@ -1,3 +1,5 @@
+pub mod mock_server;
+
 use qai_core::types::Usage;
 use reqwest::header::HeaderMap;
 use std::sync::{Arc, Mutex};

@@ -5,12 +5,13 @@
 //! (shell, code_interpreter, web_search, apply_patch, MCP, etc.).
 
 use crate::responses_types::*;
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use eventsource_stream::Eventsource;
 use futures::stream::BoxStream;
 use futures_util::StreamExt;
 use qai_core::types::{GenerateOptions, GenerateResult, Prompt, StreamPart, Usage};
+use qai_core::Result;
 use reqwest::Client;
 
 /// OpenAI Responses API model.
@@ -188,7 +189,11 @@ impl OpenAIResponsesModel {
 
 #[async_trait]
 impl qai_core::LanguageModel for OpenAIResponsesModel {
-    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
+    async fn generate(
+        &self,
+        prompt: Prompt,
+        options: GenerateOptions,
+    ) -> qai_core::Result<GenerateResult> {
         let request = self.build_request(prompt, options);
 
         let resp = self
@@ -201,13 +206,13 @@ impl qai_core::LanguageModel for OpenAIResponsesModel {
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
-            return Err(anyhow!("OpenAI Responses API error: {}", error_text));
+            return Err(anyhow!("OpenAI Responses API error: {}", error_text).into());
         }
 
         let response: ResponsesResponse = resp.json().await?;
 
         if let Some(err) = response.error {
-            return Err(anyhow!("OpenAI Responses API error: {}", err.message));
+            return Err(anyhow!("OpenAI Responses API error: {}", err.message).into());
         }
 
         let text = Self::extract_text(&response.output);
@@ -236,7 +241,7 @@ impl qai_core::LanguageModel for OpenAIResponsesModel {
         &self,
         prompt: Prompt,
         options: GenerateOptions,
-    ) -> Result<BoxStream<'static, StreamPart>> {
+    ) -> qai_core::Result<BoxStream<'static, StreamPart>> {
         let mut request = self.build_request(prompt, options);
         request.stream = Some(true);
 
@@ -250,7 +255,7 @@ impl qai_core::LanguageModel for OpenAIResponsesModel {
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
-            return Err(anyhow!("OpenAI Responses API stream error: {}", error_text));
+            return Err(anyhow!("OpenAI Responses API stream error: {}", error_text).into());
         }
 
         let stream = resp.bytes_stream().eventsource();

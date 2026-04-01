@@ -1,4 +1,3 @@
-use anyhow::Result;
 use async_trait::async_trait;
 use qai_core::types::{CompletionOptions, CompletionResult};
 use qai_openai::completion::OpenAICompletionModel;
@@ -23,7 +22,7 @@ impl OpenAICompatibleCompletionModel {
 
 #[async_trait]
 impl qai_core::CompletionModel for OpenAICompatibleCompletionModel {
-    async fn complete(&self, options: CompletionOptions) -> Result<CompletionResult> {
+    async fn complete(&self, options: CompletionOptions) -> qai_core::Result<CompletionResult> {
         self.inner.complete(options).await
     }
 }
