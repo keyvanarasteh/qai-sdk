@@ -49,6 +49,44 @@ rl.on('line', (line) => {
           content: [{ type: 'text', text: 'Weather is sunny' }]
         }
       }));
+    } else if (req.method === 'prompts/list') {
+      console.log(JSON.stringify({
+        jsonrpc: '2.0',
+        id: req.id,
+        result: {
+          prompts: [
+            {
+              name: 'code_review',
+              description: 'Review the provided code string',
+              arguments: [
+                {
+                  name: 'code',
+                  description: 'The code to review',
+                  required: true
+                }
+              ]
+            }
+          ]
+        }
+      }));
+    } else if (req.method === 'prompts/get') {
+      const args = req.params?.arguments || {};
+      console.log(JSON.stringify({
+        jsonrpc: '2.0',
+        id: req.id,
+        result: {
+          description: 'Response to code review',
+          messages: [
+            {
+              role: 'user',
+              content: {
+                type: 'text',
+                text: `Please review the following code for security vulnerabilities:\n\n${args.code || ''}`
+              }
+            }
+          ]
+        }
+      }));
     } else {
       console.log(JSON.stringify({
         jsonrpc: '2.0',

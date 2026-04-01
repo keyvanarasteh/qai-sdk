@@ -63,6 +63,29 @@ struct JsonRpcError {
     data: Option<Value>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct McpPromptArgument {
+    pub name: String,
+    pub description: Option<String>,
+    pub required: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct McpPrompt {
+    pub name: String,
+    pub description: Option<String>,
+    pub arguments: Option<Vec<McpPromptArgument>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct McpPromptMessage {
+    pub role: crate::core::types::Role,
+    pub content: crate::core::types::Content,
+}
+
 /// A transport configuration for connecting to an MCP (Model Context Protocol) server.
 #[derive(Debug, Clone)]
 pub enum McpTransport {
@@ -417,5 +440,59 @@ impl McpClient {
         });
 
         self.send_request("tools/call", Some(params)).await
+    }
+
+    /// Fetches the list of prompts available on the MCP server.
+    /// Returns a tuple of `(prompts, next_cursor)`.
+    pub async fn list_prompts(&self, cursor: Option<String>) -> Result<(Vec<McpPrompt>, Option<String>), McpError> {
+        let mut params = serde_json::Map::new();
+        if let Some(c) = cursor {
+            params.insert("cursor".to_string(), serde_json::Value::String(c));
+        }
+        let params_val = if params.is_empty() { None } else { Some(serde_json::Value::Object(params)) };
+        
+        let res = self.send_request("prompts/list", params_val).await?;
+        
+        let prompts_val = res.get("prompts").unwrap_or(&serde_json::Value::Null);
+        let prompts: Vec<McpPrompt> = serde_json::from_value(prompts_val.clone())?;
+        
+        let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
+        
+        Ok((prompts, next_cursor))
+    }
+
+    /// Retrieves a specific prompt by name, optionally with arguments.
+    /// Returns the prompt description and the generated list of messages.
+    pub async fn get_prompt(
+        &self,
+        name: &str,
+        arguments: Option<std::collections::HashMap<String, String>>,
+    ) -> Result<(String, Vec<crate::core::types::Message>), McpError> {
+        let mut params = serde_json::Map::new();
+        params.insert("name".to_string(), serde_json::Value::String(name.to_string()));
+        if let Some(args) = arguments {
+            let mut args_map = serde_json::Map::new();
+            for (k, v) in args {
+                args_map.insert(k, serde_json::Value::String(v));
+            }
+            params.insert("arguments".to_string(), serde_json::Value::Object(args_map));
+        }
+
+        let res = self.send_request("prompts/get", Some(serde_json::Value::Object(params))).await?;
+        
+        let description = res.get("description").and_then(|v| v.as_str()).unwrap_or("").to_string();
+        
+        let messages_val = res.get("messages").unwrap_or(&serde_json::Value::Null);
+        let mcp_messages: Vec<McpPromptMessage> = serde_json::from_value(messages_val.clone())?;
+        
+        let mut final_messages = Vec::new();
+        for msg in mcp_messages {
+            final_messages.push(crate::core::types::Message {
+                role: msg.role,
+                content: vec![msg.content],
+            });
+        }
+        
+        Ok((description, final_messages))
     }
 }
