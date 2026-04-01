@@ -3,103 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QAI SDK - Unified AI Interface</title>
+    <title>QAI SDK — Unified AI Playground</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #ff9d00;
             --bg: #0b0e14;
             --surface: #161b22;
+            --surface-2: #1c2333;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #c9d1d9;
+            --text-dim: #8b949e;
         }
 
         body {
             background-color: var(--bg);
-            color: #c9d1d9;
+            color: var(--text);
             font-family: 'Inter', sans-serif;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
 
         .mono { font-family: 'Fira Code', monospace; }
 
-        /* Background Neural Effect */
         #canvas {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 0;
-            opacity: 0.15;
+            opacity: 0.1;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
         }
 
         .glass-panel {
-            background: rgba(22, 27, 34, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 10;
+            background: rgba(22, 27, 34, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* Provider Selector */
         .provider-btn {
             transition: all 0.3s ease;
             filter: grayscale(1);
             opacity: 0.5;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            background: transparent;
+            color: var(--text);
         }
         .provider-btn.active {
             filter: grayscale(0);
             opacity: 1;
             transform: translateY(-2px);
             border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(255, 157, 0, 0.15);
+        }
+        .provider-btn:hover:not(.active) { opacity: 0.7; }
+
+        /* Feature Tabs */
+        .tab-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+        }
+        .tab-btn.active {
+            background: rgba(255, 157, 0, 0.12);
+            color: var(--primary);
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
         }
 
+        /* Terminal */
         .terminal-header {
             background: rgba(48, 54, 61, 0.5);
-            padding: 8px 16px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--border);
+            border-radius: 12px 12px 0 0;
         }
-
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
-
-        /* Scanning Line */
-        .scan-line {
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(to right, transparent, var(--primary), transparent);
-            top: 0;
-            left: 0;
-            animation: scan 4s linear infinite;
-            z-index: 20;
-            opacity: 0.3;
-        }
-
-        @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
 
         .code-container {
             background: #0d1117;
-            border-radius: 6px;
-            padding: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            overflow-x: auto;
+            min-height: 320px;
+            transition: opacity 0.3s ease;
         }
 
+        /* Feature Tags */
         .feature-tag {
             display: inline-flex;
             align-items: center;
             padding: 4px 10px;
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            font-size: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.7rem;
             transition: all 0.3s ease;
         }
         .feature-tag:hover {
@@ -107,152 +131,490 @@
             color: var(--primary);
         }
 
-        /* Syntax Highlighting */
+        /* Stat Cards */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Scan Line */
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--primary), transparent);
+            top: 0; left: 0;
+            animation: scan 6s linear infinite;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        /* Syntax */
         .kw { color: #ff7b72; }
         .fn { color: #d2a8ff; }
         .str { color: #a5d6ff; }
         .typ { color: #ffa657; }
         .cmt { color: #8b949e; }
+        .num { color: #79c0ff; }
+        .mac { color: #f0883e; }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(255, 157, 0, 0.08);
+        }
+        .feature-card h3 {
+            color: var(--primary);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+        .feature-card p {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container { padding: 1rem; }
+            .feature-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
     <canvas id="canvas"></canvas>
 
-    <div class="glass-panel w-full max-w-4xl rounded-2xl overflow-hidden flex flex-col md:flex-row">
-        <div class="scan-line"></div>
-        
-        <!-- Sidebar: Stats & Info -->
-        <div class="w-full md:w-1/3 p-8 border-r border-white/5 flex flex-col justify-between">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tighter text-white mb-2">QAI SDK</h1>
-                <p class="text-sm text-gray-400 mb-6">Modular, type-safe Rust SDK for unified AI orchestration.</p>
-                
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs uppercase tracking-widest text-gray-500">Stability</span>
-                        <span class="text-xs mono text-green-400">Production Ready</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs uppercase tracking-widest text-gray-500">Version</span>
-                        <span class="text-xs mono text-orange-400">v0.1.3</span>
-                    </div>
-                </div>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="text-center mb-10 relative">
+            <h1 class="text-4xl font-bold tracking-tighter text-white mb-2">QAI SDK</h1>
+            <p class="text-sm text-gray-400 max-w-xl mx-auto">Modular, type-safe Rust SDK for unified AI orchestration across 6+ providers with structured output, middleware, agents, and MCP.</p>
+            <div class="flex justify-center gap-3 mt-4 flex-wrap">
+                <span class="feature-tag">v0.1.3</span>
+                <span class="feature-tag">🦀 Rust</span>
+                <span class="feature-tag">6+ Providers</span>
+                <span class="feature-tag">Zero-cost Abstractions</span>
+                <span class="feature-tag">Async/Await</span>
+                <span class="feature-tag">crates.io</span>
+            </div>
+        </div>
 
-                <div class="mt-10">
-                    <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-4">Capabilities</h3>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="feature-tag">Chat</span>
-                        <span class="feature-tag">Streaming</span>
-                        <span class="feature-tag">Tool Calling</span>
-                        <span class="feature-tag">Vision</span>
-                        <span class="feature-tag">TTS/STT</span>
-                        <span class="feature-tag">MCP</span>
-                        <span class="feature-tag">Structured Output</span>
-                        <span class="feature-tag">Registry</span>
-                        <span class="feature-tag">Middleware</span>
-                        <span class="feature-tag">Agent</span>
-                    </div>
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+            <div class="stat-card">
+                <div class="text-xl font-bold text-white">6+</div>
+                <div class="text-[10px] uppercase tracking-widest text-gray-500">Providers</div>
+            </div>
+            <div class="stat-card">
+                <div class="text-xl font-bold text-white">6</div>
+                <div class="text-[10px] uppercase tracking-widest text-gray-500">Model Traits</div>
+            </div>
+            <div class="stat-card">
+                <div class="text-xl font-bold text-white">4</div>
+                <div class="text-[10px] uppercase tracking-widest text-gray-500">Advanced Features</div>
+            </div>
+            <div class="stat-card">
+                <div class="text-xl font-bold text-white">2</div>
+                <div class="text-[10px] uppercase tracking-widest text-gray-500">MCP Transports</div>
+            </div>
+            <div class="stat-card">
+                <div class="text-xl font-bold text-white">0</div>
+                <div class="text-[10px] uppercase tracking-widest text-gray-500">Cost Abstraction</div>
+            </div>
+        </div>
+
+        <!-- Main Panel -->
+        <div class="glass-panel relative overflow-hidden mb-8">
+            <div class="scan-line"></div>
+
+            <!-- Provider Selector -->
+            <div class="p-5 border-b" style="border-color: var(--border);">
+                <div class="text-[10px] uppercase tracking-widest text-gray-500 mb-3">Select Provider</div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="updateProvider('openai')" class="provider-btn active" id="btn-openai" aria-label="Select OpenAI provider">
+                        <span class="text-[11px] font-bold uppercase">OpenAI</span>
+                    </button>
+                    <button onclick="updateProvider('anthropic')" class="provider-btn" id="btn-anthropic" aria-label="Select Anthropic provider">
+                        <span class="text-[11px] font-bold uppercase">Claude</span>
+                    </button>
+                    <button onclick="updateProvider('google')" class="provider-btn" id="btn-google" aria-label="Select Google provider">
+                        <span class="text-[11px] font-bold uppercase">Gemini</span>
+                    </button>
+                    <button onclick="updateProvider('deepseek')" class="provider-btn" id="btn-deepseek" aria-label="Select DeepSeek provider">
+                        <span class="text-[11px] font-bold uppercase">DeepSeek</span>
+                    </button>
+                    <button onclick="updateProvider('xai')" class="provider-btn" id="btn-xai" aria-label="Select xAI provider">
+                        <span class="text-[11px] font-bold uppercase">Grok</span>
+                    </button>
+                    <button onclick="updateProvider('compatible')" class="provider-btn" id="btn-compatible" aria-label="Select OpenAI-compatible provider">
+                        <span class="text-[11px] font-bold uppercase">Ollama / vLLM</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="mt-10 pt-6 border-t border-white/5">
-                <div class="flex gap-4">
-                    <div class="bg-white/5 rounded p-2 flex-1 text-center">
-                        <div class="text-lg font-bold text-white">6+</div>
-                        <div class="text-[10px] uppercase text-gray-500">Providers</div>
-                    </div>
-                    <div class="bg-white/5 rounded p-2 flex-1 text-center">
-                        <div class="text-lg font-bold text-white">0</div>
-                        <div class="text-[10px] uppercase text-gray-500">Cost Abstraction</div>
-                    </div>
+            <!-- Feature Tabs -->
+            <div class="p-5 border-b overflow-x-auto" style="border-color: var(--border);">
+                <div class="flex gap-1 min-w-max">
+                    <button onclick="switchTab('chat')" class="tab-btn active" id="tab-chat" aria-label="Chat tab">💬 Chat</button>
+                    <button onclick="switchTab('streaming')" class="tab-btn" id="tab-streaming" aria-label="Streaming tab">⚡ Streaming</button>
+                    <button onclick="switchTab('tools')" class="tab-btn" id="tab-tools" aria-label="Tools tab">🔧 Tool Calling</button>
+                    <button onclick="switchTab('structured')" class="tab-btn" id="tab-structured" aria-label="Structured output tab">📋 Structured</button>
+                    <button onclick="switchTab('registry')" class="tab-btn" id="tab-registry" aria-label="Registry tab">🗂️ Registry</button>
+                    <button onclick="switchTab('middleware')" class="tab-btn" id="tab-middleware" aria-label="Middleware tab">🔗 Middleware</button>
+                    <button onclick="switchTab('agent')" class="tab-btn" id="tab-agent" aria-label="Agent tab">🤖 Agent</button>
+                    <button onclick="switchTab('mcp')" class="tab-btn" id="tab-mcp" aria-label="MCP tab">🌐 MCP</button>
+                </div>
+            </div>
+
+            <!-- Code Terminal -->
+            <div class="p-5">
+                <div class="terminal-header">
+                    <div class="dot bg-red-500"></div>
+                    <div class="dot bg-yellow-500"></div>
+                    <div class="dot bg-green-500"></div>
+                    <span class="ml-3 text-[10px] mono text-gray-500" id="filename">main.rs</span>
+                    <span class="ml-auto text-[10px] mono text-green-400">● Ready</span>
+                </div>
+                <div class="code-container mono text-sm" id="code-panel">
+                    <!-- Code injected by JS -->
                 </div>
             </div>
         </div>
 
-        <!-- Main Content: Interactive Terminal -->
-        <div class="flex-1 flex flex-col bg-black/20 p-6">
-            <!-- Provider Selector -->
-            <div class="flex justify-between items-center mb-6 overflow-x-auto pb-2 gap-4">
-                <button onclick="updateTheme('openai')" class="provider-btn active px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-openai">
-                    <span class="text-[10px] font-bold uppercase">OpenAI</span>
-                </button>
-                <button onclick="updateTheme('anthropic')" class="provider-btn px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-anthropic">
-                    <span class="text-[10px] font-bold uppercase">Claude</span>
-                </button>
-                <button onclick="updateTheme('google')" class="provider-btn px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-google">
-                    <span class="text-[10px] font-bold uppercase">Gemini</span>
-                </button>
-                <button onclick="updateTheme('deepseek')" class="provider-btn px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-deepseek">
-                    <span class="text-[10px] font-bold uppercase">DeepSeek</span>
-                </button>
-                <button onclick="updateTheme('xai')" class="provider-btn px-3 py-2 rounded border border-white/10 flex flex-col items-center gap-1" id="btn-xai">
-                    <span class="text-[10px] font-bold uppercase">Grok</span>
-                </button>
+        <!-- All Capabilities Grid -->
+        <div class="mb-8">
+            <h2 class="text-lg font-bold text-white mb-4 tracking-tight">Complete Feature Coverage</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>💬 Chat Generation</h3>
+                    <p>Unified <code>model.generate()</code> across all providers. System prompts, multi-turn conversations, and complete token usage stats.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⚡ Streaming</h3>
+                    <p>Real-time <code>StreamPart</code> enum covering text deltas, tool call deltas, usage, finish reasons, and errors.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔧 Tool Calling</h3>
+                    <p>First-class function calling with JSON Schema tool definitions. Works across OpenAI, Anthropic, Google, and compatible endpoints.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📋 Structured Output</h3>
+                    <p><code>generate_object()</code> forces models to return validated JSON. Supports Json mode (native) and Tool mode (fallback).</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🗂️ Provider Registry</h3>
+                    <p>Resolve models by string: <code>"openai:gpt-4o"</code>. Central hub for multi-provider applications.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔗 Middleware</h3>
+                    <p>Composable <code>LanguageModelMiddleware</code> trait. Built-in: <code>DefaultSettings</code>, <code>ExtractReasoning</code>.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🤖 Universal Agent</h3>
+                    <p>Builder-pattern agent with iterative tool loop. Configurable <code>max_steps</code> and async tool handlers.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🌐 MCP Protocol</h3>
+                    <p>Full MCP client: tools, prompts, resources, live subscriptions. Stdio and SSE transports.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🖼️ Vision / Multimodal</h3>
+                    <p>Pass images via <code>Content::Image</code>. Supported on GPT-4o, Claude 3, and Gemini models.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📐 Embeddings</h3>
+                    <p><code>EmbeddingModel</code> trait for text-embedding-3, text-embedding-004, and custom dimensions.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🎨 Image Generation</h3>
+                    <p><code>ImageModel</code> trait for DALL-E 2/3 and Imagen. HD quality, custom sizes.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔊 TTS / STT</h3>
+                    <p><code>SpeechModel</code> for text-to-speech (tts-1-hd). <code>TranscriptionModel</code> for Whisper speech-to-text.</p>
+                </div>
             </div>
+        </div>
 
-            <div class="flex-1 flex flex-col">
-                <div class="terminal-header rounded-t-lg">
-                    <div class="dot bg-red-500"></div>
-                    <div class="dot bg-yellow-500"></div>
-                    <div class="dot bg-green-500"></div>
-                    <span class="ml-auto text-[10px] mono text-gray-500">main.rs</span>
-                </div>
-                <div class="code-container flex-1 rounded-b-lg mono text-sm relative overflow-hidden">
-                    <pre id="code-snippet" class="whitespace-pre-wrap leading-relaxed"><span class="cmt">// Single unified API for all providers</span>
-<span class="kw">let</span> provider = <span id="code-fn" class="fn">create_openai</span>(settings);
-<span class="kw">let</span> model = provider.<span class="fn">chat</span>(<span id="code-model" class="str">"gpt-4o"</span>);
-
-<span class="kw">let</span> res = model.<span class="fn">generate</span>(prompt, options).<span class="kw">await</span>?;
-<span class="fn">println!</span>(<span class="str">"{}"</span>, res.text);</pre>
-                </div>
-            </div>
-
-            <div class="mt-6 flex items-center justify-between text-[11px] mono text-gray-500">
-                <div class="flex items-center gap-4">
-                    <span><span class="text-green-500">●</span> System: Ready</span>
-                    <span><span class="text-blue-500">●</span> Network: Connected</span>
-                </div>
-                <div class="p-2 px-4 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 cursor-pointer transition-colors">
-                    $ cargo build --release
-                </div>
-            </div>
+        <!-- Footer -->
+        <div class="text-center text-[11px] mono text-gray-500 pb-8">
+            <span>qai-sdk v0.1.3</span> · 
+            <span>MIT / Apache-2.0</span> · 
+            <a href="https://crates.io/crates/qai-sdk" class="hover:text-orange-400 transition-colors" aria-label="View on crates.io">crates.io</a> · 
+            <a href="https://github.com/keyvanarasteh/qai-sdk" class="hover:text-orange-400 transition-colors" aria-label="View on GitHub">GitHub</a> · 
+            <span>by Keyvan Arasteh</span>
         </div>
     </div>
 
     <script>
+        // --- Provider Data ---
         const providers = {
-            openai: { color: '#ff9d00', fn: 'create_openai', model: 'gpt-4o' },
-            anthropic: { color: '#d2a8ff', fn: 'create_anthropic', model: 'claude-3-opus' },
-            google: { color: '#4285f4', fn: 'create_google', model: 'gemini-1.5-pro' },
-            deepseek: { color: '#6ab0ff', fn: 'create_deepseek', model: 'deepseek-chat' },
-            xai: { color: '#ffffff', fn: 'create_xai', model: 'grok-beta' }
+            openai:     { color: '#ff9d00', fn: 'create_openai',     model: 'gpt-4o',             env: 'OPENAI_API_KEY' },
+            anthropic:  { color: '#d2a8ff', fn: 'create_anthropic',  model: 'claude-3-5-sonnet-20241022', env: 'ANTHROPIC_API_KEY' },
+            google:     { color: '#4285f4', fn: 'create_google',     model: 'gemini-2.0-flash',   env: 'GOOGLE_API_KEY' },
+            deepseek:   { color: '#6ab0ff', fn: 'create_deepseek',   model: 'deepseek-chat',      env: 'DEEPSEEK_API_KEY' },
+            xai:        { color: '#ffffff', fn: 'create_xai',        model: 'grok-2',             env: 'XAI_API_KEY' },
+            compatible: { color: '#22c55e', fn: 'create_openai_compatible', model: 'llama3.2',    env: 'none' },
         };
 
-        function updateTheme(key) {
+        let currentProvider = 'openai';
+        let currentTab = 'chat';
+
+        // --- Code Snippets per Tab ---
+        function getCode(tab, prov) {
+            const d = providers[prov];
+            const f = d.fn, m = d.model;
+
+            const snippets = {
+                chat: `<span class="cmt">// Basic chat — single unified API for all ${prov} models</span>
+<span class="kw">use</span> <span class="typ">qai_sdk</span>::prelude::*;
+
+<span class="kw">let</span> provider = <span class="fn">${f}</span>(<span class="typ">ProviderSettings</span> {
+    api_key: <span class="typ">Some</span>(std::env::<span class="fn">var</span>(<span class="str">"${d.env}"</span>).<span class="fn">unwrap</span>()),
+    ..<span class="typ">Default</span>::<span class="fn">default</span>()
+});
+<span class="kw">let</span> model = provider.<span class="fn">chat</span>(<span class="str">"${m}"</span>);
+
+<span class="kw">let</span> result = model.<span class="fn">generate</span>(
+    <span class="typ">Prompt</span> { messages: <span class="kw">vec!</span>[
+        <span class="typ">Message</span> { role: <span class="typ">Role</span>::User,
+            content: <span class="kw">vec!</span>[<span class="typ">Content</span>::Text {
+                text: <span class="str">"Explain Rust ownership"</span>.<span class="fn">into</span>()
+            }],
+        },
+    ]},
+    <span class="typ">GenerateOptions</span> {
+        model_id: <span class="str">"${m}"</span>.<span class="fn">into</span>(),
+        max_tokens: <span class="typ">Some</span>(<span class="num">500</span>),
+        temperature: <span class="typ">Some</span>(<span class="num">0.7</span>),
+        ..<span class="typ">Default</span>::<span class="fn">default</span>()
+    },
+).<span class="kw">await</span>?;
+
+<span class="mac">println!</span>(<span class="str">"{}"</span>, result.text);`,
+
+                streaming: `<span class="cmt">// Streaming — real-time token-by-token output</span>
+<span class="kw">use</span> <span class="typ">qai_sdk</span>::prelude::*;
+<span class="kw">use</span> futures::<span class="typ">StreamExt</span>;
+
+<span class="kw">let</span> model = provider.<span class="fn">chat</span>(<span class="str">"${m}"</span>);
+<span class="kw">let mut</span> stream = model.<span class="fn">generate_stream</span>(prompt, options).<span class="kw">await</span>?;
+
+<span class="kw">while let</span> <span class="typ">Some</span>(part) = stream.<span class="fn">next</span>().<span class="kw">await</span> {
+    <span class="kw">match</span> part {
+        <span class="typ">StreamPart</span>::TextDelta { delta } => <span class="mac">print!</span>(<span class="str">"{delta}"</span>),
+        <span class="typ">StreamPart</span>::ToolCallDelta { name, arguments_delta, .. } => {
+            <span class="kw">if let</span> <span class="typ">Some</span>(n) = name { <span class="mac">print!</span>(<span class="str">"[tool: {n}] "</span>); }
+            <span class="kw">if let</span> <span class="typ">Some</span>(a) = arguments_delta { <span class="mac">print!</span>(<span class="str">"{a}"</span>); }
+        }
+        <span class="typ">StreamPart</span>::Usage { usage } =>
+            <span class="mac">println!</span>(<span class="str">"\\n[{} tokens]"</span>, usage.prompt_tokens + usage.completion_tokens),
+        <span class="typ">StreamPart</span>::Finish { finish_reason } =>
+            <span class="mac">println!</span>(<span class="str">"\\n[Done: {finish_reason}]"</span>),
+        <span class="typ">StreamPart</span>::Error { message } =>
+            <span class="mac">eprintln!</span>(<span class="str">"\\n[Error: {message}]"</span>),
+    }
+}`,
+
+                tools: `<span class="cmt">// Tool calling — function calling with JSON Schema</span>
+<span class="kw">let</span> weather_tool = <span class="typ">ToolDefinition</span> {
+    name: <span class="str">"get_weather"</span>.<span class="fn">into</span>(),
+    description: <span class="str">"Get current weather for a city"</span>.<span class="fn">into</span>(),
+    parameters: <span class="mac">serde_json::json!</span>({
+        <span class="str">"type"</span>: <span class="str">"object"</span>,
+        <span class="str">"properties"</span>: {
+            <span class="str">"city"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> }
+        },
+        <span class="str">"required"</span>: [<span class="str">"city"</span>]
+    }),
+};
+
+<span class="kw">let</span> result = model.<span class="fn">generate</span>(prompt, <span class="typ">GenerateOptions</span> {
+    model_id: <span class="str">"${m}"</span>.<span class="fn">into</span>(),
+    tools: <span class="typ">Some</span>(<span class="kw">vec!</span>[weather_tool]),
+    ..<span class="typ">Default</span>::<span class="fn">default</span>()
+}).<span class="kw">await</span>?;
+
+<span class="kw">for</span> tc <span class="kw">in</span> &result.tool_calls {
+    <span class="mac">println!</span>(<span class="str">"Tool: {} | Args: {}"</span>, tc.name, tc.arguments);
+}`,
+
+                structured: `<span class="cmt">// Structured output — force JSON Schema conformance</span>
+<span class="kw">use</span> <span class="typ">qai_sdk</span>::core::structured::*;
+
+<span class="kw">let</span> result = <span class="fn">generate_object</span>(
+    &model,
+    <span class="str">"Generate a user profile for Jane, age 25"</span>,
+    <span class="typ">ObjectGenerateOptions</span> {
+        model_id: <span class="str">"${m}"</span>.<span class="fn">into</span>(),
+        schema: <span class="mac">serde_json::json!</span>({
+            <span class="str">"type"</span>: <span class="str">"object"</span>,
+            <span class="str">"properties"</span>: {
+                <span class="str">"name"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> },
+                <span class="str">"age"</span>: { <span class="str">"type"</span>: <span class="str">"integer"</span> },
+                <span class="str">"role"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> }
+            },
+            <span class="str">"required"</span>: [<span class="str">"name"</span>, <span class="str">"age"</span>]
+        }),
+        mode: <span class="typ">OutputMode</span>::Json,
+        ..<span class="typ">Default</span>::<span class="fn">default</span>()
+    },
+).<span class="kw">await</span>?;
+
+<span class="mac">println!</span>(<span class="str">"{}"</span>, result.object);
+<span class="cmt">// → {"name": "Jane", "age": 25, "role": "engineer"}</span>`,
+
+                registry: `<span class="cmt">// Provider Registry — resolve models by "provider:model" strings</span>
+<span class="kw">use</span> <span class="typ">qai_sdk</span>::core::registry::<span class="typ">ProviderRegistry</span>;
+
+<span class="kw">let</span> registry = <span class="typ">ProviderRegistry</span>::<span class="fn">new</span>()
+    .<span class="fn">register</span>(<span class="str">"openai"</span>, openai_provider)
+    .<span class="fn">register</span>(<span class="str">"anthropic"</span>, anthropic_provider)
+    .<span class="fn">register</span>(<span class="str">"google"</span>, google_provider)
+    .<span class="fn">register</span>(<span class="str">"deepseek"</span>, deepseek_provider);
+
+<span class="cmt">// Resolve any model with a simple string</span>
+<span class="kw">let</span> model = registry.<span class="fn">language_model</span>(<span class="str">"${prov}:${m}"</span>)?;
+<span class="kw">let</span> result = model.<span class="fn">generate</span>(prompt, options).<span class="kw">await</span>?;
+
+<span class="cmt">// Also supports embeddings and image models</span>
+<span class="kw">let</span> embedder = registry.<span class="fn">embedding_model</span>(<span class="str">"openai:text-embedding-3-small"</span>)?;
+<span class="kw">let</span> imager = registry.<span class="fn">image_model</span>(<span class="str">"openai:dall-e-3"</span>)?;`,
+
+                middleware: `<span class="cmt">// Middleware — composable model wrappers</span>
+<span class="kw">use</span> <span class="typ">qai_sdk</span>::core::middleware::*;
+
+<span class="cmt">// Wrap model with default settings + reasoning extraction</span>
+<span class="kw">let</span> wrapped = <span class="fn">wrap_language_model</span>(
+    model,
+    <span class="kw">vec!</span>[
+        <span class="typ">Box</span>::<span class="fn">new</span>(<span class="typ">DefaultSettingsMiddleware</span> {
+            temperature: <span class="typ">Some</span>(<span class="num">0.7</span>),
+            max_tokens: <span class="typ">Some</span>(<span class="num">4096</span>),
+            top_p: <span class="typ">None</span>,
+        }),
+        <span class="typ">Box</span>::<span class="fn">new</span>(<span class="typ">ExtractReasoningMiddleware</span>::<span class="fn">default</span>()),
+    ],
+);
+
+<span class="cmt">// Now every call auto-injects temperature=0.7</span>
+<span class="cmt">// and strips &lt;think&gt;...&lt;/think&gt; blocks from output</span>
+<span class="kw">let</span> result = wrapped.<span class="fn">generate</span>(prompt, options).<span class="kw">await</span>?;
+<span class="mac">println!</span>(<span class="str">"{}"</span>, result.text); <span class="cmt">// Clean, reasoning-free text</span>`,
+
+                agent: `<span class="cmt">// Universal Agent — multi-step tool loop</span>
+<span class="kw">use</span> <span class="typ">qai_sdk</span>::core::agent::<span class="typ">Agent</span>;
+
+<span class="kw">let</span> agent = <span class="typ">Agent</span>::<span class="fn">builder</span>()
+    .<span class="fn">model</span>(model)
+    .<span class="fn">model_id</span>(<span class="str">"${m}"</span>)
+    .<span class="fn">tools</span>(<span class="kw">vec!</span>[weather_tool, search_tool])
+    .<span class="fn">tool_handler</span>(|name, args| <span class="kw">async move</span> {
+        <span class="kw">match</span> name.<span class="fn">as_str</span>() {
+            <span class="str">"get_weather"</span> => <span class="typ">Ok</span>(<span class="mac">serde_json::json!</span>({
+                <span class="str">"temp"</span>: <span class="str">"22°C"</span>, <span class="str">"cond"</span>: <span class="str">"sunny"</span>
+            })),
+            <span class="str">"web_search"</span> => <span class="typ">Ok</span>(<span class="mac">serde_json::json!</span>({
+                <span class="str">"results"</span>: [<span class="str">"Rust is blazingly fast"</span>]
+            })),
+            _ => <span class="typ">Err</span>(<span class="mac">anyhow::anyhow!</span>(<span class="str">"Unknown tool"</span>)),
+        }
+    })
+    .<span class="fn">max_steps</span>(<span class="num">10</span>)
+    .<span class="fn">system</span>(<span class="str">"You are a helpful assistant."</span>)
+    .<span class="fn">build</span>().<span class="fn">expect</span>(<span class="str">"agent"</span>);
+
+<span class="kw">let</span> result = agent.<span class="fn">run</span>(<span class="str">"What's the weather?"</span>).<span class="kw">await</span>?;
+<span class="mac">println!</span>(<span class="str">"{}  ({} steps)"</span>, result.text, result.total_steps);`,
+
+                mcp: `<span class="cmt">// MCP — Model Context Protocol integration</span>
+<span class="kw">use</span> <span class="typ">qai_sdk</span>::mcp::client::<span class="typ">McpClient</span>;
+<span class="kw">use</span> <span class="typ">qai_sdk</span>::mcp::agent::<span class="fn">run_mcp_agent</span>;
+
+<span class="cmt">// Connect to any MCP server via stdio</span>
+<span class="kw">let</span> client = <span class="typ">McpClient</span>::<span class="fn">from_stdio</span>(
+    <span class="str">"npx"</span>, &[<span class="str">"-y"</span>, <span class="str">"@modelcontextprotocol/server-filesystem"</span>, <span class="str">"."</span>]
+).<span class="kw">await</span>?;
+
+<span class="cmt">// Discover tools, prompts, resources</span>
+<span class="kw">let</span> tools = client.<span class="fn">list_tools</span>().<span class="kw">await</span>?;
+<span class="kw">let</span> prompts = client.<span class="fn">list_prompts</span>().<span class="kw">await</span>?;
+<span class="kw">let</span> resources = client.<span class="fn">list_resources</span>().<span class="kw">await</span>?;
+
+<span class="cmt">// Auto-bridge: MCP tools → LLM → tool execution → response</span>
+<span class="kw">let</span> model = provider.<span class="fn">chat</span>(<span class="str">"${m}"</span>);
+<span class="kw">let</span> answer = <span class="fn">run_mcp_agent</span>(&model, &client,
+    <span class="str">"List all Rust files and summarize the project"</span>
+).<span class="kw">await</span>?;
+
+<span class="mac">println!</span>(<span class="str">"{answer}"</span>);`,
+            };
+
+            return snippets[tab] || snippets.chat;
+        }
+
+        // --- Provider Switch ---
+        function updateProvider(key) {
+            currentProvider = key;
             const data = providers[key];
             document.documentElement.style.setProperty('--primary', data.color);
-            
-            // Update buttons
             document.querySelectorAll('.provider-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`btn-${key}`).classList.add('active');
+            renderCode();
+        }
 
-            // Update Code Snippet with a small fade effect
-            const codeFn = document.getElementById('code-fn');
-            const codeModel = document.getElementById('code-model');
-            
-            codeFn.style.opacity = 0;
-            codeModel.style.opacity = 0;
-            
+        // --- Tab Switch ---
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            const filenames = {
+                chat: 'main.rs', streaming: 'stream.rs', tools: 'tools.rs',
+                structured: 'structured.rs', registry: 'registry.rs',
+                middleware: 'middleware.rs', agent: 'agent.rs', mcp: 'mcp_agent.rs'
+            };
+            document.getElementById('filename').textContent = filenames[tab] || 'main.rs';
+            renderCode();
+        }
+
+        // --- Render Code ---
+        function renderCode() {
+            const panel = document.getElementById('code-panel');
+            panel.style.opacity = '0';
             setTimeout(() => {
-                codeFn.innerText = data.fn;
-                codeModel.innerText = `"${data.model}"`;
-                codeFn.style.opacity = 1;
-                codeModel.style.opacity = 1;
+                panel.innerHTML = `<pre class="whitespace-pre-wrap leading-relaxed">${getCode(currentTab, currentProvider)}</pre>`;
+                panel.style.opacity = '1';
             }, 150);
         }
 
-        // --- Neural Background Simulation ---
+        // --- Neural Background ---
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -266,9 +628,9 @@
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.radius = Math.random() * 2;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.radius = Math.random() * 1.5 + 0.5;
             }
             update() {
                 this.x += this.vx;
@@ -286,8 +648,9 @@
 
         function init() {
             resize();
-            for (let i = 0; i < 80; i++) particles.push(new Particle());
+            for (let i = 0; i < 60; i++) particles.push(new Particle());
             animate();
+            renderCode();
         }
 
         function animate() {
@@ -295,15 +658,14 @@
             particles.forEach((p, i) => {
                 p.update();
                 p.draw();
-                // Draw lines
                 for (let j = i + 1; j < particles.length; j++) {
                     const p2 = particles[j];
                     const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if (dist < 100) {
+                    if (dist < 120) {
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist/100})`;
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * (1 - dist/120)})`;
                         ctx.lineWidth = 0.5;
                         ctx.stroke();
                     }
