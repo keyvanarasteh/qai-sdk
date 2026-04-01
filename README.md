@@ -1,9 +1,11 @@
 # QAI SDK
 
 [![Crates.io](https://img.shields.io/crates/v/qai-sdk.svg)](https://crates.io/crates/qai-sdk)
+[![Downloads](https://img.shields.io/crates/d/qai-sdk.svg)](https://crates.io/crates/qai-sdk)
 [![Documentation](https://docs.rs/qai-sdk/badge.svg)](https://docs.rs/qai-sdk)
 [![CI](https://github.com/keyvanarasteh/qai-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/keyvanarasteh/qai-sdk/actions/workflows/ci.yml)
 [![License](https://img.shields.io/crates/l/qai-sdk.svg)](https://github.com/keyvanarasteh/qai-sdk#license)
+[![GitHub stars](https://img.shields.io/github/stars/keyvanarasteh/qai-sdk.svg?style=social&label=Star)](https://github.com/keyvanarasteh/qai-sdk)
 
 A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI**, **Anthropic Claude**, **Google Gemini**, **DeepSeek**, **xAI Grok**, and any **OpenAI-compatible** endpoint.
 
@@ -114,6 +116,18 @@ let provider = create_xai(settings.clone());
 // Any OpenAI-compatible API
 let provider = create_openai_compatible(settings);
 ```
+
+## Documentation
+
+Dive deep into specific provider features and initialization parameters in our comprehensive module docs:
+
+- [Core Interoperability `qai_sdk::core`](docs/core.md)
+- [OpenAI Provider `qai_sdk::openai`](docs/openai.md)
+- [Anthropic Provider `qai_sdk::anthropic`](docs/anthropic.md)
+- [Google Gemini Provider `qai_sdk::google`](docs/google.md)
+- [DeepSeek Provider `qai_sdk::deepseek`](docs/deepseek.md)
+- [xAI Grok Provider `qai_sdk::xai`](docs/xai.md)
+- [OpenAI Compatible Provider `qai_sdk::openai_compatible`](docs/openai_compatible.md)
 
 ## Architecture
 
