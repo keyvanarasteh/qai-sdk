@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Successfully connected and initialized!");
 
     // Fetch tool list
-    let tools = client.get_tools().await?;
+    let (tools, _) = client.get_tools(None).await?;
     println!("Available Tools:");
     for tool in tools {
         println!(" - {}: {}", tool.name, tool.description);

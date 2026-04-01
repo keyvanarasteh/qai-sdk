@@ -10,7 +10,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let mcp_client = McpClient::connect(transport).await?;
 
     // 2. Fetch available tools from the MCP server
-    let mcp_tools = mcp_client.get_tools().await?;
+    let (mcp_tools, _) = mcp_client.get_tools(None).await?;
     println!("Fetched {} tools from MCP server.", mcp_tools.len());
 
     // 3. Setup QAI-SDK Provider (OpenAI Compatible or DeepSeek)

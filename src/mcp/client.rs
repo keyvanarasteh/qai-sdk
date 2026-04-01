@@ -86,6 +86,38 @@ pub struct McpPromptMessage {
     pub content: crate::core::types::Content,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct McpResource {
+    pub uri: String,
+    pub name: String,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub mime_type: Option<String>,
+    pub size: Option<usize>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct McpResourceTemplate {
+    pub uri_template: String,
+    pub name: String,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub mime_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct McpResourceContent {
+    pub uri: String,
+    pub name: Option<String>,
+    pub title: Option<String>,
+    pub mime_type: Option<String>,
+    pub text: Option<String>,
+    pub blob: Option<String>,
+}
+
 /// A transport configuration for connecting to an MCP (Model Context Protocol) server.
 #[derive(Debug, Clone)]
 pub enum McpTransport {
@@ -409,8 +441,15 @@ impl McpClient {
     }
 
     /// Fetches the list of tools available on the MCP server and converts them to QAI-SDK `ToolDefinition`s.
-    pub async fn get_tools(&self) -> Result<Vec<ToolDefinition>, McpError> {
-        let res = self.send_request("tools/list", None).await?;
+    /// Returns a tuple of `(tools, next_cursor)`.
+    pub async fn get_tools(&self, cursor: Option<String>) -> Result<(Vec<ToolDefinition>, Option<String>), McpError> {
+        let mut params = serde_json::Map::new();
+        if let Some(c) = cursor {
+            params.insert("cursor".to_string(), Value::String(c));
+        }
+        let params_val = if params.is_empty() { None } else { Some(Value::Object(params)) };
+
+        let res = self.send_request("tools/list", params_val).await?;
         
         let mut sdk_tools = Vec::new();
         if let Some(tools) = res.get("tools").and_then(|t| t.as_array()) {
@@ -429,7 +468,61 @@ impl McpClient {
                 });
             }
         }
-        Ok(sdk_tools)
+        
+        let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
+        
+        Ok((sdk_tools, next_cursor))
+    }
+
+    /// Fetches the list of resources available on the MCP server.
+    /// Returns a tuple of `(resources, next_cursor)`.
+    pub async fn list_resources(&self, cursor: Option<String>) -> Result<(Vec<McpResource>, Option<String>), McpError> {
+        let mut params = serde_json::Map::new();
+        if let Some(c) = cursor {
+            params.insert("cursor".to_string(), Value::String(c));
+        }
+        let params_val = if params.is_empty() { None } else { Some(Value::Object(params)) };
+        
+        let res = self.send_request("resources/list", params_val).await?;
+        
+        let resources_val = res.get("resources").unwrap_or(&Value::Null);
+        let resources: Vec<McpResource> = serde_json::from_value(resources_val.clone())?;
+        
+        let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
+        
+        Ok((resources, next_cursor))
+    }
+
+    /// Fetches the list of resource templates available on the MCP server.
+    /// Returns a tuple of `(templates, next_cursor)`.
+    pub async fn list_resource_templates(&self, cursor: Option<String>) -> Result<(Vec<McpResourceTemplate>, Option<String>), McpError> {
+        let mut params = serde_json::Map::new();
+        if let Some(c) = cursor {
+            params.insert("cursor".to_string(), Value::String(c));
+        }
+        let params_val = if params.is_empty() { None } else { Some(Value::Object(params)) };
+        
+        let res = self.send_request("resources/templates/list", params_val).await?;
+        
+        let templates_val = res.get("resourceTemplates").unwrap_or(&Value::Null);
+        let templates: Vec<McpResourceTemplate> = serde_json::from_value(templates_val.clone())?;
+        
+        let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
+        
+        Ok((templates, next_cursor))
+    }
+
+    /// Reads a specific resource by URI across the MCP server.
+    pub async fn read_resource(&self, uri: &str) -> Result<Vec<McpResourceContent>, McpError> {
+        let mut params = serde_json::Map::new();
+        params.insert("uri".to_string(), Value::String(uri.to_string()));
+        
+        let res = self.send_request("resources/read", Some(Value::Object(params))).await?;
+        
+        let contents_val = res.get("contents").unwrap_or(&Value::Null);
+        let contents: Vec<McpResourceContent> = serde_json::from_value(contents_val.clone())?;
+        
+        Ok(contents)
     }
 
     /// Calls a specific tool on the MCP server.

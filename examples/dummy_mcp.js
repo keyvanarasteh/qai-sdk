@@ -87,6 +87,51 @@ rl.on('line', (line) => {
           ]
         }
       }));
+    } else if (req.method === 'resources/list') {
+      console.log(JSON.stringify({
+        jsonrpc: '2.0',
+        id: req.id,
+        result: {
+          resources: [
+            {
+              uri: 'file:///logs/app.log',
+              name: 'Application Logs',
+              description: 'The main application log file',
+              mimeType: 'text/plain'
+            }
+          ]
+        }
+      }));
+    } else if (req.method === 'resources/templates/list') {
+      console.log(JSON.stringify({
+        jsonrpc: '2.0',
+        id: req.id,
+        result: {
+          resourceTemplates: [
+            {
+              uriTemplate: 'file:///logs/{date}.log',
+              name: 'Archived Logs',
+              description: 'Access logs for a specific date',
+              mimeType: 'text/plain'
+            }
+          ]
+        }
+      }));
+    } else if (req.method === 'resources/read') {
+      const uri = req.params?.uri || '';
+      console.log(JSON.stringify({
+        jsonrpc: '2.0',
+        id: req.id,
+        result: {
+          contents: [
+            {
+              uri: uri,
+              mimeType: 'text/plain',
+              text: `[DEBUG] Mock resource content for ${uri}\n[INFO] Server running perfectly.`
+            }
+          ]
+        }
+      }));
     } else {
       console.log(JSON.stringify({
         jsonrpc: '2.0',
