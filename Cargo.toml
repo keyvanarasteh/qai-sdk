@@ -1,6 +1,6 @@
 [package]
 name = "qai-sdk"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "Universal Rust SDK for AI Providers"
 license = "MIT OR Apache-2.0"
