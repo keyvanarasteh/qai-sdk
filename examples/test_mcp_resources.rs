@@ -9,15 +9,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mcp_client = McpClient::connect(transport).await?;
 
     println!("\n--- Fetching Resources ---");
-    let (resources, next_cursor) = mcp_client.list_resources(None).await?;
+    let (resources, _next_cursor) = mcp_client.list_resources(None).await?;
     println!("Fetched {} resources from MCP server.", resources.len());
     for r in &resources {
         println!("- {} ({}): {}", r.name, r.uri, r.description.as_deref().unwrap_or(""));
     }
 
     println!("\n--- Fetching Resource Templates ---");
-    let (templates, next_cursor_tmpl) = mcp_client.list_resource_templates(None).await?;
-    println!("Fetched {} templates from MCP server.", templates.len());
+    let (templates, _next_cursor_tmpl) = mcp_client.list_resource_templates(None).await?;
+    println!("Fetched {} resource templates.", templates.len());
     for t in &templates {
         println!("- {} ({})", t.name, t.uri_template);
     }

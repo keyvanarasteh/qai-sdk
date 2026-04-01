@@ -10,7 +10,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mcp_client = McpClient::connect(transport).await?;
 
     println!("\n--- Fetching Prompts ---");
-    let (prompts, next_cursor) = mcp_client.list_prompts(None).await?;
+    // 2. Fetch available prompts from the MCP server
+    let (prompts, _next_cursor) = mcp_client.list_prompts(None).await?;
     
     println!("Fetched {} prompts from MCP server.", prompts.len());
     for p in &prompts {

@@ -158,6 +158,8 @@ pub struct McpClient {
     _child: Option<Child>,
 }
 
+type PendingRequestsMap = Arc<Mutex<std::collections::HashMap<usize, oneshot::Sender<Result<Value, McpError>>>>>;
+
 impl McpClient {
     /// Connects to an MCP server using the specified transport and performs the initialization handshake.
     pub async fn connect(transport: McpTransport) -> Result<Self, McpError> {
@@ -248,8 +250,7 @@ impl McpClient {
         mut rx_notif: mpsc::Receiver<JsonRpcNotification>,
         tx_resource_updated: broadcast::Sender<String>,
     ) {
-        let pending_requests: Arc<Mutex<std::collections::HashMap<usize, oneshot::Sender<Result<Value, McpError>>>>> =
-            Arc::new(Mutex::new(std::collections::HashMap::new()));
+        let pending_requests: PendingRequestsMap = Arc::new(Mutex::new(std::collections::HashMap::new()));
         let pending_clone = pending_requests.clone();
 
         // Write Loop
@@ -310,13 +311,11 @@ impl McpClient {
                                     let _ = reply_tx.send(Err(McpError::Protocol("Empty response result".to_string())));
                                 }
                             }
-                        } else {
-                            if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&line) {
-                                if notif.method == "notifications/resources/updated" {
-                                    if let Some(params) = notif.params {
-                                        if let Some(uri) = params.get("uri").and_then(|v| v.as_str()) {
-                                            let _ = tx_resource_updated.send(uri.to_string());
-                                        }
+                        } else if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&line) {
+                            if notif.method == "notifications/resources/updated" {
+                                if let Some(params) = notif.params {
+                                    if let Some(uri) = params.get("uri").and_then(|v| v.as_str()) {
+                                        let _ = tx_resource_updated.send(uri.to_string());
                                     }
                                 }
                             }
@@ -340,8 +339,7 @@ impl McpClient {
     ) where
         S: futures_util::Stream<Item = Result<eventsource_stream::Event, eventsource_stream::EventStreamError<reqwest::Error>>> + Unpin + Send + 'static,
     {
-        let pending_requests: Arc<Mutex<std::collections::HashMap<usize, oneshot::Sender<Result<Value, McpError>>>>> =
-            Arc::new(Mutex::new(std::collections::HashMap::new()));
+        let pending_requests: PendingRequestsMap = Arc::new(Mutex::new(std::collections::HashMap::new()));
         let pending_clone = pending_requests.clone();
 
         // Write Loop (HTTP POST)
@@ -398,13 +396,11 @@ impl McpClient {
                                     let _ = reply_tx.send(Err(McpError::Protocol("Empty response result".to_string())));
                                 }
                             }
-                        } else {
-                            if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&event.data) {
-                                if notif.method == "notifications/resources/updated" {
-                                    if let Some(params) = notif.params {
-                                        if let Some(uri) = params.get("uri").and_then(|v| v.as_str()) {
-                                            let _ = tx_resource_updated.send(uri.to_string());
-                                        }
+                        } else if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&event.data) {
+                            if notif.method == "notifications/resources/updated" {
+                                if let Some(params) = notif.params {
+                                    if let Some(uri) = params.get("uri").and_then(|v| v.as_str()) {
+                                        let _ = tx_resource_updated.send(uri.to_string());
                                     }
                                 }
                             }
@@ -425,7 +421,8 @@ impl McpClient {
             method: method.to_string(),
             params,
         };
-        let (tx, rx): (oneshot::Sender<Result<Value, McpError>>, oneshot::Receiver<Result<Value, McpError>>) = oneshot::channel();
+
+        let (tx, rx) = oneshot::channel();
         self.tx_req
             .send((req, tx))
             .await
@@ -566,13 +563,13 @@ impl McpClient {
     pub async fn list_prompts(&self, cursor: Option<String>) -> Result<(Vec<McpPrompt>, Option<String>), McpError> {
         let mut params = serde_json::Map::new();
         if let Some(c) = cursor {
-            params.insert("cursor".to_string(), serde_json::Value::String(c));
+            params.insert("cursor".to_string(), Value::String(c));
         }
-        let params_val = if params.is_empty() { None } else { Some(serde_json::Value::Object(params)) };
+        let params_val = if params.is_empty() { None } else { Some(Value::Object(params)) };
         
         let res = self.send_request("prompts/list", params_val).await?;
         
-        let prompts_val = res.get("prompts").unwrap_or(&serde_json::Value::Null);
+        let prompts_val = res.get("prompts").unwrap_or(&Value::Null);
         let prompts: Vec<McpPrompt> = serde_json::from_value(prompts_val.clone())?;
         
         let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
@@ -588,20 +585,20 @@ impl McpClient {
         arguments: Option<std::collections::HashMap<String, String>>,
     ) -> Result<(String, Vec<crate::core::types::Message>), McpError> {
         let mut params = serde_json::Map::new();
-        params.insert("name".to_string(), serde_json::Value::String(name.to_string()));
+        params.insert("name".to_string(), Value::String(name.to_string()));
         if let Some(args) = arguments {
             let mut args_map = serde_json::Map::new();
             for (k, v) in args {
-                args_map.insert(k, serde_json::Value::String(v));
+                args_map.insert(k, Value::String(v));
             }
-            params.insert("arguments".to_string(), serde_json::Value::Object(args_map));
+            params.insert("arguments".to_string(), Value::Object(args_map));
         }
 
-        let res = self.send_request("prompts/get", Some(serde_json::Value::Object(params))).await?;
+        let res = self.send_request("prompts/get", Some(Value::Object(params))).await?;
         
         let description = res.get("description").and_then(|v| v.as_str()).unwrap_or("").to_string();
         
-        let messages_val = res.get("messages").unwrap_or(&serde_json::Value::Null);
+        let messages_val = res.get("messages").unwrap_or(&Value::Null);
         let mcp_messages: Vec<McpPromptMessage> = serde_json::from_value(messages_val.clone())?;
         
         let mut final_messages = Vec::new();
