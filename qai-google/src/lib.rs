@@ -1,3 +1,23 @@
+//! # QAI Google
+//!
+//! Google Gemini provider for the QAI SDK. Supports chat, streaming,
+//! tool calling, vision, embeddings, and image generation via the
+//! Generative Language API.
+//!
+//! ## Usage
+//!
+//! ```rust,no_run
+//! use qai_google::create_google;
+//! use qai_core::types::ProviderSettings;
+//!
+//! let provider = create_google(ProviderSettings {
+//!     api_key: Some("AIza...".to_string()),
+//!     ..Default::default()
+//! });
+//!
+//! let model = provider.chat("gemini-2.0-flash");
+//! ```
+
 pub mod types;
 pub mod embedding;
 pub mod image;

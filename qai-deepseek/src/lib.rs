@@ -1,3 +1,22 @@
+//! # QAI DeepSeek
+//!
+//! DeepSeek provider for the QAI SDK. Provides access to DeepSeek-Chat
+//! and DeepSeek-Reasoner models through an OpenAI-compatible API adapter.
+//!
+//! ## Usage
+//!
+//! ```rust,no_run
+//! use qai_deepseek::create_deepseek;
+//! use qai_core::types::ProviderSettings;
+//!
+//! let provider = create_deepseek(ProviderSettings {
+//!     api_key: Some("sk-...".to_string()),
+//!     ..Default::default()
+//! });
+//!
+//! let model = provider.chat("deepseek-chat");
+//! ```
+
 pub mod types;
 pub mod error;
 

@@ -1,3 +1,22 @@
+//! # QAI Anthropic
+//!
+//! Anthropic Claude provider for the QAI SDK. Supports chat, streaming,
+//! tool calling, vision (images), and PDF document input.
+//!
+//! ## Usage
+//!
+//! ```rust,no_run
+//! use qai_anthropic::create_anthropic;
+//! use qai_core::types::ProviderSettings;
+//!
+//! let provider = create_anthropic(ProviderSettings {
+//!     api_key: Some("sk-ant-...".to_string()),
+//!     ..Default::default()
+//! });
+//!
+//! let model = provider.chat("claude-sonnet-4-20250514");
+//! ```
+
 pub mod types;
 pub mod error;
 pub mod tools;

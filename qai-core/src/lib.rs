@@ -1,3 +1,19 @@
+//! # QAI Core
+//!
+//! Core traits and types for the QAI SDK ecosystem.
+//!
+//! This crate defines the provider-agnostic interfaces that every AI provider
+//! implements:
+//!
+//! - [`LanguageModel`] — Chat and text generation (with optional streaming)
+//! - [`EmbeddingModel`] — Vector embeddings for text
+//! - [`ImageModel`] — Image generation from text prompts
+//! - [`CompletionModel`] — Legacy text completion
+//! - [`SpeechModel`] — Text-to-speech synthesis
+//! - [`TranscriptionModel`] — Speech-to-text transcription
+//!
+//! All shared types live in the [`types`] module.
+
 pub mod types;
 #[cfg(test)]
 mod tests;

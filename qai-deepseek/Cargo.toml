@@ -1,11 +1,17 @@
 [package]
 name = "qai-deepseek"
-version = "0.1.0"
-edition = "2021"
+description = "DeepSeek provider for the QAI SDK — DeepSeek-Chat and DeepSeek-Reasoner models via OpenAI-compatible API"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-qai-core = { path = "../qai-core" }
-qai-openai = { path = "../qai-openai" }
+qai-core = { path = "../qai-core", version = "0.1.0" }
+qai-openai = { path = "../qai-openai", version = "0.1.0" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 reqwest = { workspace = true }

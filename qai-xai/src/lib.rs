@@ -1,3 +1,23 @@
+//! # QAI xAI
+//!
+//! xAI Grok provider for the QAI SDK. Provides access to Grok models
+//! through an OpenAI-compatible API adapter, with additional support for
+//! image generation and the Responses API.
+//!
+//! ## Usage
+//!
+//! ```rust,no_run
+//! use qai_xai::create_xai;
+//! use qai_core::types::ProviderSettings;
+//!
+//! let provider = create_xai(ProviderSettings {
+//!     api_key: Some("xai-...".to_string()),
+//!     ..Default::default()
+//! });
+//!
+//! let model = provider.chat("grok-2");
+//! ```
+
 pub mod types;
 pub mod image;
 pub mod tools;

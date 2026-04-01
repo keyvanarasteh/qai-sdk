@@ -1,3 +1,25 @@
+//! # QAI OpenAI
+//!
+//! OpenAI provider for the QAI SDK. Supports GPT chat models, DALL-E image
+//! generation, Whisper transcription, TTS speech synthesis, text embeddings,
+//! legacy completions, and the Responses API.
+//!
+//! ## Usage
+//!
+//! ```rust,no_run
+//! use qai_openai::create_openai;
+//! use qai_core::types::ProviderSettings;
+//!
+//! let provider = create_openai(ProviderSettings {
+//!     api_key: Some("sk-...".to_string()),
+//!     ..Default::default()
+//! });
+//!
+//! let chat = provider.chat("gpt-4o");
+//! let embedding = provider.embedding("text-embedding-3-small");
+//! let image = provider.image("dall-e-3");
+//! ```
+
 pub mod types;
 pub mod embedding;
 pub mod image;

@@ -2,16 +2,25 @@
 name = "qai-sdk"
 version = "0.1.0"
 edition = "2021"
-publish = false
+description = "A modular, type-safe Rust SDK for AI providers — OpenAI, Anthropic, Google Gemini, DeepSeek, xAI, and any OpenAI-compatible endpoint"
+license = "MIT OR Apache-2.0"
+authors = ["Keyvan Arasteh <keyvan.arasteh@live.com>"]
+repository = "https://github.com/keyvanarasteh/qai-sdk"
+homepage = "https://github.com/keyvanarasteh/qai-sdk"
+documentation = "https://docs.rs/qai-sdk"
+readme = "README.md"
+keywords = ["ai", "llm", "openai", "anthropic", "gemini"]
+categories = ["api-bindings", "asynchronous"]
+rust-version = "1.70"
 
 [dependencies]
-qai-core = { path = "qai-core" }
-qai-anthropic = { path = "qai-anthropic" }
-qai-google = { path = "qai-google" }
-qai-openai = { path = "qai-openai" }
-qai-deepseek = { path = "qai-deepseek" }
-qai-xai = { path = "qai-xai" }
-qai-openai-compatible = { path = "qai-openai-compatible" }
+qai-core = { path = "qai-core", version = "0.1.0" }
+qai-anthropic = { path = "qai-anthropic", version = "0.1.0" }
+qai-google = { path = "qai-google", version = "0.1.0" }
+qai-openai = { path = "qai-openai", version = "0.1.0" }
+qai-deepseek = { path = "qai-deepseek", version = "0.1.0" }
+qai-xai = { path = "qai-xai", version = "0.1.0" }
+qai-openai-compatible = { path = "qai-openai-compatible", version = "0.1.0" }
 tokio = { workspace = true }
 futures = { workspace = true }
 anyhow = { workspace = true }
@@ -21,6 +30,15 @@ dotenvy = "0.15"
 [workspace]
 members = ["qai-anthropic", "qai-core", "qai-deepseek", "qai-google", "qai-openai", "qai-openai-compatible", "qai-test-utils", "qai-xai"]
 resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["Keyvan Arasteh <keyvan.arasteh@live.com>"]
+repository = "https://github.com/keyvanarasteh/qai-sdk"
+homepage = "https://github.com/keyvanarasteh/qai-sdk"
+rust-version = "1.70"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }

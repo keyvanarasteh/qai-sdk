@@ -1,10 +1,16 @@
 [package]
 name = "qai-google"
-version = "0.1.0"
-edition = "2021"
+description = "Google Gemini provider for the QAI SDK — chat, streaming, tool calling, and vision"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-qai-core = { path = "../qai-core" }
+qai-core = { path = "../qai-core", version = "0.1.0" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 reqwest = { workspace = true }

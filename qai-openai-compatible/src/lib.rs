@@ -1,3 +1,24 @@
+//! # QAI OpenAI Compatible
+//!
+//! Provider for any OpenAI-compatible API endpoint. Use this to connect to
+//! Ollama, LM Studio, vLLM, Together AI, Groq, or any other service that
+//! implements the OpenAI chat completions format.
+//!
+//! ## Usage
+//!
+//! ```rust,no_run
+//! use qai_openai_compatible::{create_openai_compatible, OpenAICompatibleProviderSettings};
+//!
+//! let provider = create_openai_compatible(OpenAICompatibleProviderSettings {
+//!     base_url: "http://localhost:11434/v1".to_string(),
+//!     name: "ollama".to_string(),
+//!     api_key: None,
+//!     headers: None,
+//! });
+//!
+//! let model = provider.chat("llama3");
+//! ```
+
 pub mod types;
 pub mod embedding;
 pub mod image;

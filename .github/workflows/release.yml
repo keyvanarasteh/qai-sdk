@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # Publish in dependency order
+      - name: Publish qai-core
+        run: cargo publish -p qai-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Wait for crates.io index
+        run: sleep 30
+
+      - name: Publish qai-openai
+        run: cargo publish -p qai-openai --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Wait for crates.io index
+        run: sleep 30
+
+      - name: Publish qai-anthropic
+        run: cargo publish -p qai-anthropic --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Publish qai-google
+        run: cargo publish -p qai-google --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Wait for crates.io index
+        run: sleep 30
+
+      - name: Publish qai-deepseek
+        run: cargo publish -p qai-deepseek --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Publish qai-xai
+        run: cargo publish -p qai-xai --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Publish qai-openai-compatible
+        run: cargo publish -p qai-openai-compatible --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Wait for crates.io index
+        run: sleep 30
+
+      - name: Publish qai-sdk
+        run: cargo publish -p qai-sdk --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
