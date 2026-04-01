@@ -219,13 +219,13 @@ pub struct ProviderSettings {
 
 // --- Embedding Types ---
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmbeddingOptions {
     pub model_id: String,
     pub dimensions: Option<u32>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmbeddingResult {
     pub embeddings: Vec<Vec<f32>>,
     pub usage: Option<EmbeddingUsage>,
@@ -239,7 +239,7 @@ pub struct EmbeddingUsage {
 
 // --- Image Generation Types ---
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImageGenerateOptions {
     pub model_id: String,
     pub prompt: String,
@@ -249,7 +249,7 @@ pub struct ImageGenerateOptions {
     pub response_format: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImageGenerateResult {
     /// Base64-encoded images or URLs, depending on `response_format`.
     pub images: Vec<String>,
@@ -258,7 +258,7 @@ pub struct ImageGenerateResult {
 
 // --- Completion Types ---
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompletionOptions {
     pub model_id: String,
     pub prompt: String,
@@ -269,7 +269,7 @@ pub struct CompletionOptions {
     pub suffix: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompletionResult {
     pub text: String,
     pub usage: Usage,
@@ -278,7 +278,7 @@ pub struct CompletionResult {
 
 // --- Speech Types ---
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpeechOptions {
     pub model_id: String,
     pub input: String,
@@ -287,7 +287,7 @@ pub struct SpeechOptions {
     pub speed: Option<f32>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpeechResult {
     /// Raw audio bytes.
     pub audio: Vec<u8>,
@@ -295,7 +295,7 @@ pub struct SpeechResult {
 
 // --- Transcription Types ---
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TranscriptionOptions {
     pub model_id: String,
     /// Raw audio bytes to transcribe.
@@ -305,7 +305,7 @@ pub struct TranscriptionOptions {
     pub temperature: Option<f32>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TranscriptionResult {
     pub text: String,
     pub language: Option<String>,

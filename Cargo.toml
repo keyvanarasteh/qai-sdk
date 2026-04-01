@@ -11,13 +11,14 @@ keywords = ["ai", "llm", "openai", "claude", "gemini"]
 categories = ["api-bindings", "web-programming::http-client"]
 
 [features]
-default = ["openai", "anthropic", "google", "deepseek", "xai", "openai-compatible"]
+default = ["openai", "anthropic", "google", "deepseek", "xai", "openai-compatible", "mcp"]
 openai = []
 anthropic = []
 google = []
 deepseek = ["openai"]
 xai = ["openai"]
 openai-compatible = ["openai"]
+mcp = ["tokio/process", "tokio/io-util", "tokio/sync", "tokio/rt"]
 
 [dependencies]
 async-trait = "0.1"
@@ -32,6 +33,7 @@ futures-util = "0.3"
 eventsource-stream = "0.2"
 base64 = "0.22"
 async-stream = "0.3"
+tokio = { version = "1.40", features = ["process", "io-util", "sync", "rt", "macros"], optional = true }
 
 [dev-dependencies]
 tokio = { version = "1.40", features = ["full", "macros", "rt-multi-thread"] }

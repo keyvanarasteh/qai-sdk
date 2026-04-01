@@ -33,6 +33,9 @@ pub mod xai;
 #[cfg(feature = "openai-compatible")]
 pub mod openai_compatible;
 
+#[cfg(feature = "mcp")]
+pub mod mcp;
+
 #[cfg(test)]
 pub mod test_utils;
 
