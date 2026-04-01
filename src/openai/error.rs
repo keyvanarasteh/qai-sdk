@@ -47,11 +47,7 @@ impl OpenAIError {
         if let Ok(error_resp) = serde_json::from_str::<OpenAIErrorResponse>(body) {
             let message = error_resp.error.message.clone();
             let error_type = error_resp.error.error_type.clone().unwrap_or_default();
-            let code = error_resp
-                .error
-                .code
-                .as_ref()
-                .map(std::string::ToString::to_string);
+            let code = error_resp.error.code.as_ref().map(ToString::to_string);
 
             match status {
                 401 => OpenAIError::AuthenticationError { message },

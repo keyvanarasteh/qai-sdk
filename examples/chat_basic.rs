@@ -7,7 +7,7 @@ use qai_sdk::*;
 
 use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_sdk::Result<()> {
+async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     let prompt = Prompt {
@@ -39,7 +39,7 @@ async fn main() -> qai_sdk::Result<()> {
     // --- OpenAI ---
     println!("=== OpenAI ===");
     let api_key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::openai::OpenAIModel::new(api_key);
+    let model = OpenAIModel::new(api_key);
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Response: {}", result.text);
     println!(
@@ -51,7 +51,7 @@ async fn main() -> qai_sdk::Result<()> {
     // --- Anthropic ---
     println!("=== Anthropic ===");
     let api_key = std::env::var("ANTHROPIC_API_KEY").unwrap_or_default();
-    let model = qai_sdk::anthropic::AnthropicModel::new(api_key);
+    let model = AnthropicModel::new(api_key);
     let mut opts = options.clone();
     opts.model_id = "claude-3-haiku-20240307".to_string();
     let result = model.generate(prompt.clone(), opts).await?;
@@ -64,7 +64,7 @@ async fn main() -> qai_sdk::Result<()> {
     // --- Google ---
     println!("=== Google Gemini ===");
     let api_key = std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::google::GoogleModel::new(api_key);
+    let model = GoogleModel::new(api_key);
     let mut opts = options.clone();
     opts.model_id = "gemini-1.5-flash".to_string();
     let result = model.generate(prompt.clone(), opts).await?;
@@ -77,7 +77,7 @@ async fn main() -> qai_sdk::Result<()> {
     // --- DeepSeek ---
     println!("=== DeepSeek ===");
     let api_key = std::env::var("DEEPSEEK_API_KEY").unwrap_or_default();
-    let model = qai_sdk::deepseek::DeepSeekModel::new(api_key);
+    let model = DeepSeekModel::new(api_key);
     let mut opts = options.clone();
     opts.model_id = "deepseek-chat".to_string();
     let result = model.generate(prompt.clone(), opts).await?;
@@ -90,7 +90,7 @@ async fn main() -> qai_sdk::Result<()> {
     // --- xAI ---
     println!("=== xAI (Grok) ===");
     let api_key = std::env::var("XAI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::xai::XAIModel::new(api_key);
+    let model = XAIModel::new(api_key);
     let mut opts = options.clone();
     opts.model_id = "grok-2".to_string();
     let result = model.generate(prompt.clone(), opts).await?;

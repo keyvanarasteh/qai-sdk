@@ -9,14 +9,14 @@ use qai_sdk::*;
 
 use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_sdk::Result<()> {
+async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================
     // 1. OpenAI Responses API — Basic Generation
     // ===================================================================
     println!("=== OpenAI Responses API (Basic) ===");
-    let provider = qai_sdk::openai::create_openai(ProviderSettings {
+    let provider = create_openai(ProviderSettings {
         api_key: Some(std::env::var("OPENAI_API_KEY").unwrap_or_default()),
         ..Default::default()
     });
@@ -138,7 +138,7 @@ async fn main() -> qai_sdk::Result<()> {
         }],
     };
 
-    let tools = vec![qai_sdk::types::ToolDefinition {
+    let tools = vec![ToolDefinition {
         name: "calculate".to_string(),
         description: "Evaluate a math expression.".to_string(),
         parameters: json!({
@@ -167,7 +167,7 @@ async fn main() -> qai_sdk::Result<()> {
     // 5. xAI Responses API
     // ===================================================================
     println!("\n=== xAI Responses API ===");
-    let xai_provider = qai_sdk::xai::create_xai(ProviderSettings {
+    let xai_provider = create_xai(ProviderSettings {
         api_key: Some(std::env::var("XAI_API_KEY").unwrap_or_default()),
         ..Default::default()
     });

@@ -7,7 +7,7 @@ use qai_sdk::*;
 
 use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_sdk::Result<()> {
+async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================
@@ -15,7 +15,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("=== Image URL Input (OpenAI) ===");
     let api_key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::openai::OpenAIModel::new(api_key);
+    let model = OpenAIModel::new(api_key);
 
     let prompt = Prompt {
         messages: vec![Message {
@@ -50,7 +50,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("=== Base64 Image Input (Anthropic) ===");
     let api_key = std::env::var("ANTHROPIC_API_KEY").unwrap_or_default();
-    let model = qai_sdk::anthropic::AnthropicModel::new(api_key);
+    let model = AnthropicModel::new(api_key);
 
     // Example: 1x1 red PNG pixel as base64
     let tiny_png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
@@ -89,7 +89,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("=== Multi-turn with Image (Google) ===");
     let api_key = std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::google::GoogleModel::new(api_key);
+    let model = GoogleModel::new(api_key);
 
     let prompt = Prompt {
         messages: vec![

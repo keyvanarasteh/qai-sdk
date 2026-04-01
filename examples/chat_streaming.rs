@@ -8,7 +8,7 @@ use qai_sdk::*;
 
 use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_sdk::Result<()> {
+async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     let prompt = Prompt {
@@ -34,7 +34,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("=== OpenAI Streaming ===");
     let api_key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::openai::OpenAIModel::new(api_key);
+    let model = OpenAIModel::new(api_key);
 
     let mut stream = model
         .generate_stream(prompt.clone(), options.clone())
@@ -75,7 +75,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("\n\n=== Anthropic Streaming ===");
     let api_key = std::env::var("ANTHROPIC_API_KEY").unwrap_or_default();
-    let model = qai_sdk::anthropic::AnthropicModel::new(api_key);
+    let model = AnthropicModel::new(api_key);
 
     let mut opts = options.clone();
     opts.model_id = "claude-3-haiku-20240307".to_string();
@@ -102,7 +102,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("\n\n=== Google Gemini Streaming ===");
     let api_key = std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::google::GoogleModel::new(api_key);
+    let model = GoogleModel::new(api_key);
 
     let mut opts = options.clone();
     opts.model_id = "gemini-1.5-flash".to_string();

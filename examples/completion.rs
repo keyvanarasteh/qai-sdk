@@ -6,7 +6,6 @@
 use qai_sdk::types::{CompletionOptions, ProviderSettings};
 use qai_sdk::CompletionModel;
 
-use qai_sdk::LanguageModel;
 #[tokio::main]
 async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();

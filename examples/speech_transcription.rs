@@ -6,7 +6,6 @@
 use qai_sdk::types::{ProviderSettings, SpeechOptions, TranscriptionOptions};
 use qai_sdk::{SpeechModel, TranscriptionModel};
 
-use qai_sdk::LanguageModel;
 #[tokio::main]
 async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();

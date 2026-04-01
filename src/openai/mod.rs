@@ -163,7 +163,7 @@ impl crate::core::LanguageModel for OpenAIModel {
                             break;
                         }
 
-                        let parsed: std::result::Result<OpenAIStreamChunk, _> = serde_json::from_str(&event.data);
+                        let parsed: Result<OpenAIStreamChunk, _> = serde_json::from_str(&event.data);
                         match parsed {
                             Ok(chunk) => {
                                 if let Some(usage) = chunk.usage {

@@ -8,13 +8,13 @@ use serde_json::json;
 
 use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_sdk::Result<()> {
+async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================
     // Define tools
     // ===================================================================
-    let weather_tool = qai_sdk::types::ToolDefinition {
+    let weather_tool = ToolDefinition {
         name: "get_weather".to_string(),
         description: "Get the current weather for a given location.".to_string(),
         parameters: json!({
@@ -34,7 +34,7 @@ async fn main() -> qai_sdk::Result<()> {
         }),
     };
 
-    let calculator_tool = qai_sdk::types::ToolDefinition {
+    let calculator_tool = ToolDefinition {
         name: "calculate".to_string(),
         description: "Perform a mathematical calculation.".to_string(),
         parameters: json!({
@@ -56,7 +56,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("=== OpenAI Tool Calling ===");
     let api_key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::openai::OpenAIModel::new(api_key);
+    let model = OpenAIModel::new(api_key);
 
     let prompt = Prompt {
         messages: vec![Message {
@@ -86,7 +86,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("=== Anthropic Tool Calling ===");
     let api_key = std::env::var("ANTHROPIC_API_KEY").unwrap_or_default();
-    let model = qai_sdk::anthropic::AnthropicModel::new(api_key);
+    let model = AnthropicModel::new(api_key);
 
     let options = GenerateOptions {
         model_id: "claude-3-haiku-20240307".to_string(),
@@ -106,7 +106,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     println!("=== Multi-turn with Tool Results (OpenAI) ===");
     let api_key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
-    let model = qai_sdk::openai::OpenAIModel::new(api_key);
+    let model = OpenAIModel::new(api_key);
 
     // Step 1: User asks, model calls tool
     // Step 2: Provide tool result, model synthesizes

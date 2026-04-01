@@ -7,7 +7,7 @@ use qai_sdk::*;
 
 use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_sdk::Result<()> {
+async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================
@@ -196,7 +196,7 @@ async fn main() -> qai_sdk::Result<()> {
     // 7. Live error handling with actual API call
     // ===================================================================
     println!("\n=== Live Error Handling ===");
-    let model = qai_sdk::openai::OpenAIModel::new("sk-invalid-key".to_string());
+    let model = OpenAIModel::new("sk-invalid-key".to_string());
 
     let prompt = Prompt {
         messages: vec![Message {

@@ -5,15 +5,14 @@
 
 use qai_sdk::*;
 
-use qai_sdk::LanguageModel;
 #[tokio::main]
-async fn main() -> qai_sdk::Result<()> {
+async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     // ===================================================================
     // 1. OpenAI Provider — full model suite
     // ===================================================================
-    let openai = qai_sdk::openai::create_openai(ProviderSettings {
+    let openai = create_openai(ProviderSettings {
         api_key: Some(std::env::var("OPENAI_API_KEY").unwrap_or_default()),
         base_url: None, // defaults to https://api.openai.com/v1
         headers: None,
@@ -31,7 +30,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     // 2. Anthropic Provider — chat only
     // ===================================================================
-    let anthropic = qai_sdk::anthropic::create_anthropic(ProviderSettings {
+    let anthropic = create_anthropic(ProviderSettings {
         api_key: Some(std::env::var("ANTHROPIC_API_KEY").unwrap_or_default()),
         base_url: None,
         headers: None,
@@ -43,7 +42,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     // 3. Google Provider — chat + embedding + image
     // ===================================================================
-    let google = qai_sdk::google::create_google(ProviderSettings {
+    let google = create_google(ProviderSettings {
         api_key: Some(std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").unwrap_or_default()),
         base_url: None,
         headers: None,
@@ -57,7 +56,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     // 4. DeepSeek Provider — chat (OpenAI-compatible)
     // ===================================================================
-    let deepseek = qai_sdk::deepseek::create_deepseek(ProviderSettings {
+    let deepseek = create_deepseek(ProviderSettings {
         api_key: Some(std::env::var("DEEPSEEK_API_KEY").unwrap_or_default()),
         base_url: None, // defaults to https://api.deepseek.com
         headers: None,
@@ -70,7 +69,7 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     // 5. xAI Provider — chat + image + responses
     // ===================================================================
-    let xai = qai_sdk::xai::create_xai(ProviderSettings {
+    let xai = create_xai(ProviderSettings {
         api_key: Some(std::env::var("XAI_API_KEY").unwrap_or_default()),
         base_url: None, // defaults to https://api.x.ai/v1
         headers: None,
@@ -86,13 +85,12 @@ async fn main() -> qai_sdk::Result<()> {
     // ===================================================================
     use qai_sdk::openai_compatible::OpenAICompatibleProviderSettings;
 
-    let compatible =
-        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
-            base_url: "https://api.together.xyz/v1".to_string(),
-            name: "together".to_string(),
-            api_key: Some(std::env::var("TOGETHER_API_KEY").unwrap_or_default()),
-            headers: None,
-        });
+    let compatible = create_openai_compatible(OpenAICompatibleProviderSettings {
+        base_url: "https://api.together.xyz/v1".to_string(),
+        name: "together".to_string(),
+        api_key: Some(std::env::var("TOGETHER_API_KEY").unwrap_or_default()),
+        headers: None,
+    });
 
     let _chat = compatible.chat("meta-llama/Llama-3-70b-chat-hf");
     let _embedding = compatible.embedding("togethercomputer/m2-bert-80M-8k-retrieval");

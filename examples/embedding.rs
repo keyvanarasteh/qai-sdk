@@ -6,7 +6,6 @@
 use qai_sdk::types::{EmbeddingOptions, ProviderSettings};
 use qai_sdk::EmbeddingModel;
 
-use qai_sdk::LanguageModel;
 #[tokio::main]
 async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();
