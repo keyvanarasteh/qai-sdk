@@ -41,7 +41,7 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 
 <p align="center">
   <a href="playground.html">
-    <img src="assets/qai_playground_demo.webp" alt="QAI SDK Playground Interactive Demo" width="100%"/>
+    <img src="assets/qai_playground_demo_v2.webp" alt="QAI SDK Playground Interactive Demo" width="100%"/>
   </a>
 </p>
 
