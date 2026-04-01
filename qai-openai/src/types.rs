@@ -38,7 +38,11 @@ pub struct OpenAIFunctionDefinition {
 #[serde(untagged)]
 pub enum OpenAIToolChoice {
     String(String), // "none", "auto", "required"
-    Object { #[serde(rename = "type")] tool_type: String, function: OpenAIFunctionName },
+    Object {
+        #[serde(rename = "type")]
+        tool_type: String,
+        function: OpenAIFunctionName,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -49,15 +53,19 @@ pub struct OpenAIFunctionName {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "role", rename_all = "lowercase")]
 pub enum OpenAIMessage {
-    System { content: String },
-    User { content: Vec<OpenAIContent> },
-    Assistant { 
+    System {
+        content: String,
+    },
+    User {
+        content: Vec<OpenAIContent>,
+    },
+    Assistant {
         #[serde(skip_serializing_if = "Option::is_none")]
         content: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
         tool_calls: Option<Vec<OpenAIToolCall>>,
     },
-    Tool { 
+    Tool {
         content: String,
         tool_call_id: String,
     },

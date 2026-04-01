@@ -32,10 +32,21 @@ pub struct GoogleContent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum GooglePart {
-    Text { text: String },
-    InlineData { mime_type: String, data: String },
-    FunctionCall { name: String, args: serde_json::Value },
-    FunctionResponse { name: String, response: serde_json::Value },
+    Text {
+        text: String,
+    },
+    InlineData {
+        mime_type: String,
+        data: String,
+    },
+    FunctionCall {
+        name: String,
+        args: serde_json::Value,
+    },
+    FunctionResponse {
+        name: String,
+        response: serde_json::Value,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

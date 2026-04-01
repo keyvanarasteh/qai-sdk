@@ -1,9 +1,15 @@
-use std::sync::{Arc, Mutex};
-use reqwest::header::HeaderMap;
 use qai_core::types::Usage;
+use reqwest::header::HeaderMap;
+use std::sync::{Arc, Mutex};
 
 pub struct MockClient {
     pub responses: Arc<Mutex<Vec<serde_json::Value>>>,
+}
+
+impl Default for MockClient {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MockClient {

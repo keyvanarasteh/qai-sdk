@@ -1,8 +1,8 @@
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use qai_core::types::{TranscriptionOptions, TranscriptionResult};
-use anyhow::{Result, anyhow};
-use reqwest::Client;
 use reqwest::multipart::{Form, Part};
+use reqwest::Client;
 use serde::Deserialize;
 
 /// OpenAI transcription (speech-to-text) model.
@@ -53,7 +53,9 @@ impl qai_core::TranscriptionModel for OpenAITranscriptionModel {
             form = form.text("temperature", temperature.to_string());
         }
 
-        let resp = self.client.post(&format!("{}/audio/transcriptions", self.base_url))
+        let resp = self
+            .client
+            .post(format!("{}/audio/transcriptions", self.base_url))
             .header("Authorization", &format!("Bearer {}", self.api_key))
             .multipart(form)
             .send()

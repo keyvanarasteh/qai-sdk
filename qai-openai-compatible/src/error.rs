@@ -34,16 +34,10 @@ pub enum OpenAICompatibleError {
     },
 
     #[error("{provider} authentication error: {message}")]
-    AuthenticationError {
-        provider: String,
-        message: String,
-    },
+    AuthenticationError { provider: String, message: String },
 
     #[error("{provider} rate limit error: {message}")]
-    RateLimitError {
-        provider: String,
-        message: String,
-    },
+    RateLimitError { provider: String, message: String },
 
     #[error("API request error: {0}")]
     RequestError(#[from] reqwest::Error),

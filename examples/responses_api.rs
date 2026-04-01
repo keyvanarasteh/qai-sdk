@@ -4,8 +4,8 @@
 //! that supports reasoning models, multi-turn via `previous_response_id`, and
 //! server-executed tools (web_search, code_interpreter, file_search).
 
-use qai_sdk::prelude::*;
 use futures::StreamExt;
+use qai_sdk::prelude::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -41,7 +41,10 @@ async fn main() -> anyhow::Result<()> {
 
     let result = model.generate(prompt, options).await?;
     println!("Response: {}", result.text);
-    println!("Tokens: {} in, {} out", result.usage.prompt_tokens, result.usage.completion_tokens);
+    println!(
+        "Tokens: {} in, {} out",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
     println!("Finish: {}\n", result.finish_reason);
 
     // ===================================================================
@@ -104,7 +107,10 @@ async fn main() -> anyhow::Result<()> {
         match part {
             StreamPart::TextDelta { delta } => print!("{}", delta),
             StreamPart::Usage { usage } => {
-                println!("\n📊 Tokens: {} in, {} out", usage.prompt_tokens, usage.completion_tokens);
+                println!(
+                    "\n📊 Tokens: {} in, {} out",
+                    usage.prompt_tokens, usage.completion_tokens
+                );
             }
             StreamPart::Finish { finish_reason } => {
                 println!("✅ Finished: {}", finish_reason);

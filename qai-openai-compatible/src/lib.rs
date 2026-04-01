@@ -19,17 +19,17 @@
 //! let model = provider.chat("llama3");
 //! ```
 
-pub mod types;
-pub mod embedding;
-pub mod image;
 pub mod completion;
+pub mod embedding;
 pub mod error;
+pub mod image;
+pub mod types;
 
+use anyhow::Result;
 use async_trait::async_trait;
+use futures::stream::BoxStream;
 use qai_core::types::{GenerateOptions, GenerateResult, Prompt, StreamPart};
 use qai_openai::OpenAIModel;
-use anyhow::Result;
-use futures::stream::BoxStream;
 use reqwest::Client;
 
 pub struct OpenAICompatibleModel {
@@ -98,7 +98,10 @@ impl OpenAICompatibleProvider {
     /// Creates an embedding model.
     pub fn embedding(&self, _model_id: &str) -> crate::embedding::OpenAICompatibleEmbeddingModel {
         let api_key = self.settings.api_key.clone().unwrap_or_default();
-        crate::embedding::OpenAICompatibleEmbeddingModel::new(api_key, self.settings.base_url.clone())
+        crate::embedding::OpenAICompatibleEmbeddingModel::new(
+            api_key,
+            self.settings.base_url.clone(),
+        )
     }
 
     /// Creates an image generation model.
@@ -108,13 +111,21 @@ impl OpenAICompatibleProvider {
     }
 
     /// Creates a completion model.
-    pub fn completion(&self, _model_id: &str) -> crate::completion::OpenAICompatibleCompletionModel {
+    pub fn completion(
+        &self,
+        _model_id: &str,
+    ) -> crate::completion::OpenAICompatibleCompletionModel {
         let api_key = self.settings.api_key.clone().unwrap_or_default();
-        crate::completion::OpenAICompatibleCompletionModel::new(api_key, self.settings.base_url.clone())
+        crate::completion::OpenAICompatibleCompletionModel::new(
+            api_key,
+            self.settings.base_url.clone(),
+        )
     }
 }
 
 /// Create an OpenAI-compatible provider instance with the given settings.
-pub fn create_openai_compatible(settings: OpenAICompatibleProviderSettings) -> OpenAICompatibleProvider {
+pub fn create_openai_compatible(
+    settings: OpenAICompatibleProviderSettings,
+) -> OpenAICompatibleProvider {
     OpenAICompatibleProvider { settings }
 }

@@ -18,22 +18,28 @@
 //! let model = provider.chat("gemini-2.0-flash");
 //! ```
 
-pub mod types;
 pub mod embedding;
-pub mod image;
 pub mod error;
-pub mod tools;
+pub mod image;
 #[cfg(test)]
 mod tests;
+pub mod tools;
+pub mod types;
 
+use crate::types::{
+    GoogleContent, GoogleFunctionDeclaration, GoogleGenerationConfig, GooglePart, GoogleRequest,
+    GoogleResponse, GoogleTool,
+};
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use qai_core::types::{Content, GenerateOptions, GenerateResult, Prompt, Role, Usage, ImageSource, FileSource, StreamPart};
-use crate::types::{GoogleRequest, GoogleResponse, GoogleContent, GooglePart, GoogleGenerationConfig, GoogleTool, GoogleFunctionDeclaration};
-use anyhow::{Result, anyhow};
-use reqwest::Client;
+use eventsource_stream::Eventsource;
 use futures::stream::BoxStream;
 use futures_util::StreamExt;
-use eventsource_stream::Eventsource;
+use qai_core::types::{
+    Content, FileSource, GenerateOptions, GenerateResult, ImageSource, Prompt, Role, StreamPart,
+    Usage,
+};
+use reqwest::Client;
 
 pub struct GoogleModel {
     pub api_key: String,
@@ -56,12 +62,12 @@ impl qai_core::LanguageModel for GoogleModel {
     async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
         let request = self.prepare_request(prompt, &options)?;
 
-        let url = format!("{}/models/{}:generateContent?key={}", self.base_url, options.model_id, self.api_key);
+        let url = format!(
+            "{}/models/{}:generateContent?key={}",
+            self.base_url, options.model_id, self.api_key
+        );
 
-        let response = self.client.post(&url)
-            .json(&request)
-            .send()
-            .await?;
+        let response = self.client.post(&url).json(&request).send().await?;
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
@@ -81,11 +87,14 @@ impl qai_core::LanguageModel for GoogleModel {
             usage = header_usage;
         }
 
-        let candidate = google_response.candidates.get(0).ok_or_else(|| anyhow!("No candidates returned from Google"))?;
-        
+        let candidate = google_response
+            .candidates
+            .first()
+            .ok_or_else(|| anyhow!("No candidates returned from Google"))?;
+
         let mut text_parts = Vec::new();
         let mut tool_calls = Vec::new();
-        
+
         for part in &candidate.content.parts {
             match part {
                 GooglePart::Text { text } => {
@@ -100,13 +109,16 @@ impl qai_core::LanguageModel for GoogleModel {
                 _ => {}
             }
         }
-        
+
         let text = text_parts.join("");
 
         Ok(GenerateResult {
             text,
             usage,
-            finish_reason: candidate.finish_reason.clone().unwrap_or_else(|| "stop".to_string()),
+            finish_reason: candidate
+                .finish_reason
+                .clone()
+                .unwrap_or_else(|| "stop".to_string()),
             tool_calls,
         })
     }
@@ -117,12 +129,12 @@ impl qai_core::LanguageModel for GoogleModel {
         options: GenerateOptions,
     ) -> Result<BoxStream<'static, StreamPart>> {
         let request = self.prepare_request(prompt, &options)?;
-        let url = format!("{}/models/{}:streamGenerateContent?alt=sse&key={}", self.base_url, options.model_id, self.api_key);
+        let url = format!(
+            "{}/models/{}:streamGenerateContent?alt=sse&key={}",
+            self.base_url, options.model_id, self.api_key
+        );
 
-        let response = self.client.post(&url)
-            .json(&request)
-            .send()
-            .await?;
+        let response = self.client.post(&url).json(&request).send().await?;
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
@@ -139,14 +151,14 @@ impl qai_core::LanguageModel for GoogleModel {
                         match parsed {
                             Ok(google_response) => {
                                 // Gemini sends usage in the last chunk or sometimes in every chunk
-                                yield StreamPart::Usage { 
-                                    usage: Usage { 
-                                        prompt_tokens: google_response.usage_metadata.prompt_token_count, 
-                                        completion_tokens: google_response.usage_metadata.candidates_token_count 
-                                    } 
+                                yield StreamPart::Usage {
+                                    usage: Usage {
+                                        prompt_tokens: google_response.usage_metadata.prompt_token_count,
+                                        completion_tokens: google_response.usage_metadata.candidates_token_count
+                                    }
                                 };
 
-                                if let Some(candidate) = google_response.candidates.get(0) {
+                                if let Some(candidate) = google_response.candidates.first() {
                                     for part in &candidate.content.parts {
                                         match part {
                                             GooglePart::Text { text } => {
@@ -221,10 +233,7 @@ impl GoogleModel {
                             ImageSource::Base64 { media_type, data } => (media_type, data),
                             _ => return Err(anyhow!("Unsupported image source for Google")),
                         };
-                        parts.push(GooglePart::InlineData {
-                            mime_type,
-                            data,
-                        });
+                        parts.push(GooglePart::InlineData { mime_type, data });
                     }
                     Content::File { source } => {
                         let FileSource::Base64 { media_type, data } = source;
@@ -233,7 +242,9 @@ impl GoogleModel {
                             data,
                         });
                     }
-                    Content::ToolCall { name, arguments, .. } => {
+                    Content::ToolCall {
+                        name, arguments, ..
+                    } => {
                         parts.push(GooglePart::FunctionCall {
                             name,
                             args: arguments,
@@ -254,13 +265,24 @@ impl GoogleModel {
             });
         }
 
-        let google_tools = if options.tools.as_ref().map(|t| !t.is_empty()).unwrap_or(false) {
+        let google_tools = if options
+            .tools
+            .as_ref()
+            .map(|t| !t.is_empty())
+            .unwrap_or(false)
+        {
             Some(vec![GoogleTool {
-                function_declarations: options.tools.as_ref().unwrap().iter().map(|t| GoogleFunctionDeclaration {
-                    name: t.name.clone(),
-                    description: t.description.clone(),
-                    parameters: t.parameters.clone(),
-                }).collect()
+                function_declarations: options
+                    .tools
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .map(|t| GoogleFunctionDeclaration {
+                        name: t.name.clone(),
+                        description: t.description.clone(),
+                        parameters: t.parameters.clone(),
+                    })
+                    .collect(),
             }])
         } else {
             None
@@ -293,7 +315,10 @@ pub struct GoogleProvider {
 impl GoogleProvider {
     /// Creates a chat language model.
     pub fn chat(&self, _model_id: &str) -> GoogleModel {
-        let api_key = self.settings.api_key.clone()
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
             .unwrap_or_default();
         let mut model = GoogleModel::new(api_key);
@@ -310,7 +335,10 @@ impl GoogleProvider {
 
     /// Creates an embedding model.
     pub fn embedding(&self, _model_id: &str) -> crate::embedding::GoogleEmbeddingModel {
-        let api_key = self.settings.api_key.clone()
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
             .unwrap_or_default();
         let mut model = crate::embedding::GoogleEmbeddingModel::new(api_key);
@@ -322,7 +350,10 @@ impl GoogleProvider {
 
     /// Creates an image generation model.
     pub fn image(&self, _model_id: &str) -> crate::image::GoogleImageModel {
-        let api_key = self.settings.api_key.clone()
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
             .unwrap_or_default();
         let mut model = crate::image::GoogleImageModel::new(api_key);

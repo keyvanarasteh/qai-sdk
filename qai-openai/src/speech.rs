@@ -1,6 +1,6 @@
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use qai_core::types::{SpeechOptions, SpeechResult};
-use anyhow::{Result, anyhow};
 use reqwest::Client;
 use serde::Serialize;
 
@@ -43,7 +43,9 @@ impl qai_core::SpeechModel for OpenAISpeechModel {
             speed: options.speed,
         };
 
-        let resp = self.client.post(&format!("{}/audio/speech", self.base_url))
+        let resp = self
+            .client
+            .post(format!("{}/audio/speech", self.base_url))
             .header("Authorization", &format!("Bearer {}", self.api_key))
             .json(&request)
             .send()

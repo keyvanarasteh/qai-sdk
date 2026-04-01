@@ -20,27 +20,32 @@
 //! let image = provider.image("dall-e-3");
 //! ```
 
-pub mod types;
-pub mod embedding;
-pub mod image;
-pub mod error;
-pub mod tools;
 pub mod completion;
-pub mod speech;
-pub mod transcription;
-pub mod responses_types;
+pub mod embedding;
+pub mod error;
+pub mod image;
 pub mod responses;
+pub mod responses_types;
+pub mod speech;
 #[cfg(test)]
 mod tests;
+pub mod tools;
+pub mod transcription;
+pub mod types;
 
+use crate::types::{
+    OpenAIContent, OpenAIFunctionCall, OpenAIFunctionDefinition, OpenAIImageUrl, OpenAIMessage,
+    OpenAIRequest, OpenAIResponse, OpenAIStreamChunk, OpenAITool, OpenAIToolCall,
+};
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use qai_core::types::{Content, GenerateOptions, GenerateResult, Prompt, Role, Usage, ImageSource, StreamPart};
-use crate::types::{OpenAIRequest, OpenAIResponse, OpenAIMessage, OpenAIContent, OpenAIImageUrl, OpenAIToolCall, OpenAIFunctionCall, OpenAIStreamChunk, OpenAITool, OpenAIFunctionDefinition};
-use anyhow::{Result, anyhow};
-use reqwest::Client;
+use eventsource_stream::Eventsource;
 use futures::stream::BoxStream;
 use futures_util::StreamExt;
-use eventsource_stream::Eventsource;
+use qai_core::types::{
+    Content, GenerateOptions, GenerateResult, ImageSource, Prompt, Role, StreamPart, Usage,
+};
+use reqwest::Client;
 
 pub struct OpenAIModel {
     pub api_key: String,
@@ -63,7 +68,9 @@ impl qai_core::LanguageModel for OpenAIModel {
     async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
         let request = self.prepare_request(prompt, options)?;
 
-        let response = self.client.post(&format!("{}/chat/completions", self.base_url))
+        let response = self
+            .client
+            .post(format!("{}/chat/completions", self.base_url))
             .header("Authorization", &format!("Bearer {}", self.api_key))
             .json(&request)
             .send()
@@ -88,21 +95,33 @@ impl qai_core::LanguageModel for OpenAIModel {
         }
 
         // Extract native tool calls from the response
-        let tool_calls = openai_response.choices[0].message.tool_calls
+        let tool_calls = openai_response.choices[0]
+            .message
+            .tool_calls
             .as_ref()
             .map(|tcs| {
-                tcs.iter().map(|tc| qai_core::types::ToolCallResult {
-                    name: tc.function.name.clone(),
-                    arguments: serde_json::from_str(&tc.function.arguments)
-                        .unwrap_or_else(|_| serde_json::Value::String(tc.function.arguments.clone())),
-                }).collect()
+                tcs.iter()
+                    .map(|tc| qai_core::types::ToolCallResult {
+                        name: tc.function.name.clone(),
+                        arguments: serde_json::from_str(&tc.function.arguments).unwrap_or_else(
+                            |_| serde_json::Value::String(tc.function.arguments.clone()),
+                        ),
+                    })
+                    .collect()
             })
             .unwrap_or_default();
 
         Ok(GenerateResult {
-            text: openai_response.choices[0].message.content.clone().unwrap_or_default(),
+            text: openai_response.choices[0]
+                .message
+                .content
+                .clone()
+                .unwrap_or_default(),
             usage,
-            finish_reason: openai_response.choices[0].finish_reason.clone().unwrap_or_default(),
+            finish_reason: openai_response.choices[0]
+                .finish_reason
+                .clone()
+                .unwrap_or_default(),
             tool_calls,
         })
     }
@@ -115,7 +134,9 @@ impl qai_core::LanguageModel for OpenAIModel {
         let mut request = self.prepare_request(prompt, options)?;
         request.stream = Some(true);
 
-        let response = self.client.post(&format!("{}/chat/completions", self.base_url))
+        let response = self
+            .client
+            .post(format!("{}/chat/completions", self.base_url))
             .header("Authorization", &format!("Bearer {}", self.api_key))
             .json(&request)
             .send()
@@ -140,11 +161,11 @@ impl qai_core::LanguageModel for OpenAIModel {
                         match parsed {
                             Ok(chunk) => {
                                 if let Some(usage) = chunk.usage {
-                                    yield StreamPart::Usage { 
-                                        usage: Usage { 
-                                            prompt_tokens: usage.prompt_tokens, 
-                                            completion_tokens: usage.completion_tokens 
-                                        } 
+                                    yield StreamPart::Usage {
+                                        usage: Usage {
+                                            prompt_tokens: usage.prompt_tokens,
+                                            completion_tokens: usage.completion_tokens
+                                        }
                                     };
                                 }
 
@@ -198,7 +219,9 @@ impl OpenAIModel {
                             system_text.push_str(&text);
                         }
                     }
-                    messages.push(OpenAIMessage::System { content: system_text });
+                    messages.push(OpenAIMessage::System {
+                        content: system_text,
+                    });
                 }
                 Role::User => {
                     let mut user_contents = Vec::new();
@@ -207,29 +230,31 @@ impl OpenAIModel {
                             Content::Text { text } => {
                                 user_contents.push(OpenAIContent::Text { text });
                             }
-                            Content::Image { source } => {
-                                match source {
-                                    ImageSource::Base64 { media_type, data } => {
-                                        user_contents.push(OpenAIContent::ImageUrl {
-                                            image_url: OpenAIImageUrl {
-                                                url: format!("data:{};base64,{}", media_type, data),
-                                            },
-                                        });
-                                    }
-                                    ImageSource::Url { url } => {
-                                        user_contents.push(OpenAIContent::ImageUrl {
-                                            image_url: OpenAIImageUrl { url },
-                                        });
-                                    }
+                            Content::Image { source } => match source {
+                                ImageSource::Base64 { media_type, data } => {
+                                    user_contents.push(OpenAIContent::ImageUrl {
+                                        image_url: OpenAIImageUrl {
+                                            url: format!("data:{};base64,{}", media_type, data),
+                                        },
+                                    });
                                 }
-                            }
+                                ImageSource::Url { url } => {
+                                    user_contents.push(OpenAIContent::ImageUrl {
+                                        image_url: OpenAIImageUrl { url },
+                                    });
+                                }
+                            },
                             Content::File { .. } => {
-                                return Err(anyhow!("File content is not yet supported for OpenAI"));
+                                return Err(anyhow!(
+                                    "File content is not yet supported for OpenAI"
+                                ));
                             }
                             _ => {}
                         }
                     }
-                    messages.push(OpenAIMessage::User { content: user_contents });
+                    messages.push(OpenAIMessage::User {
+                        content: user_contents,
+                    });
                 }
                 Role::Assistant => {
                     let mut assistant_text = String::new();
@@ -240,7 +265,11 @@ impl OpenAIModel {
                             Content::Text { text } => {
                                 assistant_text.push_str(&text);
                             }
-                            Content::ToolCall { id, name, arguments } => {
+                            Content::ToolCall {
+                                id,
+                                name,
+                                arguments,
+                            } => {
                                 tool_calls.push(OpenAIToolCall {
                                     id,
                                     call_type: "function".to_string(),
@@ -254,8 +283,16 @@ impl OpenAIModel {
                         }
                     }
                     messages.push(OpenAIMessage::Assistant {
-                        content: if assistant_text.is_empty() { None } else { Some(assistant_text) },
-                        tool_calls: if tool_calls.is_empty() { None } else { Some(tool_calls) },
+                        content: if assistant_text.is_empty() {
+                            None
+                        } else {
+                            Some(assistant_text)
+                        },
+                        tool_calls: if tool_calls.is_empty() {
+                            None
+                        } else {
+                            Some(tool_calls)
+                        },
                     });
                 }
                 Role::Tool => {
@@ -271,15 +308,27 @@ impl OpenAIModel {
             }
         }
 
-        let openai_tools = if options.tools.as_ref().map(|t| !t.is_empty()).unwrap_or(false) {
-            Some(options.tools.unwrap().into_iter().map(|t| OpenAITool {
-                tool_type: "function".to_string(),
-                function: OpenAIFunctionDefinition {
-                    name: t.name,
-                    description: t.description,
-                    parameters: t.parameters,
-                },
-            }).collect())
+        let openai_tools = if options
+            .tools
+            .as_ref()
+            .map(|t| !t.is_empty())
+            .unwrap_or(false)
+        {
+            Some(
+                options
+                    .tools
+                    .unwrap()
+                    .into_iter()
+                    .map(|t| OpenAITool {
+                        tool_type: "function".to_string(),
+                        function: OpenAIFunctionDefinition {
+                            name: t.name,
+                            description: t.description,
+                            parameters: t.parameters,
+                        },
+                    })
+                    .collect(),
+            )
         } else {
             None
         };
@@ -309,13 +358,17 @@ pub struct OpenAIProvider {
 
 impl OpenAIProvider {
     fn resolve_api_key(&self) -> String {
-        self.settings.api_key.clone()
+        self.settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("OPENAI_API_KEY").ok())
             .unwrap_or_default()
     }
 
     fn resolve_base_url(&self) -> String {
-        self.settings.base_url.clone()
+        self.settings
+            .base_url
+            .clone()
             .unwrap_or_else(|| "https://api.openai.com/v1".to_string())
     }
 

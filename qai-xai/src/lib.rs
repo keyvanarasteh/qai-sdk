@@ -18,17 +18,17 @@
 //! let model = provider.chat("grok-2");
 //! ```
 
-pub mod types;
-pub mod image;
-pub mod tools;
 pub mod error;
+pub mod image;
 pub mod responses;
+pub mod tools;
+pub mod types;
 
-use async_trait::async_trait;
-use qai_core::types::{GenerateOptions, GenerateResult, Prompt, StreamPart, ProviderSettings};
-use qai_openai::OpenAIModel;
 use anyhow::Result;
+use async_trait::async_trait;
 use futures::stream::BoxStream;
+use qai_core::types::{GenerateOptions, GenerateResult, Prompt, ProviderSettings, StreamPart};
+use qai_openai::OpenAIModel;
 use reqwest::Client;
 
 pub struct XAIModel {
@@ -72,10 +72,16 @@ pub struct XAIProvider {
 impl XAIProvider {
     /// Creates a chat language model.
     pub fn chat(&self, _model_id: &str) -> XAIModel {
-        let api_key = self.settings.api_key.clone()
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("XAI_API_KEY").ok())
             .unwrap_or_default();
-        let base_url = self.settings.base_url.clone()
+        let base_url = self
+            .settings
+            .base_url
+            .clone()
             .unwrap_or_else(|| "https://api.x.ai/v1".to_string());
         XAIModel {
             inner: OpenAIModel {
@@ -93,10 +99,16 @@ impl XAIProvider {
 
     /// Creates an image generation model.
     pub fn image(&self, _model_id: &str) -> crate::image::XaiImageModel {
-        let api_key = self.settings.api_key.clone()
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("XAI_API_KEY").ok())
             .unwrap_or_default();
-        let base_url = self.settings.base_url.clone()
+        let base_url = self
+            .settings
+            .base_url
+            .clone()
             .unwrap_or_else(|| "https://api.x.ai/v1".to_string());
         crate::image::XaiImageModel {
             api_key,
@@ -107,7 +119,10 @@ impl XAIProvider {
 
     /// Creates a Responses API model.
     pub fn responses(&self, _model_id: &str) -> crate::responses::XaiResponsesModel {
-        let api_key = self.settings.api_key.clone()
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("XAI_API_KEY").ok())
             .unwrap_or_default();
         crate::responses::XaiResponsesModel::new(api_key)

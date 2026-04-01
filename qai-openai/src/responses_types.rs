@@ -31,10 +31,7 @@ pub enum ResponsesInputItem {
         id: Option<String>,
     },
     /// Output from a function call.
-    FunctionCallOutput {
-        call_id: String,
-        output: Value,
-    },
+    FunctionCallOutput { call_id: String, output: Value },
     /// Reasoning content.
     Reasoning {
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -44,9 +41,7 @@ pub enum ResponsesInputItem {
         summary: Vec<ResponsesReasoningSummary>,
     },
     /// Reference to a previous item by ID.
-    ItemReference {
-        id: String,
-    },
+    ItemReference { id: String },
     /// Custom tool call.
     CustomToolCall {
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -56,10 +51,7 @@ pub enum ResponsesInputItem {
         input: String,
     },
     /// Custom tool call output.
-    CustomToolCallOutput {
-        call_id: String,
-        output: Value,
-    },
+    CustomToolCallOutput { call_id: String, output: Value },
     /// MCP approval response.
     McpApprovalResponse {
         approval_request_id: String,
@@ -72,10 +64,7 @@ pub enum ResponsesInputItem {
         action: LocalShellAction,
     },
     /// Local shell call output.
-    LocalShellCallOutput {
-        call_id: String,
-        output: String,
-    },
+    LocalShellCallOutput { call_id: String, output: String },
     /// Shell call.
     ShellCall {
         id: String,
@@ -146,10 +135,20 @@ pub enum ResponsesMessageContent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ResponsesContentPart {
-    InputText { text: String },
-    InputImage { image_url: String },
-    InputFile { file_url: Option<String>, #[serde(skip_serializing_if = "Option::is_none")] file_id: Option<String> },
-    OutputText { text: String },
+    InputText {
+        text: String,
+    },
+    InputImage {
+        image_url: String,
+    },
+    InputFile {
+        file_url: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        file_id: Option<String>,
+    },
+    OutputText {
+        text: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -464,9 +463,7 @@ pub enum ResponsesOutputItem {
         error: Option<String>,
     },
     /// MCP approval request.
-    McpApprovalRequest {
-        id: String,
-    },
+    McpApprovalRequest { id: String },
     /// Custom tool call.
     CustomToolCall {
         id: String,
@@ -572,21 +569,13 @@ pub enum ResponsesStreamEvent {
     },
     /// Response failed.
     #[serde(rename = "response.failed")]
-    ResponseFailed {
-        response: ResponsesStreamFailedData,
-    },
+    ResponseFailed { response: ResponsesStreamFailedData },
     /// Output item added.
     #[serde(rename = "response.output_item.added")]
-    OutputItemAdded {
-        output_index: u32,
-        item: Value,
-    },
+    OutputItemAdded { output_index: u32, item: Value },
     /// Output item done.
     #[serde(rename = "response.output_item.done")]
-    OutputItemDone {
-        output_index: u32,
-        item: Value,
-    },
+    OutputItemDone { output_index: u32, item: Value },
     /// Text delta.
     #[serde(rename = "response.output_text.delta")]
     OutputTextDelta {
@@ -597,10 +586,7 @@ pub enum ResponsesStreamEvent {
     },
     /// Text done.
     #[serde(rename = "response.output_text.done")]
-    OutputTextDone {
-        item_id: String,
-        text: String,
-    },
+    OutputTextDone { item_id: String, text: String },
     /// Function call arguments delta.
     #[serde(rename = "response.function_call_arguments.delta")]
     FunctionCallArgumentsDelta {
@@ -617,16 +603,10 @@ pub enum ResponsesStreamEvent {
     },
     /// Reasoning summary text delta.
     #[serde(rename = "response.reasoning_summary_text.delta")]
-    ReasoningSummaryTextDelta {
-        item_id: String,
-        delta: String,
-    },
+    ReasoningSummaryTextDelta { item_id: String, delta: String },
     /// Reasoning summary text done.
     #[serde(rename = "response.reasoning_summary_text.done")]
-    ReasoningSummaryTextDone {
-        item_id: String,
-        text: String,
-    },
+    ReasoningSummaryTextDone { item_id: String, text: String },
 }
 
 #[derive(Debug, Clone, Deserialize)]

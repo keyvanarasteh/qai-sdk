@@ -1,6 +1,6 @@
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use qai_core::types::{ImageGenerateOptions, ImageGenerateResult};
-use anyhow::{Result, anyhow};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -48,7 +48,10 @@ struct XaiImageData {
 #[async_trait]
 impl qai_core::ImageModel for XaiImageModel {
     async fn generate(&self, options: ImageGenerateOptions) -> Result<ImageGenerateResult> {
-        let response_format = options.response_format.clone().unwrap_or_else(|| "b64_json".to_string());
+        let response_format = options
+            .response_format
+            .clone()
+            .unwrap_or_else(|| "b64_json".to_string());
 
         let request = XaiImageRequest {
             model: options.model_id,
@@ -58,7 +61,9 @@ impl qai_core::ImageModel for XaiImageModel {
             response_format,
         };
 
-        let resp = self.client.post(&format!("{}/images/generations", self.base_url))
+        let resp = self
+            .client
+            .post(format!("{}/images/generations", self.base_url))
             .header("Authorization", &format!("Bearer {}", self.api_key))
             .json(&request)
             .send()
@@ -71,9 +76,16 @@ impl qai_core::ImageModel for XaiImageModel {
 
         let img_resp: XaiImageResponse = resp.json().await?;
 
-        let images: Vec<String> = img_resp.data.iter().map(|d| {
-            d.b64_json.clone().or_else(|| d.url.clone()).unwrap_or_default()
-        }).collect();
+        let images: Vec<String> = img_resp
+            .data
+            .iter()
+            .map(|d| {
+                d.b64_json
+                    .clone()
+                    .or_else(|| d.url.clone())
+                    .unwrap_or_default()
+            })
+            .collect();
 
         Ok(ImageGenerateResult {
             images,

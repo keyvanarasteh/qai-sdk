@@ -1,6 +1,6 @@
+use anyhow::Result;
 use async_trait::async_trait;
 use qai_core::types::{EmbeddingOptions, EmbeddingResult};
-use anyhow::Result;
 use qai_openai::embedding::OpenAIEmbeddingModel;
 use reqwest::Client;
 
@@ -23,7 +23,11 @@ impl OpenAICompatibleEmbeddingModel {
 
 #[async_trait]
 impl qai_core::EmbeddingModel for OpenAICompatibleEmbeddingModel {
-    async fn embed(&self, values: Vec<String>, options: EmbeddingOptions) -> Result<EmbeddingResult> {
+    async fn embed(
+        &self,
+        values: Vec<String>,
+        options: EmbeddingOptions,
+    ) -> Result<EmbeddingResult> {
         self.inner.embed(values, options).await
     }
 }

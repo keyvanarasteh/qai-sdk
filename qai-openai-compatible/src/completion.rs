@@ -1,6 +1,6 @@
+use anyhow::Result;
 use async_trait::async_trait;
 use qai_core::types::{CompletionOptions, CompletionResult};
-use anyhow::Result;
 use qai_openai::completion::OpenAICompletionModel;
 use reqwest::Client;
 

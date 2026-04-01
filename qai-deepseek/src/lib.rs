@@ -17,15 +17,15 @@
 //! let model = provider.chat("deepseek-chat");
 //! ```
 
-pub mod types;
 pub mod error;
+pub mod types;
 
-use async_trait::async_trait;
-use qai_core::types::{GenerateOptions, GenerateResult, Prompt, StreamPart, ProviderSettings};
-use qai_openai::OpenAIModel;
 use anyhow::Result;
-use reqwest::Client;
+use async_trait::async_trait;
 use futures::stream::BoxStream;
+use qai_core::types::{GenerateOptions, GenerateResult, Prompt, ProviderSettings, StreamPart};
+use qai_openai::OpenAIModel;
+use reqwest::Client;
 
 pub struct DeepSeekModel {
     pub inner: OpenAIModel,
@@ -68,10 +68,16 @@ pub struct DeepSeekProvider {
 impl DeepSeekProvider {
     /// Creates a chat language model.
     pub fn chat(&self, _model_id: &str) -> DeepSeekModel {
-        let api_key = self.settings.api_key.clone()
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("DEEPSEEK_API_KEY").ok())
             .unwrap_or_default();
-        let base_url = self.settings.base_url.clone()
+        let base_url = self
+            .settings
+            .base_url
+            .clone()
             .unwrap_or_else(|| "https://api.deepseek.com".to_string());
         DeepSeekModel {
             inner: OpenAIModel {

@@ -1,5 +1,5 @@
 //! Anthropic server-defined tools.
-//! 
+//!
 //! These tools are Anthropic-specific capabilities that can be passed alongside
 //! user-defined tools in API requests. Each function returns a `serde_json::Value`
 //! representing the tool configuration.
@@ -32,7 +32,11 @@ pub fn code_execution_20260120() -> Value {
 }
 
 /// Creates a computer use tool (version 2024-10-22).
-pub fn computer_20241022(display_width_px: u32, display_height_px: u32, display_number: Option<u32>) -> Value {
+pub fn computer_20241022(
+    display_width_px: u32,
+    display_height_px: u32,
+    display_number: Option<u32>,
+) -> Value {
     let mut tool = json!({
         "type": "computer_20241022",
         "name": "computer",
@@ -46,7 +50,11 @@ pub fn computer_20241022(display_width_px: u32, display_height_px: u32, display_
 }
 
 /// Creates a computer use tool (version 2025-01-24).
-pub fn computer_20250124(display_width_px: u32, display_height_px: u32, display_number: Option<u32>) -> Value {
+pub fn computer_20250124(
+    display_width_px: u32,
+    display_height_px: u32,
+    display_number: Option<u32>,
+) -> Value {
     let mut tool = json!({
         "type": "computer_20250124",
         "name": "computer",
@@ -60,7 +68,12 @@ pub fn computer_20250124(display_width_px: u32, display_height_px: u32, display_
 }
 
 /// Creates a computer use tool (version 2025-11-24) with zoom support.
-pub fn computer_20251124(display_width_px: u32, display_height_px: u32, display_number: Option<u32>, enable_zoom: Option<bool>) -> Value {
+pub fn computer_20251124(
+    display_width_px: u32,
+    display_height_px: u32,
+    display_number: Option<u32>,
+    enable_zoom: Option<bool>,
+) -> Value {
     let mut tool = json!({
         "type": "computer_20251124",
         "name": "computer",
@@ -109,38 +122,78 @@ pub fn text_editor_20250728(max_characters: Option<u32>) -> Value {
 }
 
 /// Creates a web search tool (version 2025-03-05).
-pub fn web_search_20250305(max_uses: Option<u32>, allowed_domains: Option<Vec<String>>, blocked_domains: Option<Vec<String>>) -> Value {
+pub fn web_search_20250305(
+    max_uses: Option<u32>,
+    allowed_domains: Option<Vec<String>>,
+    blocked_domains: Option<Vec<String>>,
+) -> Value {
     let mut tool = json!({ "type": "web_search_20250305", "name": "web_search" });
-    if let Some(mu) = max_uses { tool["max_uses"] = json!(mu); }
-    if let Some(ad) = allowed_domains { tool["allowed_domains"] = json!(ad); }
-    if let Some(bd) = blocked_domains { tool["blocked_domains"] = json!(bd); }
+    if let Some(mu) = max_uses {
+        tool["max_uses"] = json!(mu);
+    }
+    if let Some(ad) = allowed_domains {
+        tool["allowed_domains"] = json!(ad);
+    }
+    if let Some(bd) = blocked_domains {
+        tool["blocked_domains"] = json!(bd);
+    }
     tool
 }
 
 /// Creates a web search tool (version 2026-02-09).
-pub fn web_search_20260209(max_uses: Option<u32>, allowed_domains: Option<Vec<String>>, blocked_domains: Option<Vec<String>>) -> Value {
+pub fn web_search_20260209(
+    max_uses: Option<u32>,
+    allowed_domains: Option<Vec<String>>,
+    blocked_domains: Option<Vec<String>>,
+) -> Value {
     let mut tool = json!({ "type": "web_search_20260209", "name": "web_search" });
-    if let Some(mu) = max_uses { tool["max_uses"] = json!(mu); }
-    if let Some(ad) = allowed_domains { tool["allowed_domains"] = json!(ad); }
-    if let Some(bd) = blocked_domains { tool["blocked_domains"] = json!(bd); }
+    if let Some(mu) = max_uses {
+        tool["max_uses"] = json!(mu);
+    }
+    if let Some(ad) = allowed_domains {
+        tool["allowed_domains"] = json!(ad);
+    }
+    if let Some(bd) = blocked_domains {
+        tool["blocked_domains"] = json!(bd);
+    }
     tool
 }
 
 /// Creates a web fetch tool (version 2025-09-10).
-pub fn web_fetch_20250910(max_uses: Option<u32>, allowed_domains: Option<Vec<String>>, blocked_domains: Option<Vec<String>>) -> Value {
+pub fn web_fetch_20250910(
+    max_uses: Option<u32>,
+    allowed_domains: Option<Vec<String>>,
+    blocked_domains: Option<Vec<String>>,
+) -> Value {
     let mut tool = json!({ "type": "web_fetch_20250910", "name": "web_fetch" });
-    if let Some(mu) = max_uses { tool["max_uses"] = json!(mu); }
-    if let Some(ad) = allowed_domains { tool["allowed_domains"] = json!(ad); }
-    if let Some(bd) = blocked_domains { tool["blocked_domains"] = json!(bd); }
+    if let Some(mu) = max_uses {
+        tool["max_uses"] = json!(mu);
+    }
+    if let Some(ad) = allowed_domains {
+        tool["allowed_domains"] = json!(ad);
+    }
+    if let Some(bd) = blocked_domains {
+        tool["blocked_domains"] = json!(bd);
+    }
     tool
 }
 
 /// Creates a web fetch tool (version 2026-02-09).
-pub fn web_fetch_20260209(max_uses: Option<u32>, allowed_domains: Option<Vec<String>>, blocked_domains: Option<Vec<String>>) -> Value {
+pub fn web_fetch_20260209(
+    max_uses: Option<u32>,
+    allowed_domains: Option<Vec<String>>,
+    blocked_domains: Option<Vec<String>>,
+) -> Value {
     let mut tool = json!({ "type": "web_fetch_20260209", "name": "web_fetch" });
-    if let Some(mu) = max_uses { tool["max_uses"] = json!(mu); }
-    if let Some(ad) = allowed_domains { tool["allowed_domains"] = json!(ad); }
-    if let Some(bd) = blocked_domains { tool["blocked_domains"] = json!(bd); }
+    if let Some(mu) = max_uses {
+        tool["max_uses"] = json!(mu);
+    }
+    if let Some(ad) = allowed_domains {
+        tool["allowed_domains"] = json!(ad);
+    }
+    if let Some(bd) = blocked_domains {
+        tool["blocked_domains"] = json!(bd);
+    }
     tool
 }
 

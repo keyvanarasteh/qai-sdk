@@ -3,8 +3,8 @@
 //! Demonstrates Text-to-Speech (TTS) and Speech-to-Text (STT) using
 //! the `SpeechModel` and `TranscriptionModel` traits. Currently OpenAI-only.
 
+use qai_core::types::{ProviderSettings, SpeechOptions, TranscriptionOptions};
 use qai_core::{SpeechModel, TranscriptionModel};
-use qai_core::types::{SpeechOptions, TranscriptionOptions, ProviderSettings};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -27,7 +27,7 @@ async fn main() -> anyhow::Result<()> {
         input: "Hello! This is a demo of the QAI SDK's text-to-speech capabilities.".to_string(),
         voice: "alloy".to_string(), // alloy, echo, fable, onyx, nova, shimmer
         response_format: Some("mp3".to_string()), // mp3, opus, aac, flac, wav, pcm
-        speed: None, // 0.25 to 4.0, default 1.0
+        speed: None,                // 0.25 to 4.0, default 1.0
     };
 
     let result = speech_model.synthesize(options).await?;
@@ -49,7 +49,10 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let result = speech_model.synthesize(options).await?;
-    println!("Generated {} bytes of audio (Opus, 1.25x speed)", result.audio.len());
+    println!(
+        "Generated {} bytes of audio (Opus, 1.25x speed)",
+        result.audio.len()
+    );
 
     let path = "/tmp/qai_speech_fast.opus";
     std::fs::write(path, &result.audio)?;

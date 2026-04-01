@@ -45,9 +45,16 @@ async fn main() -> anyhow::Result<()> {
         r#"{"error": {"message": "Invalid model", "type": "invalid_request_error", "code": "model_not_found"}}"#,
     );
     match &error {
-        OpenAIError::ApiError { error_type, message, code, status_code } => {
-            println!("✅ Caught API error: type={}, msg={}, code={:?}, status={}",
-                error_type, message, code, status_code);
+        OpenAIError::ApiError {
+            error_type,
+            message,
+            code,
+            status_code,
+        } => {
+            println!(
+                "✅ Caught API error: type={}, msg={}, code={:?}, status={}",
+                error_type, message, code, status_code
+            );
         }
         _ => println!("❌ Unexpected error type: {}", error),
     }
@@ -100,8 +107,13 @@ async fn main() -> anyhow::Result<()> {
         r#"{"error": {"code": 403, "message": "API key not valid", "status": "PERMISSION_DENIED"}}"#,
     );
     match &error {
-        GoogleError::ApiError { status, message, .. } => {
-            println!("✅ Caught Google API error: status={}, msg={}", status, message);
+        GoogleError::ApiError {
+            status, message, ..
+        } => {
+            println!(
+                "✅ Caught Google API error: status={}, msg={}",
+                status, message
+            );
         }
         _ => println!("❌ Unexpected error type: {}", error),
     }
@@ -164,9 +176,17 @@ async fn main() -> anyhow::Result<()> {
         r#"{"error": {"message": "Model not found", "type": "invalid_request"}}"#,
     );
     match &error {
-        OpenAICompatibleError::ApiError { provider, error_type, message, status_code, .. } => {
-            println!("✅ Caught {} API error: type={}, msg={}, status={}",
-                provider, error_type, message, status_code);
+        OpenAICompatibleError::ApiError {
+            provider,
+            error_type,
+            message,
+            status_code,
+            ..
+        } => {
+            println!(
+                "✅ Caught {} API error: type={}, msg={}, status={}",
+                provider, error_type, message, status_code
+            );
         }
         _ => println!("❌ Unexpected error type: {}", error),
     }
@@ -180,7 +200,9 @@ async fn main() -> anyhow::Result<()> {
     let prompt = Prompt {
         messages: vec![Message {
             role: Role::User,
-            content: vec![Content::Text { text: "Hello".to_string() }],
+            content: vec![Content::Text {
+                text: "Hello".to_string(),
+            }],
         }],
     };
 

@@ -14,9 +14,13 @@ pub struct DeepSeekRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "role", rename_all = "lowercase")]
 pub enum DeepSeekMessage {
-    System { content: String },
-    User { content: String },
-    Assistant { 
+    System {
+        content: String,
+    },
+    User {
+        content: String,
+    },
+    Assistant {
         #[serde(skip_serializing_if = "Option::is_none")]
         content: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -24,7 +28,7 @@ pub enum DeepSeekMessage {
         #[serde(skip_serializing_if = "Option::is_none")]
         tool_calls: Option<Vec<DeepSeekToolCall>>,
     },
-    Tool { 
+    Tool {
         content: String,
         tool_call_id: String,
     },

@@ -5,11 +5,11 @@
 //! Examples include: Together AI, Groq, Fireworks, Perplexity, Mistral,
 //! Anyscale, OpenRouter, local Ollama, and vLLM.
 
-use qai_sdk::prelude::*;
-use qai_sdk::openai_compatible::OpenAICompatibleProviderSettings;
-use qai_core::EmbeddingModel;
-use qai_core::types::EmbeddingOptions;
 use futures::StreamExt;
+use qai_core::types::EmbeddingOptions;
+use qai_core::EmbeddingModel;
+use qai_sdk::openai_compatible::OpenAICompatibleProviderSettings;
+use qai_sdk::prelude::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -19,14 +19,13 @@ async fn main() -> anyhow::Result<()> {
     // 1. Together AI
     // ===================================================================
     println!("=== Together AI ===");
-    let together = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let together =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "https://api.together.xyz/v1".to_string(),
             name: "together".to_string(),
             api_key: Some(std::env::var("TOGETHER_API_KEY").unwrap_or_default()),
             headers: None,
-        },
-    );
+        });
 
     // Chat
     let model = together.chat("meta-llama/Llama-3-70b-chat-hf");
@@ -51,27 +50,31 @@ async fn main() -> anyhow::Result<()> {
 
     // Embedding
     let model = together.embedding("togethercomputer/m2-bert-80M-8k-retrieval");
-    let result = model.embed(
-        vec!["Hello world".to_string()],
-        EmbeddingOptions {
-            model_id: "togethercomputer/m2-bert-80M-8k-retrieval".to_string(),
-            dimensions: None,
-        },
-    ).await?;
-    println!("Together Embedding: {} dimensions\n", result.embeddings[0].len());
+    let result = model
+        .embed(
+            vec!["Hello world".to_string()],
+            EmbeddingOptions {
+                model_id: "togethercomputer/m2-bert-80M-8k-retrieval".to_string(),
+                dimensions: None,
+            },
+        )
+        .await?;
+    println!(
+        "Together Embedding: {} dimensions\n",
+        result.embeddings[0].len()
+    );
 
     // ===================================================================
     // 2. Groq (Ultra-fast inference)
     // ===================================================================
     println!("=== Groq ===");
-    let groq = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let groq =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "https://api.groq.com/openai/v1".to_string(),
             name: "groq".to_string(),
             api_key: Some(std::env::var("GROQ_API_KEY").unwrap_or_default()),
             headers: None,
-        },
-    );
+        });
 
     let model = groq.chat("llama-3.1-70b-versatile");
     let options = GenerateOptions {
@@ -89,14 +92,13 @@ async fn main() -> anyhow::Result<()> {
     // 3. Fireworks AI
     // ===================================================================
     println!("=== Fireworks AI ===");
-    let fireworks = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let fireworks =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "https://api.fireworks.ai/inference/v1".to_string(),
             name: "fireworks".to_string(),
             api_key: Some(std::env::var("FIREWORKS_API_KEY").unwrap_or_default()),
             headers: None,
-        },
-    );
+        });
 
     let model = fireworks.chat("accounts/fireworks/models/llama-v3p1-70b-instruct");
     let options = GenerateOptions {
@@ -114,14 +116,13 @@ async fn main() -> anyhow::Result<()> {
     // 4. OpenRouter (Multi-provider gateway)
     // ===================================================================
     println!("=== OpenRouter ===");
-    let openrouter = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let openrouter =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "https://openrouter.ai/api/v1".to_string(),
             name: "openrouter".to_string(),
             api_key: Some(std::env::var("OPENROUTER_API_KEY").unwrap_or_default()),
             headers: None,
-        },
-    );
+        });
 
     let model = openrouter.chat("meta-llama/llama-3.1-8b-instruct:free");
     let options = GenerateOptions {
@@ -139,14 +140,13 @@ async fn main() -> anyhow::Result<()> {
     // 5. Mistral AI
     // ===================================================================
     println!("=== Mistral AI ===");
-    let mistral = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let mistral =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "https://api.mistral.ai/v1".to_string(),
             name: "mistral".to_string(),
             api_key: Some(std::env::var("MISTRAL_API_KEY").unwrap_or_default()),
             headers: None,
-        },
-    );
+        });
 
     let model = mistral.chat("mistral-small-latest");
     let options = GenerateOptions {
@@ -164,14 +164,13 @@ async fn main() -> anyhow::Result<()> {
     // 6. Local Ollama
     // ===================================================================
     println!("=== Local Ollama ===");
-    let ollama = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let ollama =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "http://localhost:11434/v1".to_string(),
             name: "ollama".to_string(),
             api_key: Some("ollama".to_string()), // Ollama doesn't require a key
             headers: None,
-        },
-    );
+        });
 
     let model = ollama.chat("llama3.2");
     let options = GenerateOptions {

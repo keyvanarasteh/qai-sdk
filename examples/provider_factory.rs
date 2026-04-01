@@ -85,14 +85,13 @@ async fn main() -> anyhow::Result<()> {
     // ===================================================================
     use qai_sdk::openai_compatible::OpenAICompatibleProviderSettings;
 
-    let compatible = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let compatible =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "https://api.together.xyz/v1".to_string(),
             name: "together".to_string(),
             api_key: Some(std::env::var("TOGETHER_API_KEY").unwrap_or_default()),
             headers: None,
-        },
-    );
+        });
 
     let _chat = compatible.chat("meta-llama/Llama-3-70b-chat-hf");
     let _embedding = compatible.embedding("togethercomputer/m2-bert-80M-8k-retrieval");

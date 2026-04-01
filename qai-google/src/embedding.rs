@@ -1,6 +1,6 @@
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use qai_core::types::{EmbeddingOptions, EmbeddingResult};
-use anyhow::{Result, anyhow};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -75,22 +75,28 @@ struct GoogleBatchEmbeddingResponse {
 
 #[async_trait]
 impl qai_core::EmbeddingModel for GoogleEmbeddingModel {
-    async fn embed(&self, values: Vec<String>, options: EmbeddingOptions) -> Result<EmbeddingResult> {
+    async fn embed(
+        &self,
+        values: Vec<String>,
+        options: EmbeddingOptions,
+    ) -> Result<EmbeddingResult> {
         if values.len() == 1 {
             // Single embedding
             let request = GoogleEmbedContentRequest {
                 model: format!("models/{}", options.model_id),
                 content: GoogleEmbedContent {
-                    parts: vec![GoogleEmbedPart { text: values[0].clone() }],
+                    parts: vec![GoogleEmbedPart {
+                        text: values[0].clone(),
+                    }],
                 },
                 output_dimensionality: options.dimensions,
             };
 
-            let url = format!("{}/models/{}:embedContent?key={}", self.base_url, options.model_id, self.api_key);
-            let response = self.client.post(&url)
-                .json(&request)
-                .send()
-                .await?;
+            let url = format!(
+                "{}/models/{}:embedContent?key={}",
+                self.base_url, options.model_id, self.api_key
+            );
+            let response = self.client.post(&url).json(&request).send().await?;
 
             if !response.status().is_success() {
                 let error_text = response.text().await?;
@@ -105,20 +111,23 @@ impl qai_core::EmbeddingModel for GoogleEmbeddingModel {
         } else {
             // Batch embedding
             let request = GoogleBatchEmbedRequest {
-                requests: values.iter().map(|v| GoogleBatchEmbedItem {
-                    model: format!("models/{}", options.model_id),
-                    content: GoogleEmbedContent {
-                        parts: vec![GoogleEmbedPart { text: v.clone() }],
-                    },
-                    output_dimensionality: options.dimensions,
-                }).collect(),
+                requests: values
+                    .iter()
+                    .map(|v| GoogleBatchEmbedItem {
+                        model: format!("models/{}", options.model_id),
+                        content: GoogleEmbedContent {
+                            parts: vec![GoogleEmbedPart { text: v.clone() }],
+                        },
+                        output_dimensionality: options.dimensions,
+                    })
+                    .collect(),
             };
 
-            let url = format!("{}/models/{}:batchEmbedContents?key={}", self.base_url, options.model_id, self.api_key);
-            let response = self.client.post(&url)
-                .json(&request)
-                .send()
-                .await?;
+            let url = format!(
+                "{}/models/{}:batchEmbedContents?key={}",
+                self.base_url, options.model_id, self.api_key
+            );
+            let response = self.client.post(&url).json(&request).send().await?;
 
             if !response.status().is_success() {
                 let error_text = response.text().await?;

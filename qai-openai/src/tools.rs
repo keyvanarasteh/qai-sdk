@@ -63,11 +63,21 @@ pub fn image_generation(
     output_format: Option<String>,
 ) -> Value {
     let mut tool = json!({ "type": "image_generation" });
-    if let Some(m) = model { tool["model"] = json!(m); }
-    if let Some(q) = quality { tool["quality"] = json!(q); }
-    if let Some(s) = size { tool["size"] = json!(s); }
-    if let Some(b) = background { tool["background"] = json!(b); }
-    if let Some(f) = output_format { tool["output_format"] = json!(f); }
+    if let Some(m) = model {
+        tool["model"] = json!(m);
+    }
+    if let Some(q) = quality {
+        tool["quality"] = json!(q);
+    }
+    if let Some(s) = size {
+        tool["size"] = json!(s);
+    }
+    if let Some(b) = background {
+        tool["background"] = json!(b);
+    }
+    if let Some(f) = output_format {
+        tool["output_format"] = json!(f);
+    }
     tool
 }
 
@@ -92,8 +102,12 @@ pub fn custom_tool(name: String, description: Option<String>, format: Option<Val
         "type": "custom_tool",
         "name": name,
     });
-    if let Some(d) = description { tool["description"] = json!(d); }
-    if let Some(f) = format { tool["format"] = f; }
+    if let Some(d) = description {
+        tool["description"] = json!(d);
+    }
+    if let Some(f) = format {
+        tool["format"] = f;
+    }
     tool
 }
 
@@ -108,9 +122,15 @@ pub fn mcp(
         "type": "mcp",
         "server_label": server_label,
     });
-    if let Some(u) = server_url { tool["server_url"] = json!(u); }
-    if let Some(at) = allowed_tools { tool["allowed_tools"] = at; }
-    if let Some(h) = headers { tool["headers"] = h; }
+    if let Some(u) = server_url {
+        tool["server_url"] = json!(u);
+    }
+    if let Some(at) = allowed_tools {
+        tool["allowed_tools"] = at;
+    }
+    if let Some(h) = headers {
+        tool["headers"] = h;
+    }
     tool
 }
 

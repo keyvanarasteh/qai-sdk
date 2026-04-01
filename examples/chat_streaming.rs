@@ -3,8 +3,8 @@
 //! Demonstrates real-time streaming responses from multiple providers
 //! using `generate_stream()` and handling all `StreamPart` variants.
 
-use qai_sdk::prelude::*;
 use futures::StreamExt;
+use qai_sdk::prelude::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -35,19 +35,30 @@ async fn main() -> anyhow::Result<()> {
     let api_key = std::env::var("OPENAI_API_KEY").unwrap_or_default();
     let model = qai_sdk::openai::OpenAIModel::new(api_key);
 
-    let mut stream = model.generate_stream(prompt.clone(), options.clone()).await?;
+    let mut stream = model
+        .generate_stream(prompt.clone(), options.clone())
+        .await?;
     while let Some(part) = stream.next().await {
         match part {
             StreamPart::TextDelta { delta } => {
                 print!("{}", delta); // Print each token as it arrives
             }
-            StreamPart::ToolCallDelta { index, id, name, arguments_delta } => {
-                println!("\n[Tool Call #{} id={:?} name={:?}]: {:?}",
-                    index, id, name, arguments_delta);
+            StreamPart::ToolCallDelta {
+                index,
+                id,
+                name,
+                arguments_delta,
+            } => {
+                println!(
+                    "\n[Tool Call #{} id={:?} name={:?}]: {:?}",
+                    index, id, name, arguments_delta
+                );
             }
             StreamPart::Usage { usage } => {
-                println!("\n📊 Usage: {} prompt + {} completion tokens",
-                    usage.prompt_tokens, usage.completion_tokens);
+                println!(
+                    "\n📊 Usage: {} prompt + {} completion tokens",
+                    usage.prompt_tokens, usage.completion_tokens
+                );
             }
             StreamPart::Finish { finish_reason } => {
                 println!("\n✅ Finished: {}", finish_reason);
@@ -73,8 +84,10 @@ async fn main() -> anyhow::Result<()> {
         match part {
             StreamPart::TextDelta { delta } => print!("{}", delta),
             StreamPart::Usage { usage } => {
-                println!("\n📊 Usage: {} prompt + {} completion tokens",
-                    usage.prompt_tokens, usage.completion_tokens);
+                println!(
+                    "\n📊 Usage: {} prompt + {} completion tokens",
+                    usage.prompt_tokens, usage.completion_tokens
+                );
             }
             StreamPart::Finish { finish_reason } => {
                 println!("\n✅ Finished: {}", finish_reason);

@@ -1,6 +1,6 @@
+use anyhow::Result;
 use async_trait::async_trait;
 use qai_core::types::{ImageGenerateOptions, ImageGenerateResult};
-use anyhow::Result;
 use qai_openai::image::OpenAIImageModel;
 use reqwest::Client;
 

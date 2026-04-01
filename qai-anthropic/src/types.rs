@@ -48,11 +48,25 @@ pub struct AnthropicMessage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AnthropicContent {
-    Text { text: String },
-    Image { source: AnthropicImageSource },
-    Document { source: AnthropicImageSource }, // Uses same source structure
-    ToolUse { id: String, name: String, input: serde_json::Value },
-    ToolResult { tool_use_id: String, content: String, is_error: Option<bool> },
+    Text {
+        text: String,
+    },
+    Image {
+        source: AnthropicImageSource,
+    },
+    Document {
+        source: AnthropicImageSource,
+    }, // Uses same source structure
+    ToolUse {
+        id: String,
+        name: String,
+        input: serde_json::Value,
+    },
+    ToolResult {
+        tool_use_id: String,
+        content: String,
+        is_error: Option<bool>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -91,14 +105,29 @@ pub struct AnthropicUsage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AnthropicStreamEvent {
-    MessageStart { message: AnthropicResponse },
-    ContentBlockStart { index: u32, content_block: AnthropicContent },
-    ContentBlockDelta { index: u32, delta: AnthropicDelta },
-    ContentBlockStop { index: u32 },
-    MessageDelta { delta: AnthropicMessageDelta, usage: AnthropicUsageDelta },
+    MessageStart {
+        message: AnthropicResponse,
+    },
+    ContentBlockStart {
+        index: u32,
+        content_block: AnthropicContent,
+    },
+    ContentBlockDelta {
+        index: u32,
+        delta: AnthropicDelta,
+    },
+    ContentBlockStop {
+        index: u32,
+    },
+    MessageDelta {
+        delta: AnthropicMessageDelta,
+        usage: AnthropicUsageDelta,
+    },
     MessageStop,
     Ping,
-    Error { error: AnthropicError },
+    Error {
+        error: AnthropicError,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

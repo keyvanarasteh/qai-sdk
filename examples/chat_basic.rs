@@ -41,7 +41,10 @@ async fn main() -> anyhow::Result<()> {
     let model = qai_sdk::openai::OpenAIModel::new(api_key);
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Response: {}", result.text);
-    println!("Tokens: {} in, {} out", result.usage.prompt_tokens, result.usage.completion_tokens);
+    println!(
+        "Tokens: {} in, {} out",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
     println!("Finish: {}\n", result.finish_reason);
 
     // --- Anthropic ---
@@ -52,7 +55,10 @@ async fn main() -> anyhow::Result<()> {
     opts.model_id = "claude-3-haiku-20240307".to_string();
     let result = model.generate(prompt.clone(), opts).await?;
     println!("Response: {}", result.text);
-    println!("Tokens: {} in, {} out\n", result.usage.prompt_tokens, result.usage.completion_tokens);
+    println!(
+        "Tokens: {} in, {} out\n",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
 
     // --- Google ---
     println!("=== Google Gemini ===");
@@ -62,7 +68,10 @@ async fn main() -> anyhow::Result<()> {
     opts.model_id = "gemini-1.5-flash".to_string();
     let result = model.generate(prompt.clone(), opts).await?;
     println!("Response: {}", result.text);
-    println!("Tokens: {} in, {} out\n", result.usage.prompt_tokens, result.usage.completion_tokens);
+    println!(
+        "Tokens: {} in, {} out\n",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
 
     // --- DeepSeek ---
     println!("=== DeepSeek ===");
@@ -72,7 +81,10 @@ async fn main() -> anyhow::Result<()> {
     opts.model_id = "deepseek-chat".to_string();
     let result = model.generate(prompt.clone(), opts).await?;
     println!("Response: {}", result.text);
-    println!("Tokens: {} in, {} out\n", result.usage.prompt_tokens, result.usage.completion_tokens);
+    println!(
+        "Tokens: {} in, {} out\n",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
 
     // --- xAI ---
     println!("=== xAI (Grok) ===");
@@ -82,7 +94,10 @@ async fn main() -> anyhow::Result<()> {
     opts.model_id = "grok-2".to_string();
     let result = model.generate(prompt.clone(), opts).await?;
     println!("Response: {}", result.text);
-    println!("Tokens: {} in, {} out\n", result.usage.prompt_tokens, result.usage.completion_tokens);
+    println!(
+        "Tokens: {} in, {} out\n",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
 
     Ok(())
 }

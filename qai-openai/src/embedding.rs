@@ -1,6 +1,6 @@
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use qai_core::types::{EmbeddingOptions, EmbeddingResult, EmbeddingUsage};
-use anyhow::{Result, anyhow};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -49,7 +49,11 @@ struct OpenAIEmbeddingResponseUsage {
 
 #[async_trait]
 impl qai_core::EmbeddingModel for OpenAIEmbeddingModel {
-    async fn embed(&self, values: Vec<String>, options: EmbeddingOptions) -> Result<EmbeddingResult> {
+    async fn embed(
+        &self,
+        values: Vec<String>,
+        options: EmbeddingOptions,
+    ) -> Result<EmbeddingResult> {
         let request = OpenAIEmbeddingRequest {
             model: options.model_id,
             input: values,
@@ -57,7 +61,9 @@ impl qai_core::EmbeddingModel for OpenAIEmbeddingModel {
             dimensions: options.dimensions,
         };
 
-        let response = self.client.post(&format!("{}/embeddings", self.base_url))
+        let response = self
+            .client
+            .post(format!("{}/embeddings", self.base_url))
             .header("Authorization", &format!("Bearer {}", self.api_key))
             .json(&request)
             .send()

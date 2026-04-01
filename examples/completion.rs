@@ -3,8 +3,8 @@
 //! Demonstrates the legacy completion API (non-chat) using the `CompletionModel` trait.
 //! This is used for code infill, text completion, and similar tasks.
 
-use qai_core::CompletionModel;
 use qai_core::types::{CompletionOptions, ProviderSettings};
+use qai_core::CompletionModel;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -33,7 +33,10 @@ async fn main() -> anyhow::Result<()> {
 
     let result = model.complete(options).await?;
     println!("Completion: \"The capital of France is{}\"", result.text);
-    println!("Tokens: {} in, {} out", result.usage.prompt_tokens, result.usage.completion_tokens);
+    println!(
+        "Tokens: {} in, {} out",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
 
     // Completion with stop sequences
     println!("\n--- With stop sequences ---");
@@ -64,7 +67,10 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let result = model.complete(options).await?;
-    println!("Code infill:\nfn fibonacci(n: u32) -> u32 {{\n    {}\n}}", result.text.trim());
+    println!(
+        "Code infill:\nfn fibonacci(n: u32) -> u32 {{\n    {}\n}}",
+        result.text.trim()
+    );
 
     // ===================================================================
     // 2. OpenAI-Compatible Completion
@@ -72,14 +78,13 @@ async fn main() -> anyhow::Result<()> {
     println!("\n=== OpenAI-Compatible Completion ===");
     use qai_sdk::openai_compatible::OpenAICompatibleProviderSettings;
 
-    let provider = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let provider =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "https://api.together.xyz/v1".to_string(),
             name: "together".to_string(),
             api_key: Some(std::env::var("TOGETHER_API_KEY").unwrap_or_default()),
             headers: None,
-        },
-    );
+        });
     let model = provider.completion("meta-llama/Llama-3-70b-chat-hf");
 
     let options = CompletionOptions {

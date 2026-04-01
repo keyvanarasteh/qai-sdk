@@ -1,6 +1,6 @@
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use qai_core::types::{ImageGenerateOptions, ImageGenerateResult};
-use anyhow::{Result, anyhow};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -74,10 +74,7 @@ impl qai_core::ImageModel for GoogleImageModel {
             self.base_url, options.model_id, self.api_key
         );
 
-        let resp = self.client.post(&url)
-            .json(&request)
-            .send()
-            .await?;
+        let resp = self.client.post(&url).json(&request).send().await?;
 
         if !resp.status().is_success() {
             let error_text = resp.text().await?;
@@ -86,7 +83,9 @@ impl qai_core::ImageModel for GoogleImageModel {
 
         let img_resp: GoogleImageResponse = resp.json().await?;
 
-        let images: Vec<String> = img_resp.predictions.iter()
+        let images: Vec<String> = img_resp
+            .predictions
+            .iter()
             .filter_map(|p| p.bytes_base64_encoded.clone())
             .collect();
 

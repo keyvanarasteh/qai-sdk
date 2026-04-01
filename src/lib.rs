@@ -46,25 +46,24 @@ pub use qai_openai_compatible as openai_compatible;
 // Re-export commonly used items at top level for convenience.
 pub mod prelude {
     // Core traits
-    pub use qai_core::LanguageModel;
+    pub use qai_core::CompletionModel;
     pub use qai_core::EmbeddingModel;
     pub use qai_core::ImageModel;
-    pub use qai_core::CompletionModel;
+    pub use qai_core::LanguageModel;
     pub use qai_core::SpeechModel;
     pub use qai_core::TranscriptionModel;
 
     // Core types
     pub use qai_core::types::{
-        Prompt, Message, Role, Content,
-        GenerateOptions, GenerateResult,
-        ProviderSettings, Usage, StreamPart,
+        Content, GenerateOptions, GenerateResult, Message, Prompt, ProviderSettings, Role,
+        StreamPart, Usage,
     };
 
     // Provider factory functions
     pub use qai_anthropic::create_anthropic;
-    pub use qai_openai::create_openai;
-    pub use qai_google::create_google;
     pub use qai_deepseek::create_deepseek;
-    pub use qai_xai::create_xai;
+    pub use qai_google::create_google;
+    pub use qai_openai::create_openai;
     pub use qai_openai_compatible::create_openai_compatible;
+    pub use qai_xai::create_xai;
 }

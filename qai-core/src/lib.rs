@@ -14,20 +14,17 @@
 //!
 //! All shared types live in the [`types`] module.
 
-pub mod types;
 #[cfg(test)]
 mod tests;
+pub mod types;
 
-use async_trait::async_trait;
 use crate::types::{
-    GenerateOptions, GenerateResult, Prompt, StreamPart,
-    EmbeddingOptions, EmbeddingResult,
-    ImageGenerateOptions, ImageGenerateResult,
-    CompletionOptions, CompletionResult,
-    SpeechOptions, SpeechResult,
-    TranscriptionOptions, TranscriptionResult,
+    CompletionOptions, CompletionResult, EmbeddingOptions, EmbeddingResult, GenerateOptions,
+    GenerateResult, ImageGenerateOptions, ImageGenerateResult, Prompt, SpeechOptions, SpeechResult,
+    StreamPart, TranscriptionOptions, TranscriptionResult,
 };
 use anyhow::Result;
+use async_trait::async_trait;
 use futures::stream::BoxStream;
 
 #[async_trait]
@@ -48,7 +45,11 @@ pub trait LanguageModel: Send + Sync {
 #[async_trait]
 pub trait EmbeddingModel: Send + Sync {
     /// Generates embeddings for the given input values.
-    async fn embed(&self, values: Vec<String>, options: EmbeddingOptions) -> Result<EmbeddingResult>;
+    async fn embed(
+        &self,
+        values: Vec<String>,
+        options: EmbeddingOptions,
+    ) -> Result<EmbeddingResult>;
 }
 
 #[async_trait]

@@ -2,8 +2,8 @@
 //!
 //! Demonstrates sending images and files alongside text to vision-capable models.
 
-use qai_sdk::prelude::*;
 use qai_core::types::ImageSource;
+use qai_sdk::prelude::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

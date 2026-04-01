@@ -3,8 +3,8 @@
 //! Demonstrates text embedding generation using the `EmbeddingModel` trait
 //! across OpenAI, Google, and OpenAI-Compatible providers.
 
-use qai_core::EmbeddingModel;
 use qai_core::types::{EmbeddingOptions, ProviderSettings};
+use qai_core::EmbeddingModel;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -34,8 +34,12 @@ async fn main() -> anyhow::Result<()> {
     let result = model.embed(texts.clone(), options).await?;
     println!("Generated {} embeddings", result.embeddings.len());
     for (i, embedding) in result.embeddings.iter().enumerate() {
-        println!("  Text {}: {} dimensions, first 5 values: {:?}",
-            i, embedding.len(), &embedding[..5.min(embedding.len())]);
+        println!(
+            "  Text {}: {} dimensions, first 5 values: {:?}",
+            i,
+            embedding.len(),
+            &embedding[..5.min(embedding.len())]
+        );
     }
     if let Some(usage) = &result.usage {
         println!("  Usage: {} prompt tokens", usage.prompt_tokens);
@@ -68,14 +72,13 @@ async fn main() -> anyhow::Result<()> {
     println!("\n=== OpenAI-Compatible Embeddings ===");
     use qai_sdk::openai_compatible::OpenAICompatibleProviderSettings;
 
-    let provider = qai_sdk::openai_compatible::create_openai_compatible(
-        OpenAICompatibleProviderSettings {
+    let provider =
+        qai_sdk::openai_compatible::create_openai_compatible(OpenAICompatibleProviderSettings {
             base_url: "https://api.together.xyz/v1".to_string(),
             name: "together".to_string(),
             api_key: Some(std::env::var("TOGETHER_API_KEY").unwrap_or_default()),
             headers: None,
-        },
-    );
+        });
     let model = provider.embedding("togethercomputer/m2-bert-80M-8k-retrieval");
 
     let options = EmbeddingOptions {
@@ -105,19 +108,30 @@ async fn main() -> anyhow::Result<()> {
         "The weather is beautiful today".to_string(),
     ];
 
-    let result = model.embed(similarity_texts.clone(), EmbeddingOptions {
-        model_id: "text-embedding-3-small".to_string(),
-        dimensions: Some(256),
-    }).await?;
+    let result = model
+        .embed(
+            similarity_texts.clone(),
+            EmbeddingOptions {
+                model_id: "text-embedding-3-small".to_string(),
+                dimensions: Some(256),
+            },
+        )
+        .await?;
 
     println!("Similarity between related texts (should be high):");
-    println!("  '{}' vs '{}': {:.4}",
-        similarity_texts[0], similarity_texts[1],
-        cosine_similarity(&result.embeddings[0], &result.embeddings[1]));
+    println!(
+        "  '{}' vs '{}': {:.4}",
+        similarity_texts[0],
+        similarity_texts[1],
+        cosine_similarity(&result.embeddings[0], &result.embeddings[1])
+    );
     println!("Similarity between unrelated texts (should be low):");
-    println!("  '{}' vs '{}': {:.4}",
-        similarity_texts[0], similarity_texts[2],
-        cosine_similarity(&result.embeddings[0], &result.embeddings[2]));
+    println!(
+        "  '{}' vs '{}': {:.4}",
+        similarity_texts[0],
+        similarity_texts[2],
+        cosine_similarity(&result.embeddings[0], &result.embeddings[2])
+    );
 
     Ok(())
 }
@@ -126,6 +140,8 @@ fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
     let dot: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
     let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
     let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
-    if norm_a == 0.0 || norm_b == 0.0 { return 0.0; }
+    if norm_a == 0.0 || norm_b == 0.0 {
+        return 0.0;
+    }
     dot / (norm_a * norm_b)
 }

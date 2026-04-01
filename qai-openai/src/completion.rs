@@ -1,6 +1,6 @@
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use qai_core::types::{CompletionOptions, CompletionResult, Usage};
-use anyhow::{Result, anyhow};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -68,7 +68,9 @@ impl qai_core::CompletionModel for OpenAICompletionModel {
             suffix: options.suffix,
         };
 
-        let resp = self.client.post(&format!("{}/completions", self.base_url))
+        let resp = self
+            .client
+            .post(format!("{}/completions", self.base_url))
             .header("Authorization", &format!("Bearer {}", self.api_key))
             .json(&request)
             .send()
@@ -80,7 +82,9 @@ impl qai_core::CompletionModel for OpenAICompletionModel {
         }
 
         let completion_resp: OpenAICompletionResponse = resp.json().await?;
-        let choice = completion_resp.choices.first()
+        let choice = completion_resp
+            .choices
+            .first()
             .ok_or_else(|| anyhow!("No completion choices returned"))?;
 
         Ok(CompletionResult {
@@ -89,7 +93,10 @@ impl qai_core::CompletionModel for OpenAICompletionModel {
                 prompt_tokens: completion_resp.usage.prompt_tokens,
                 completion_tokens: completion_resp.usage.completion_tokens,
             },
-            finish_reason: choice.finish_reason.clone().unwrap_or_else(|| "stop".to_string()),
+            finish_reason: choice
+                .finish_reason
+                .clone()
+                .unwrap_or_else(|| "stop".to_string()),
         })
     }
 }

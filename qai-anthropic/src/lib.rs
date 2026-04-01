@@ -17,20 +17,26 @@
 //! let model = provider.chat("claude-sonnet-4-20250514");
 //! ```
 
-pub mod types;
 pub mod error;
-pub mod tools;
 #[cfg(test)]
 mod tests;
+pub mod tools;
+pub mod types;
 
+use crate::types::{
+    AnthropicContent, AnthropicImageSource, AnthropicMessage, AnthropicRequest, AnthropicResponse,
+    AnthropicStreamEvent, AnthropicSystemContent, AnthropicTool,
+};
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use qai_core::types::{Content, GenerateOptions, GenerateResult, Prompt, Role, Usage, ImageSource, FileSource, StreamPart};
-use crate::types::{AnthropicRequest, AnthropicResponse, AnthropicMessage, AnthropicContent, AnthropicSystemContent, AnthropicImageSource, AnthropicStreamEvent, AnthropicTool};
-use anyhow::{Result, anyhow};
-use reqwest::Client;
+use eventsource_stream::Eventsource;
 use futures::stream::BoxStream;
 use futures_util::StreamExt;
-use eventsource_stream::Eventsource;
+use qai_core::types::{
+    Content, FileSource, GenerateOptions, GenerateResult, ImageSource, Prompt, Role, StreamPart,
+    Usage,
+};
+use reqwest::Client;
 
 pub struct AnthropicModel {
     pub api_key: String,
@@ -53,7 +59,9 @@ impl qai_core::LanguageModel for AnthropicModel {
     async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
         let (request, _) = self.prepare_request(prompt, options)?;
 
-        let response = self.client.post(&format!("{}/messages", self.base_url))
+        let response = self
+            .client
+            .post(format!("{}/messages", self.base_url))
             .header("x-api-key", &self.api_key)
             .header("anthropic-version", "2023-06-01")
             .json(&request)
@@ -78,13 +86,23 @@ impl qai_core::LanguageModel for AnthropicModel {
             usage = header_usage;
         }
 
-        let text = anthropic_response.content.iter()
-            .filter_map(|c| if let AnthropicContent::Text { text } = c { Some(text.clone()) } else { None })
+        let text = anthropic_response
+            .content
+            .iter()
+            .filter_map(|c| {
+                if let AnthropicContent::Text { text } = c {
+                    Some(text.clone())
+                } else {
+                    None
+                }
+            })
             .collect::<Vec<_>>()
             .join("");
 
         // Extract native tool calls from ToolUse content blocks
-        let tool_calls = anthropic_response.content.iter()
+        let tool_calls = anthropic_response
+            .content
+            .iter()
             .filter_map(|c| {
                 if let AnthropicContent::ToolUse { id: _, name, input } = c {
                     Some(qai_core::types::ToolCallResult {
@@ -100,7 +118,9 @@ impl qai_core::LanguageModel for AnthropicModel {
         Ok(GenerateResult {
             text,
             usage,
-            finish_reason: anthropic_response.stop_reason.unwrap_or_else(|| "stop".to_string()),
+            finish_reason: anthropic_response
+                .stop_reason
+                .unwrap_or_else(|| "stop".to_string()),
             tool_calls,
         })
     }
@@ -113,7 +133,9 @@ impl qai_core::LanguageModel for AnthropicModel {
         let (mut request, _) = self.prepare_request(prompt, options)?;
         request.stream = Some(true);
 
-        let response = self.client.post(&format!("{}/messages", self.base_url))
+        let response = self
+            .client
+            .post(format!("{}/messages", self.base_url))
             .header("x-api-key", &self.api_key)
             .header("anthropic-version", "2023-06-01")
             .json(&request)
@@ -144,11 +166,11 @@ impl qai_core::LanguageModel for AnthropicModel {
                                         yield StreamPart::TextDelta { delta: text };
                                     }
                                     crate::types::AnthropicDelta::InputJsonDelta { partial_json } => {
-                                        yield StreamPart::ToolCallDelta { 
-                                            index: 0, 
-                                            id: None, 
-                                            name: None, 
-                                            arguments_delta: Some(partial_json) 
+                                        yield StreamPart::ToolCallDelta {
+                                            index: 0,
+                                            id: None,
+                                            name: None,
+                                            arguments_delta: Some(partial_json)
                                         };
                                     }
                                 }
@@ -177,7 +199,11 @@ impl qai_core::LanguageModel for AnthropicModel {
 }
 
 impl AnthropicModel {
-    fn prepare_request(&self, prompt: Prompt, options: GenerateOptions) -> Result<(AnthropicRequest, Vec<qai_core::types::ToolDefinition>)> {
+    fn prepare_request(
+        &self,
+        prompt: Prompt,
+        options: GenerateOptions,
+    ) -> Result<(AnthropicRequest, Vec<qai_core::types::ToolDefinition>)> {
         let mut system_content = Vec::new();
         let mut messages = Vec::new();
 
@@ -214,18 +240,22 @@ impl AnthropicModel {
                                 }
                             }
                             Content::File { source } => {
-                            let FileSource::Base64 { media_type, data } = source;
-                            if media_type == "application/pdf" {
-                                anthropic_contents.push(AnthropicContent::Document {
-                                    source: AnthropicImageSource {
-                                        source_type: "base64".to_string(),
-                                        media_type,
-                                        data,
-                                    },
-                                });
+                                let FileSource::Base64 { media_type, data } = source;
+                                if media_type == "application/pdf" {
+                                    anthropic_contents.push(AnthropicContent::Document {
+                                        source: AnthropicImageSource {
+                                            source_type: "base64".to_string(),
+                                            media_type,
+                                            data,
+                                        },
+                                    });
+                                }
                             }
-                            }
-                            Content::ToolCall { id, name, arguments } => {
+                            Content::ToolCall {
+                                id,
+                                name,
+                                arguments,
+                            } => {
                                 anthropic_contents.push(AnthropicContent::ToolUse {
                                     id: id.clone(),
                                     name: name.clone(),
@@ -253,12 +283,24 @@ impl AnthropicModel {
             }
         }
 
-        let anthropic_tools = if options.tools.as_ref().map(|t| !t.is_empty()).unwrap_or(false) {
-            Some(options.tools.unwrap().into_iter().map(|t| AnthropicTool {
-                name: t.name,
-                description: t.description,
-                input_schema: t.parameters,
-            }).collect())
+        let anthropic_tools = if options
+            .tools
+            .as_ref()
+            .map(|t| !t.is_empty())
+            .unwrap_or(false)
+        {
+            Some(
+                options
+                    .tools
+                    .unwrap()
+                    .into_iter()
+                    .map(|t| AnthropicTool {
+                        name: t.name,
+                        description: t.description,
+                        input_schema: t.parameters,
+                    })
+                    .collect(),
+            )
         } else {
             None
         };
@@ -266,7 +308,11 @@ impl AnthropicModel {
         let request = AnthropicRequest {
             model: options.model_id,
             messages,
-            system: if system_content.is_empty() { None } else { Some(system_content) },
+            system: if system_content.is_empty() {
+                None
+            } else {
+                Some(system_content)
+            },
             max_tokens: options.max_tokens.unwrap_or(1024),
             temperature: options.temperature,
             top_p: options.top_p,
@@ -293,7 +339,10 @@ pub struct AnthropicProvider {
 impl AnthropicProvider {
     /// Creates a language model with the given model ID.
     pub fn language_model(&self, _model_id: &str) -> AnthropicModel {
-        let api_key = self.settings.api_key.clone()
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
             .or_else(|| std::env::var("ANTHROPIC_API_KEY").ok())
             .unwrap_or_default();
         let mut model = AnthropicModel::new(api_key);

@@ -23,17 +23,23 @@ pub enum Role {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum Content {
-    Text { text: String },
-    Image { source: ImageSource },
-    File { source: FileSource },
-    ToolCall { 
-        id: String, 
-        name: String, 
-        arguments: serde_json::Value 
+    Text {
+        text: String,
     },
-    ToolResult { 
-        id: String, 
-        result: serde_json::Value 
+    Image {
+        source: ImageSource,
+    },
+    File {
+        source: FileSource,
+    },
+    ToolCall {
+        id: String,
+        name: String,
+        arguments: serde_json::Value,
+    },
+    ToolResult {
+        id: String,
+        result: serde_json::Value,
     },
 }
 
@@ -114,14 +120,22 @@ impl Usage {
         ];
 
         for key in prompt_header_keys {
-            if let Some(val) = headers.get(key).and_then(|v| v.to_str().ok()).and_then(|s| s.parse::<u32>().ok()) {
+            if let Some(val) = headers
+                .get(key)
+                .and_then(|v| v.to_str().ok())
+                .and_then(|s| s.parse::<u32>().ok())
+            {
                 prompt_tokens = Some(val);
                 break;
             }
         }
 
         for key in completion_header_keys {
-            if let Some(val) = headers.get(key).and_then(|v| v.to_str().ok()).and_then(|s| s.parse::<u32>().ok()) {
+            if let Some(val) = headers
+                .get(key)
+                .and_then(|v| v.to_str().ok())
+                .and_then(|s| s.parse::<u32>().ok())
+            {
                 completion_tokens = Some(val);
                 break;
             }
@@ -129,12 +143,24 @@ impl Usage {
 
         // Check for composite JSON header (e.g., anthropic-usage)
         if prompt_tokens.is_none() || completion_tokens.is_none() {
-            if let Some(val) = headers.get("anthropic-usage").or_else(|| headers.get("x-ai-usage")).and_then(|v| v.to_str().ok()) {
+            if let Some(val) = headers
+                .get("anthropic-usage")
+                .or_else(|| headers.get("x-ai-usage"))
+                .and_then(|v| v.to_str().ok())
+            {
                 if let Ok(json) = serde_json::from_str::<serde_json::Value>(val) {
-                    if let Some(p) = json.get("input_tokens").or_else(|| json.get("prompt_tokens")).and_then(|v| v.as_u64()) {
+                    if let Some(p) = json
+                        .get("input_tokens")
+                        .or_else(|| json.get("prompt_tokens"))
+                        .and_then(|v| v.as_u64())
+                    {
                         prompt_tokens = Some(p as u32);
                     }
-                    if let Some(c) = json.get("output_tokens").or_else(|| json.get("completion_tokens")).and_then(|v| v.as_u64()) {
+                    if let Some(c) = json
+                        .get("output_tokens")
+                        .or_else(|| json.get("completion_tokens"))
+                        .and_then(|v| v.as_u64())
+                    {
                         completion_tokens = Some(c as u32);
                     }
                 }
@@ -157,16 +183,24 @@ impl Usage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum StreamPart {
-    TextDelta { delta: String },
-    ToolCallDelta { 
+    TextDelta {
+        delta: String,
+    },
+    ToolCallDelta {
         index: u32,
         id: Option<String>,
         name: Option<String>,
         arguments_delta: Option<String>,
     },
-    Usage { usage: Usage },
-    Finish { finish_reason: String },
-    Error { message: String },
+    Usage {
+        usage: Usage,
+    },
+    Finish {
+        finish_reason: String,
+    },
+    Error {
+        message: String,
+    },
 }
 
 // --- Provider Settings ---
