@@ -1,11 +1,19 @@
 # QAI SDK
 
-[![Crates.io](https://img.shields.io/crates/v/qai-sdk.svg)](https://crates.io/crates/qai-sdk)
-[![Downloads](https://img.shields.io/crates/d/qai-sdk.svg)](https://crates.io/crates/qai-sdk)
-[![Documentation](https://docs.rs/qai-sdk/badge.svg)](https://docs.rs/qai-sdk)
-[![CI](https://github.com/keyvanarasteh/qai-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/keyvanarasteh/qai-sdk/actions/workflows/ci.yml)
-[![License](https://img.shields.io/crates/l/qai-sdk.svg)](https://github.com/keyvanarasteh/qai-sdk#license)
-[![GitHub stars](https://img.shields.io/github/stars/keyvanarasteh/qai-sdk.svg?style=social&label=Star)](https://github.com/keyvanarasteh/qai-sdk)
+<div align="center">
+  
+[![Crates.io Version](https://img.shields.io/crates/v/qai-sdk.svg?style=flat-square&color=orange)](https://crates.io/crates/qai-sdk)
+[![Crates.io Downloads](https://img.shields.io/crates/d/qai-sdk.svg?style=flat-square&color=blue)](https://crates.io/crates/qai-sdk)
+[![Docs.rs](https://img.shields.io/docsrs/qai-sdk?style=flat-square)](https://docs.rs/qai-sdk)
+[![CI Pipeline](https://img.shields.io/github/actions/workflow/status/keyvanarasteh/qai-sdk/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/keyvanarasteh/qai-sdk/actions)
+[![Rust Version](https://img.shields.io/badge/rust-1.80%2B-black?style=flat-square&logo=rust)](https://www.rust-lang.org)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue?style=flat-square)](https://github.com/keyvanarasteh/qai-sdk)
+
+[![GitHub Stars](https://img.shields.io/github/stars/keyvanarasteh/qai-sdk?style=flat-square&color=yellow)](https://github.com/keyvanarasteh/qai-sdk/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/keyvanarasteh/qai-sdk?style=flat-square)](https://github.com/keyvanarasteh/qai-sdk/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/keyvanarasteh/qai-sdk?style=flat-square)](https://github.com/keyvanarasteh/qai-sdk/pulls)
+
+</div>
 
 A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI**, **Anthropic Claude**, **Google Gemini**, **DeepSeek**, **xAI Grok**, and any **OpenAI-compatible** endpoint.
 
