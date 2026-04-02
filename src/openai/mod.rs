@@ -349,6 +349,7 @@ impl OpenAIModel {
             stream: Some(false),
             tools: openai_tools,
             tool_choice: None, // Default to auto
+            response_format: options.response_format,
         })
     }
 }

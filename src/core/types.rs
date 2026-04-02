@@ -64,6 +64,7 @@ pub struct GenerateOptions {
     pub top_p: Option<f32>,
     pub stop_sequences: Option<Vec<String>>,
     pub tools: Option<Vec<ToolDefinition>>,
+    pub response_format: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

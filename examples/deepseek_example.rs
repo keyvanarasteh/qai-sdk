@@ -25,6 +25,7 @@ async fn main() -> qai_sdk::Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     println!("--- Generating (Non-Streaming) ---");

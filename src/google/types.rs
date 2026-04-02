@@ -57,6 +57,10 @@ pub struct GoogleGenerationConfig {
     pub top_p: Option<f32>,
     pub top_k: Option<u32>,
     pub stop_sequences: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub response_mime_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub response_schema: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

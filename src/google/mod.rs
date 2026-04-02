@@ -298,6 +298,19 @@ impl GoogleModel {
             None
         };
 
+        let mut response_mime_type = None;
+        let mut response_schema = None;
+        if let Some(format) = &options.response_format {
+            if format.get("type").and_then(|t| t.as_str()) == Some("json_schema") {
+                response_mime_type = Some("application/json".to_string());
+                if let Some(schema) = format.get("json_schema").and_then(|s| s.get("schema")) {
+                    response_schema = Some(schema.clone());
+                }
+            } else if format.get("type").and_then(|t| t.as_str()) == Some("json_object") {
+                response_mime_type = Some("application/json".to_string());
+            }
+        }
+
         Ok(GoogleRequest {
             contents,
             system_instruction,
@@ -307,6 +320,8 @@ impl GoogleModel {
                 top_p: options.top_p,
                 top_k: None,
                 stop_sequences: options.stop_sequences.clone(),
+                response_mime_type,
+                response_schema,
             }),
             tools: google_tools,
         })

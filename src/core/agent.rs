@@ -29,14 +29,37 @@
 //! ```
 
 use crate::core::types::{
-    Content, GenerateOptions, GenerateResult, Message, Prompt, Role, ToolDefinition,
+    Content, GenerateOptions, GenerateResult, Message, Prompt, Role, StreamPart, ToolDefinition,
 };
 use crate::core::{LanguageModel, Result};
 use crate::core::error::ProviderError;
+use futures::stream::BoxStream;
+use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
+
+/// A streaming chunk from an agent run.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum AgentStreamPart {
+    /// Text delta.
+    TextDelta { delta: String },
+    /// Tool call starting.
+    ToolCall {
+        id: String,
+        name: String,
+        arguments: serde_json::Value,
+    },
+    /// Tool call result.
+    ToolResult {
+        name: String,
+        result: serde_json::Value,
+    },
+    /// A streaming error.
+    Error { message: String },
+}
 
 /// A snapshot of one agent step.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -244,6 +267,7 @@ impl Agent {
                 } else {
                     Some(self.tools.clone())
                 },
+                response_format: None,
             };
 
             let result = self.model.generate(prompt, options).await?;
@@ -325,5 +349,135 @@ impl Agent {
             total_steps,
             finish_reason: final_result.finish_reason,
         })
+    }
+
+    /// Run the agent and stream results.
+    pub async fn run_stream<'a>(
+        &'a mut self,
+        prompt_text: &str,
+    ) -> Result<BoxStream<'a, AgentStreamPart>> {
+        let mut messages = vec![];
+        if let Some(sys) = &self.system {
+            messages.push(Message {
+                role: Role::System,
+                content: vec![Content::Text { text: sys.clone() }],
+            });
+        }
+        messages.push(Message {
+            role: Role::User,
+            content: vec![Content::Text {
+                text: prompt_text.to_string(),
+            }],
+        });
+
+        let stream = async_stream::stream! {
+            for _step in 0..self.max_steps {
+                let prompt = Prompt {
+                    messages: messages.clone(),
+                };
+
+                let options = GenerateOptions {
+                    model_id: self.model_id.clone(),
+                    max_tokens: self.max_tokens,
+                    temperature: self.temperature,
+                    top_p: None,
+                    stop_sequences: None,
+                    tools: if self.tools.is_empty() {
+                        None
+                    } else {
+                        Some(self.tools.clone())
+                    },
+                    response_format: None,
+                };
+
+                let mut inner_stream = match self.model.generate_stream(prompt, options).await {
+                    Ok(s) => s,
+                    Err(e) => {
+                        yield AgentStreamPart::Error { message: e.to_string() };
+                        break;
+                    }
+                };
+
+                let mut tc_names = std::collections::HashMap::new();
+                let mut tc_args = std::collections::HashMap::new();
+
+                while let Some(part) = inner_stream.next().await {
+                    match part {
+                        StreamPart::TextDelta { delta } => {
+                            yield AgentStreamPart::TextDelta { delta };
+                        }
+                        StreamPart::ToolCallDelta { index, name, arguments_delta, .. } => {
+                            if let Some(n) = name {
+                                tc_names.insert(index, n);
+                            }
+                            if let Some(d) = arguments_delta {
+                                tc_args.entry(index).or_insert_with(String::new).push_str(&d);
+                            }
+                        }
+                        StreamPart::Error { message } => {
+                            yield AgentStreamPart::Error { message };
+                        }
+                        _ => {}
+                    }
+                }
+
+                if tc_names.is_empty() && tc_args.is_empty() {
+                    break;
+                }
+
+                // Add assistant message containing the tool calls
+                let mut contents = vec![];
+                let mut tool_results_to_yield = vec![];
+
+                for (idx, name) in &tc_names {
+                    let args_str = tc_args.get(idx).map(|s| s.as_str()).unwrap_or("{}");
+                    let arguments: serde_json::Value = serde_json::from_str(args_str).unwrap_or(serde_json::Value::Null);
+
+                    contents.push(Content::ToolCall {
+                        id: name.clone(), // using name as id for simplicity
+                        name: name.clone(),
+                        arguments: arguments.clone(),
+                    });
+
+                    yield AgentStreamPart::ToolCall {
+                        id: name.clone(),
+                        name: name.clone(),
+                        arguments: arguments.clone(),
+                    };
+
+                    // Execute
+                    let handler = &self.tool_handler;
+                    let result_val = match handler(name.clone(), arguments).await {
+                        Ok(res) => res,
+                        Err(e) => serde_json::json!({ "error": e.to_string() }),
+                    };
+
+                    yield AgentStreamPart::ToolResult {
+                        name: name.clone(),
+                        result: result_val.clone(),
+                    };
+
+                    tool_results_to_yield.push((name.clone(), result_val));
+                }
+
+                messages.push(Message {
+                    role: Role::Assistant,
+                    content: contents,
+                });
+
+                // Add tool results
+                for (name, result_val) in tool_results_to_yield {
+                    messages.push(Message {
+                        role: Role::Tool,
+                        content: vec![Content::ToolResult {
+                            id: name,
+                            result: result_val,
+                        }],
+                    });
+                }
+            }
+        };
+
+        Ok(Box::pin(stream))
     }
 }

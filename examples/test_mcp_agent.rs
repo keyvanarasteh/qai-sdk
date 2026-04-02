@@ -39,6 +39,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         top_p: None,
         stop_sequences: None,
         tools: None, // Tools are automatically populated by the loop
+        response_format: None,
     };
 
     // 3. Just one line to run the entire loop!

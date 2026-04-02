@@ -214,6 +214,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     match model.generate(prompt, options).await {

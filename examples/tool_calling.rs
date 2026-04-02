@@ -74,6 +74,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: Some(tools.clone()),
+        response_format: None,
     };
 
     let result = model.generate(prompt.clone(), options.clone()).await?;
@@ -95,6 +96,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: Some(tools.clone()),
+        response_format: None,
     };
 
     let result = model.generate(prompt.clone(), options).await?;
@@ -143,6 +145,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: Some(tools),
+        response_format: None,
     };
 
     let result = model.generate(prompt_with_result, options).await?;

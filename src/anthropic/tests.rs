@@ -21,6 +21,7 @@ fn test_anthropic_request_mapping() {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     let (request, _) = model.prepare_request(prompt, options).unwrap();

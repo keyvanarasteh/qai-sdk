@@ -21,6 +21,7 @@ fn test_google_request_mapping() {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     let request = model.prepare_request(prompt, &options).unwrap();

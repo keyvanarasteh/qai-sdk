@@ -38,6 +38,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     let result = model.generate(prompt, options).await?;
@@ -76,6 +77,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     let result = model.generate(prompt, options).await?;
@@ -101,6 +103,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     let mut stream = model.generate_stream(prompt, options).await?;
@@ -157,6 +160,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: Some(tools),
+        response_format: None,
     };
 
     let result = model.generate(prompt, options).await?;
@@ -189,6 +193,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     let result = xai_model.generate(prompt, options).await?;

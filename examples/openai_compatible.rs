@@ -44,6 +44,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Together Chat: {}", result.text);
@@ -83,6 +84,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Groq response: {}\n", result.text);
@@ -106,6 +108,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Fireworks response: {}\n", result.text);
@@ -129,6 +132,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("OpenRouter response: {}\n", result.text);
@@ -152,6 +156,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Mistral response: {}\n", result.text);
@@ -175,6 +180,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     // Ollama may not be running, so handle errors gracefully
@@ -195,6 +201,7 @@ async fn main() -> Result<()> {
         top_p: None,
         stop_sequences: None,
         tools: None,
+        response_format: None,
     };
 
     let mut stream = model.generate_stream(prompt.clone(), options).await?;

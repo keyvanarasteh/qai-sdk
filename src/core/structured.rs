@@ -209,6 +209,15 @@ async fn generate_object_once(
 
     match options.mode {
         OutputMode::Json => {
+            let tool_name = options
+                .schema_name
+                .clone()
+                .unwrap_or_else(|| "json_output".to_string());
+            let tool_desc = options
+                .schema_description
+                .clone()
+                .unwrap_or_else(|| "Generate a structured JSON object".to_string());
+
             let gen_options = GenerateOptions {
                 model_id: options.model_id.clone(),
                 max_tokens: options.max_tokens,
@@ -216,6 +225,15 @@ async fn generate_object_once(
                 top_p: None,
                 stop_sequences: None,
                 tools: None,
+                response_format: Some(serde_json::json!({
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": tool_name,
+                        "description": tool_desc,
+                        "schema": options.schema.clone(),
+                        "strict": true
+                    }
+                })),
             };
 
             let result = model.generate(prompt, gen_options).await?;
@@ -252,6 +270,7 @@ async fn generate_object_once(
                 top_p: None,
                 stop_sequences: None,
                 tools: Some(vec![tool]),
+                response_format: None,
             };
 
             let result = model.generate(prompt, gen_options).await?;
@@ -345,13 +364,49 @@ pub async fn stream_object(
 
     let prompt = Prompt { messages };
 
-    let gen_options = GenerateOptions {
-        model_id: options.model_id.clone(),
-        max_tokens: options.max_tokens,
-        temperature: options.temperature,
-        top_p: None,
-        stop_sequences: None,
-        tools: None,
+    let tool_name = options
+        .schema_name
+        .clone()
+        .unwrap_or_else(|| "json_output".to_string());
+    let tool_desc = options
+        .schema_description
+        .clone()
+        .unwrap_or_else(|| "Generate a structured JSON object".to_string());
+
+    let gen_options = match options.mode {
+        OutputMode::Json => GenerateOptions {
+            model_id: options.model_id.clone(),
+            max_tokens: options.max_tokens,
+            temperature: options.temperature,
+            top_p: None,
+            stop_sequences: None,
+            tools: None,
+            response_format: Some(serde_json::json!({
+                "type": "json_schema",
+                "json_schema": {
+                    "name": tool_name.clone(),
+                    "description": tool_desc.clone(),
+                    "schema": options.schema.clone(),
+                    "strict": true
+                }
+            })),
+        },
+        OutputMode::Tool => {
+            let tool = ToolDefinition {
+                name: tool_name.clone(),
+                description: tool_desc.clone(),
+                parameters: options.schema.clone(),
+            };
+            GenerateOptions {
+                model_id: options.model_id.clone(),
+                max_tokens: options.max_tokens,
+                temperature: options.temperature,
+                top_p: None,
+                stop_sequences: None,
+                tools: Some(vec![tool]),
+                response_format: None,
+            }
+        }
     };
 
     let mut inner_stream = model.generate_stream(prompt, gen_options).await?;
@@ -364,14 +419,31 @@ pub async fn stream_object(
         while let Some(part) = inner_stream.next().await {
             match part {
                 StreamPart::TextDelta { delta } => {
-                    accumulated.push_str(&delta);
-                    chunk_count += 1;
-                    yield ObjectStreamPart::TextDelta { delta };
+                    if matches!(options.mode, OutputMode::Json) {
+                        accumulated.push_str(&delta);
+                        chunk_count += 1;
+                        yield ObjectStreamPart::TextDelta { delta };
 
-                    // Try partial parse every 5 chunks to avoid excessive parsing
-                    if chunk_count.is_multiple_of(5) {
-                        if let Ok(partial) = try_parse_partial_json(&accumulated) {
-                            yield ObjectStreamPart::Partial { object: partial };
+                        // Try partial parse every 5 chunks to avoid excessive parsing
+                        if chunk_count.is_multiple_of(5) {
+                            if let Ok(partial) = try_parse_partial_json(&accumulated) {
+                                yield ObjectStreamPart::Partial { object: partial };
+                            }
+                        }
+                    }
+                }
+                StreamPart::ToolCallDelta { arguments_delta, .. } => {
+                    if matches!(options.mode, OutputMode::Tool) {
+                        if let Some(delta) = arguments_delta {
+                            accumulated.push_str(&delta);
+                            chunk_count += 1;
+                            yield ObjectStreamPart::TextDelta { delta: delta.clone() };
+
+                            if chunk_count.is_multiple_of(5) {
+                                if let Ok(partial) = try_parse_partial_json(&accumulated) {
+                                    yield ObjectStreamPart::Partial { object: partial };
+                                }
+                            }
                         }
                     }
                 }
@@ -397,7 +469,6 @@ pub async fn stream_object(
                 StreamPart::Error { message } => {
                     yield ObjectStreamPart::Error { message };
                 }
-                _ => {}
             }
         }
 
