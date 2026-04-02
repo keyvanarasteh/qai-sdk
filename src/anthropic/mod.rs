@@ -367,3 +367,9 @@ impl AnthropicProvider {
 pub fn create_anthropic(settings: ProviderSettings) -> AnthropicProvider {
     AnthropicProvider { settings }
 }
+
+impl crate::core::registry::Provider for AnthropicProvider {
+    fn language_model(&self, model_id: &str) -> Option<Box<dyn crate::core::LanguageModel>> {
+        Some(Box::new(self.chat(model_id)))
+    }
+}

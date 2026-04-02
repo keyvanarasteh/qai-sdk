@@ -143,3 +143,13 @@ impl XAIProvider {
 pub fn create_xai(settings: ProviderSettings) -> XAIProvider {
     XAIProvider { settings }
 }
+
+impl crate::core::registry::Provider for XAIProvider {
+    fn language_model(&self, model_id: &str) -> Option<Box<dyn crate::core::LanguageModel>> {
+        Some(Box::new(self.chat(model_id)))
+    }
+
+    fn image_model(&self, model_id: &str) -> Option<Box<dyn crate::core::ImageModel>> {
+        Some(Box::new(self.image(model_id)))
+    }
+}

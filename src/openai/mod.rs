@@ -460,3 +460,17 @@ impl OpenAIProvider {
 pub fn create_openai(settings: ProviderSettings) -> OpenAIProvider {
     OpenAIProvider { settings }
 }
+
+impl crate::core::registry::Provider for OpenAIProvider {
+    fn language_model(&self, model_id: &str) -> Option<Box<dyn crate::core::LanguageModel>> {
+        Some(Box::new(self.chat(model_id)))
+    }
+
+    fn embedding_model(&self, model_id: &str) -> Option<Box<dyn crate::core::EmbeddingModel>> {
+        Some(Box::new(self.embedding(model_id)))
+    }
+
+    fn image_model(&self, model_id: &str) -> Option<Box<dyn crate::core::ImageModel>> {
+        Some(Box::new(self.image(model_id)))
+    }
+}

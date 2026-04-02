@@ -106,3 +106,9 @@ impl DeepSeekProvider {
 pub fn create_deepseek(settings: ProviderSettings) -> DeepSeekProvider {
     DeepSeekProvider { settings }
 }
+
+impl crate::core::registry::Provider for DeepSeekProvider {
+    fn language_model(&self, model_id: &str) -> Option<Box<dyn crate::core::LanguageModel>> {
+        Some(Box::new(self.chat(model_id)))
+    }
+}
