@@ -34,10 +34,10 @@ eventsource-stream = "0.2"
 base64 = "0.22"
 async-stream = "0.3"
 jsonschema = "0.29"
-tokio = { version = "1.40", features = ["process", "io-util", "sync", "rt", "macros"], optional = true }
+tokio = { version = "1.51", features = ["process", "io-util", "sync", "rt", "macros"], optional = true }
 
 [dev-dependencies]
-tokio = { version = "1.40", features = ["full", "macros", "rt-multi-thread"] }
+tokio = { version = "1.51", features = ["full", "macros", "rt-multi-thread"] }
 wiremock = "0.6"
 dotenvy = "0.15"
 
