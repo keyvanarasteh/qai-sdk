@@ -29,7 +29,8 @@ pub type Result<T> = std::result::Result<T, ProviderError>;
 use crate::core::types::{
     CompletionOptions, CompletionResult, EmbeddingOptions, EmbeddingResult, GenerateOptions,
     GenerateResult, ImageGenerateOptions, ImageGenerateResult, Prompt, SpeechOptions, SpeechResult,
-    StreamPart, TranscriptionOptions, TranscriptionResult,
+    StreamPart, TranscriptionOptions, TranscriptionResult, VideoGenerateOptions, VideoGenerateResult,
+    RealtimeEvent,
 };
 use async_trait::async_trait;
 use futures::stream::BoxStream;
@@ -83,4 +84,19 @@ pub trait SpeechModel: Send + Sync {
 pub trait TranscriptionModel: Send + Sync {
     /// Transcribes audio to text.
     async fn transcribe(&self, options: TranscriptionOptions) -> Result<TranscriptionResult>;
+}
+
+#[async_trait]
+pub trait VideoModel: Send + Sync {
+    /// Generates videos from a text prompt.
+    async fn generate(&self, options: VideoGenerateOptions) -> Result<VideoGenerateResult>;
+}
+
+#[async_trait]
+pub trait RealtimeModel: Send + Sync {
+    /// Connects to a real-time WebSocket session.
+    async fn connect(&self) -> Result<BoxStream<'static, RealtimeEvent>>;
+
+    /// Sends an event to the real-time session.
+    async fn send(&self, event: RealtimeEvent) -> Result<()>;
 }

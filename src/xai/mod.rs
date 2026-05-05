@@ -23,6 +23,10 @@ pub mod image;
 pub mod responses;
 pub mod tools;
 pub mod types;
+pub mod speech;
+pub mod transcription;
+pub mod video;
+pub mod realtime;
 
 use crate::core::types::{GenerateOptions, GenerateResult, Prompt, ProviderSettings, StreamPart};
 use crate::openai::OpenAIModel;
@@ -136,6 +140,45 @@ impl XAIProvider {
             .unwrap_or_default();
         responses::XaiResponsesModel::new(api_key)
     }
+
+    /// Creates a speech (TTS) model.
+    #[must_use]
+    pub fn speech(&self, _model_id: &str) -> speech::XaiSpeechModel {
+        let api_key = self.resolve_api_key();
+        let base_url = self.resolve_base_url();
+        speech::XaiSpeechModel::new(api_key, base_url)
+    }
+
+    /// Creates a transcription (STT) model.
+    #[must_use]
+    pub fn transcription(&self, _model_id: &str) -> transcription::XaiTranscriptionModel {
+        let api_key = self.resolve_api_key();
+        let base_url = self.resolve_base_url();
+        transcription::XaiTranscriptionModel::new(api_key, base_url)
+    }
+
+    /// Creates a video generation model.
+    #[must_use]
+    pub fn video(&self, _model_id: &str) -> video::XaiVideoModel {
+        let api_key = self.resolve_api_key();
+        let base_url = self.resolve_base_url();
+        video::XaiVideoModel::new(api_key, base_url)
+    }
+
+    fn resolve_api_key(&self) -> String {
+        self.settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("XAI_API_KEY").ok())
+            .unwrap_or_default()
+    }
+
+    fn resolve_base_url(&self) -> String {
+        self.settings
+            .base_url
+            .clone()
+            .unwrap_or_else(|| "https://api.x.ai/v1".to_string())
+    }
 }
 
 /// Create an xAI provider instance with the given settings.
@@ -151,5 +194,13 @@ impl crate::core::registry::Provider for XAIProvider {
 
     fn image_model(&self, model_id: &str) -> Option<Box<dyn crate::core::ImageModel>> {
         Some(Box::new(self.image(model_id)))
+    }
+
+    fn speech_model(&self, model_id: &str) -> Option<Box<dyn crate::core::SpeechModel>> {
+        Some(Box::new(self.speech(model_id)))
+    }
+
+    fn transcription_model(&self, model_id: &str) -> Option<Box<dyn crate::core::TranscriptionModel>> {
+        Some(Box::new(self.transcription(model_id)))
     }
 }

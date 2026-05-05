@@ -79,6 +79,7 @@ pub struct GenerateOptions {
     /// or custom proxy headers.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub extra_headers: Option<std::collections::HashMap<String, String>>,
+
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -362,6 +363,45 @@ pub struct TranscriptionResult {
     pub text: String,
     pub language: Option<String>,
     pub duration: Option<f64>,
+}
+
+// --- Video Types ---
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct VideoGenerateOptions {
+    pub model_id: String,
+    pub prompt: String,
+    /// Optional negative prompt.
+    pub negative_prompt: Option<String>,
+    /// Number of frames or duration in seconds.
+    pub duration: Option<f32>,
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    /// Seed for reproducible generation.
+    pub seed: Option<u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VideoGenerateResult {
+    /// URL of the generated video.
+    pub url: Option<String>,
+    /// Raw video bytes (if available).
+    pub data: Option<Vec<u8>>,
+    /// Revision or internal ID of the generation.
+    pub revision: Option<String>,
+}
+
+// --- Realtime Types ---
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum RealtimeEvent {
+    Text { text: String },
+    Audio { data: Vec<u8> },
+    ToolCall { id: String, name: String, arguments: serde_json::Value },
+    Error { message: String },
+    SessionStarted,
+    SessionEnded,
 }
 
 // --- Server-Defined Tool Types ---
