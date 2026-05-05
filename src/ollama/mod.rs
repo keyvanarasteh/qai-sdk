@@ -251,7 +251,13 @@ impl OllamaProvider {
         let client = Client::new();
         
         let mut request_builder = client.post(&url);
-        let api_key = self.resolve_api_key();
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("OLLAMA_API_KEY").ok())
+            .unwrap_or_default();
+            
         if !api_key.is_empty() {
             request_builder = request_builder.bearer_auth(api_key);
         }
@@ -269,7 +275,13 @@ impl OllamaProvider {
         let client = Client::new();
 
         let mut request_builder = client.post(&url);
-        let api_key = self.resolve_api_key();
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("OLLAMA_API_KEY").ok())
+            .unwrap_or_default();
+            
         if !api_key.is_empty() {
             request_builder = request_builder.bearer_auth(api_key);
         }

@@ -70,11 +70,9 @@ let result = model.generate(
 println!("{}", result.text);
 ```
 
----
+## Tool Calling & Structured Outputs
 
-## Tool Calling
-
-Because `qai-sdk` targets Ollama's OpenAI-compatible endpoint, Tool Calling works exactly as it does on OpenAI, provided your local model supports it (like `llama3.1` or `llama3.2`):
+Because `qai-sdk` targets Ollama's OpenAI-compatible endpoint, Tool Calling works exactly as it does on OpenAI, provided your local model supports it (like `llama3.1` or `llama3.2`). The SDK also supports `response_format` for enforcing JSON Schemas natively via Ollama's structured output engine.
 
 ```rust
 let result = model.generate(
@@ -82,14 +80,46 @@ let result = model.generate(
     GenerateOptions {
         model_id: "llama3.2".into(),
         tools: Some(vec![my_tool]),
+        // Enforce JSON outputs natively
+        response_format: Some(json!({"type": "json_object"})),
         ..Default::default()
     },
 ).await?;
-
-for tc in &result.tool_calls {
-    println!("Ollama invoked tool: {} -> {}", tc.name, tc.arguments);
-}
 ```
+
+---
+
+## Vision, Thinking & Embeddings
+
+`OllamaModel` automatically parses and supports advanced multimodal capabilities:
+- **Vision:** Pass images via `ImageSource::Base64` or `ImageSource::Url` and they will be routed accurately to vision models like `llava` or `gemma3`.
+- **Embeddings:** Supports `model.embed(texts, options)` natively by wrapping the standard `/v1/embeddings` endpoint.
+- **Thinking Mode:** DeepSeek-R1 style reasoning chunks emitted from Ollama natively bubble up as `StreamPart::ReasoningDelta`.
+
+---
+
+## Native Management API (Administrative)
+
+Beyond standard chat endpoints, the `OllamaProvider` natively implements Ollama's proprietary `/api` lifecycle and administrative endpoints:
+
+```rust
+// Get a list of installed models
+let tags = provider.list_models().await?;
+
+// View currently running models and memory usage
+let running = provider.list_running_models().await?;
+
+// Get details about a specific model
+let info = provider.show_model_info(OllamaShowRequest { model: "llama3.2".into(), verbose: None }).await?;
+
+// Pull a model from the registry
+provider.pull_model(OllamaPullRequest { model: "qwen3".into(), insecure: None, stream: None }).await?;
+
+// Perform a Web Search via Ollama's new built-in tools
+let search = provider.web_search(WebSearchRequest { query: "Ollama new engine".into(), max_results: Some(3) }).await?;
+```
+
+Supported management functions: `list_models`, `list_running_models`, `show_model_info`, `create_model`, `copy_model`, `delete_model`, `pull_model`, `push_model`, `get_version`, `web_search`, and `web_fetch`.
 
 ---
 
@@ -100,3 +130,4 @@ for tc in &result.tool_calls {
 | Base URL | `http://localhost:11434/v1` | `https://api.ollama.cloud/v1` |
 | Protocol | `chat/completions` (OpenAI format) | `chat/completions` |
 | Auth Header | None | `Authorization: Bearer <API_KEY>` |
+

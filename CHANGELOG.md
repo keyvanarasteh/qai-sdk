@@ -5,9 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.7] - 2026-05-05
+## [0.1.8] - 2026-05-05
 
 ### Added
+
+- **Ollama Management API**: Native implementation of Ollama administrative endpoints (`/api/tags`, `/api/ps`, `/api/show`, `/api/create`, `/api/copy`, `/api/delete`, `/api/pull`, `/api/push`, `/api/version`).
+- **Ollama Web Search / Fetch**: Native support for Ollama's `web_search` and `web_fetch` utility endpoints.
+- **Ollama Cloud Support**: Intelligent auto-routing to `https://api.ollama.cloud` when an API key is provided, while seamlessly maintaining localhost compatibility for local servers.
+- **Full Feature Parity**: Validated comprehensive coverage for Ollama Streaming, Thinking mode (Reasoning Traces), Structured Outputs (JSON Schema), Vision (Base64 encoding via `image_url`), Embeddings, and Tool Calling via the underlying OpenAI-compatible execution layer.
+
+## [0.1.7] - 2026-05-05
 
 - **DeepSeek Caching**: Full native support for DeepSeek KV cache tracking (`cache_hit_tokens`, `cache_miss_tokens` in `Usage` struct).
 - **DeepSeek Multi-round**: Validated stateless multi-round chat functionality across the core generation interfaces.
