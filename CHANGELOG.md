@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18] - 2026-05-06
+
+### Added
+
+- **Google Gemini Search Grounding**:
+  - Implemented native Web Search Grounding for Gemini models.
+  - Added support for parsing `groundingMetadata` from API responses.
+  - Exposed grounding results via the standard `executed_tools` array in both batch and streaming generations.
+  - Added `gemini_search_grounding.rs` example.
+
 ## [0.1.17] - 2026-05-06
 
 ### Added

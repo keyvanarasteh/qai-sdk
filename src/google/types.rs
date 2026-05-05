@@ -12,11 +12,33 @@ pub struct GoogleRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GoogleTool {
-    pub function_declarations: Vec<GoogleFunctionDeclaration>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub function_declarations: Option<Vec<GoogleFunctionDeclaration>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub google_search_retrieval: Option<GoogleSearchRetrieval>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GoogleSearchRetrieval {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dynamic_retrieval_config: Option<DynamicRetrievalConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicRetrievalConfig {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dynamic_threshold: Option<f32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GoogleFunctionDeclaration {
     pub name: String,
     pub description: String,
@@ -99,6 +121,8 @@ pub struct GoogleResponse {
 pub struct GoogleCandidate {
     pub content: GoogleContent,
     pub finish_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grounding_metadata: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

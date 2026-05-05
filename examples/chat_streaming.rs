@@ -68,6 +68,9 @@ async fn main() -> Result<()> {
                 eprintln!("\n❌ Error: {}", message);
             }
             StreamPart::ReasoningDelta { .. } => {}
+            StreamPart::ExecutedTool { tool } => {
+                println!("\n[Executed tool: {}]", tool.name);
+            }
         }
     }
 

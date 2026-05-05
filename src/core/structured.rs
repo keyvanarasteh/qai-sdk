@@ -461,6 +461,9 @@ pub async fn stream_object(
                         }
                     }
                 }
+                StreamPart::ExecutedTool { .. } => {
+                    // Ignore for structured output
+                }
                 StreamPart::Usage { usage } => {
                     last_usage = usage;
                 }

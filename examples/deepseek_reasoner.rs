@@ -87,6 +87,7 @@ async fn main() -> Result<()> {
                 println!("\n--- Finished ({}) ---", finish_reason);
             }
             StreamPart::ToolCallDelta { .. } => {}
+            StreamPart::ExecutedTool { .. } => {}
             StreamPart::Error { message } => {
                 println!("\nError: {}", message);
             }

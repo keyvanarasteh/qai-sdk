@@ -42,7 +42,7 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 | Text Completion | ✅ | — | — | — | — | — | — | — |
 | Responses API | ✅ | — | — | — | ✅ | ✅ | — | — |
 | Content Moderation | — | — | — | — | — | ✅ | — | — |
-| Built-in Web Search | — | — | — | — | — | ✅ | — | — |
+| Built-in Web Search | — | — | ✅ | — | — | ✅ | — | — |
 | Remote MCP Tools | — | — | — | — | — | ✅ | — | — |
 | Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Custom HTTP Headers | ✅ | — | — | — | ✅ | — | ✅ | ✅ |

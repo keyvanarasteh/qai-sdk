@@ -251,6 +251,9 @@ pub enum StreamPart {
     Error {
         message: String,
     },
+    ExecutedTool {
+        tool: ExecutedTool,
+    },
 }
 
 // --- Provider Settings ---

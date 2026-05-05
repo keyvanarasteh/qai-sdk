@@ -135,6 +135,17 @@ impl crate::core::LanguageModel for GoogleModel {
             Some(thought_parts.join(""))
         };
 
+        let mut executed_tools = Vec::new();
+        if let Some(metadata) = &candidate.grounding_metadata {
+            executed_tools.push(crate::core::types::ExecutedTool {
+                name: "google_search_retrieval".to_string(),
+                tool_type: "web_search".to_string(),
+                arguments: None,
+                output: Some(metadata.clone()),
+                server_label: None,
+            });
+        }
+
         Ok(GenerateResult {
             text,
             usage,
@@ -144,7 +155,7 @@ impl crate::core::LanguageModel for GoogleModel {
                 .unwrap_or_else(|| "stop".to_string()),
             tool_calls,
             reasoning,
-            executed_tools: Vec::new(),
+            executed_tools,
         })
     }
 
@@ -205,6 +216,18 @@ impl crate::core::LanguageModel for GoogleModel {
                                             }
                                             _ => {}
                                         }
+                                    }
+
+                                    if let Some(metadata) = &candidate.grounding_metadata {
+                                        yield StreamPart::ExecutedTool {
+                                            tool: crate::core::types::ExecutedTool {
+                                                name: "google_search_retrieval".to_string(),
+                                                tool_type: "web_search".to_string(),
+                                                arguments: None,
+                                                output: Some(metadata.clone()),
+                                                server_label: None,
+                                            }
+                                        };
                                     }
 
                                     if let Some(reason) = &candidate.finish_reason {
@@ -300,23 +323,36 @@ impl GoogleModel {
             });
         }
 
-        let google_tools = if options.tools.as_ref().is_some_and(|t| !t.is_empty()) {
-            Some(vec![GoogleTool {
-                function_declarations: options
-                    .tools
-                    .as_ref()
-                    .unwrap()
-                    .iter()
-                    .map(|t| GoogleFunctionDeclaration {
+        let mut google_tools = Vec::new();
+        if let Some(tools) = &options.tools {
+            let mut functions = Vec::new();
+            for t in tools {
+                if t.name == "google_search_retrieval" {
+                    google_tools.push(GoogleTool {
+                        function_declarations: None,
+                        google_search_retrieval: Some(crate::google::types::GoogleSearchRetrieval {
+                            dynamic_retrieval_config: Some(crate::google::types::DynamicRetrievalConfig {
+                                mode: Some("MODE_DYNAMIC".to_string()),
+                                dynamic_threshold: Some(0.3),
+                            }),
+                        }),
+                    });
+                } else {
+                    functions.push(GoogleFunctionDeclaration {
                         name: t.name.clone(),
                         description: t.description.clone(),
                         parameters: t.parameters.clone(),
-                    })
-                    .collect(),
-            }])
-        } else {
-            None
-        };
+                    });
+                }
+            }
+            if !functions.is_empty() {
+                google_tools.push(GoogleTool {
+                    function_declarations: Some(functions),
+                    google_search_retrieval: None,
+                });
+            }
+        }
+        let google_tools_opt = if google_tools.is_empty() { None } else { Some(google_tools) };
 
         let mut response_mime_type = None;
         let mut response_schema = None;
@@ -380,8 +416,9 @@ impl GoogleModel {
         };
 
         Ok(GoogleRequest {
-            contents,
             system_instruction,
+            contents,
+            tools: google_tools_opt,
             generation_config: Some(GoogleGenerationConfig {
                 max_output_tokens: options.max_tokens,
                 temperature: options.temperature,
@@ -392,7 +429,6 @@ impl GoogleModel {
                 response_schema,
                 thinking_config,
             }),
-            tools: google_tools,
         })
     }
 }
