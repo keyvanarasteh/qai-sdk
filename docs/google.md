@@ -14,7 +14,10 @@ Integration with the Google Generative AI API for the Gemini multimodal model fa
 |---|---|
 | `LanguageModel` | `gemini-3-flash-preview`, `gemini-2.5-flash-preview-05-20`, `gemini-2.0-flash`, `gemini-1.5-pro` |
 | `EmbeddingModel` | `text-embedding-004` |
-| `ImageModel` | `imagen-3.0-generate-002` |
+| `ImageModel` | `imagen-3.0-generate-001` |
+| `VideoModel` | `veo-2.0-generate-001` |
+| `MusicModel` | `lyria-3-pro-001` |
+| `RealtimeModel` | `gemini-2.0-flash-exp` (Multimodal Live API) |
 
 ---
 
@@ -226,6 +229,94 @@ For enterprise use, Gemini supports **thought signatures** — cryptographically
 ### Example
 
 - [`gemini_thinking.rs`](../examples/gemini_thinking.rs) — Thinking with thought summaries, streaming, and budgets
+- [`gemini_image_generation.rs`](../examples/gemini_image_generation.rs) — Image generation using Imagen 3
+
+---
+
+## Specialized Modalities
+
+Gemini supports high-fidelity generation across multiple modalities using specialized models.
+
+### Image Generation (Imagen 3)
+
+```rust
+let model = provider.image("imagen-3.0-generate-001");
+let result = model.generate(ImageGenerateOptions {
+    prompt: "A futuristic city at sunset".into(),
+    ..Default::default()
+}).await?;
+```
+
+### Video Generation (Veo 2)
+
+```rust
+let model = provider.video_model("veo-2.0-generate-001");
+let result = model.generate(VideoGenerateOptions {
+    prompt: "A drone flying through a neon canyon".into(),
+    duration: Some(5.0),
+    ..Default::default()
+}).await?;
+```
+
+### Music Generation (Lyria)
+
+```rust
+let model = provider.music_model("lyria-3-pro-001");
+let result = model.generate(MusicGenerateOptions {
+    prompt: "Lo-fi hip hop beat with rain sounds".into(),
+    ..Default::default()
+}).await?;
+```
+
+---
+
+## Spatial Reasoning
+
+Gemini supports spatial reasoning through bounding boxes, useful for object detection and robotics.
+
+```rust
+let prompt = Prompt {
+    messages: vec![Message {
+        role: Role::User,
+        content: vec![
+            Content::Text { text: "Detect all cars in this image".into() },
+            Content::Image { source: image_source },
+        ],
+    }],
+};
+
+let result = model.generate(prompt, options).await?;
+
+for content in &result.messages.last().unwrap().content {
+    if let Content::Spatial { boxes } = content {
+        for b in boxes {
+            println!("Car detected at: [{}, {}, {}, {}]", b.ymin, b.xmin, b.ymax, b.xmax);
+        }
+    }
+}
+```
+
+---
+
+## Built-in Code Execution
+
+Gemini can execute code in a secure sandbox to solve complex problems.
+
+```rust
+let options = GenerateOptions {
+    server_tools: Some(vec![
+        ServerTool { tool_type: "code_execution".into(), ..Default::default() },
+    ]),
+    ..Default::default()
+};
+
+let result = model.generate(prompt, options).await?;
+
+// Execution results appear in executed_tools
+for et in &result.executed_tools {
+    println!("Executed {}: {}", et.tool_type, et.output.as_ref().unwrap());
+}
+```
 
 ---
 

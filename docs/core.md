@@ -65,6 +65,33 @@ pub trait TranscriptionModel: Send + Sync {
 }
 ```
 
+### `VideoModel` — Video Generation
+
+```rust
+#[async_trait]
+pub trait VideoModel: Send + Sync {
+    async fn generate(&self, options: VideoGenerateOptions) -> Result<VideoGenerateResult>;
+}
+```
+
+### `MusicModel` — Music Generation
+
+```rust
+#[async_trait]
+pub trait MusicModel: Send + Sync {
+    async fn generate(&self, options: MusicGenerateOptions) -> Result<MusicGenerateResult>;
+}
+```
+
+### `RealtimeModel` — WebSocket Realtime
+
+```rust
+#[async_trait]
+pub trait RealtimeModel: Send + Sync {
+    async fn connect(&self) -> Result<BoxStream<'static, RealtimeEvent>>;
+}
+```
+
 ---
 
 ## Type Reference
@@ -145,6 +172,13 @@ classDiagram
 | `EmbeddingResult` | `embeddings: Vec<Vec<f32>>`, `usage` |
 | `ImageGenerateOptions` | `model_id`, `prompt`, `n`, `size`, `quality` |
 | `ImageGenerateResult` | `images: Vec<String>`, `revised_prompt` |
+| `VideoGenerateOptions` | `model_id`, `prompt`, `duration`, `width`, `height`, `fps` |
+| `VideoGenerateResult` | `videos: Vec<String>`, `revised_prompt` |
+| `MusicGenerateOptions` | `model_id`, `prompt`, `duration`, `response_modalities` |
+| `MusicGenerateResult` | `audio: Vec<u8>`, `revised_prompt` |
+| `RealtimeEvent` | `Text`, `Audio`, `SessionStarted`, `Error` |
+| `ImageGenerateOptions` | `model_id`, `prompt`, `n`, `size`, `quality` |
+| `ImageGenerateResult` | `images: Vec<String>`, `revised_prompt` |
 | `SpeechOptions` | `model_id`, `input`, `voice`, `response_format`, `speed` |
 | `SpeechResult` | `audio: Vec<u8>` |
 | `TranscriptionOptions` | `model_id`, `audio: Vec<u8>`, `language`, `prompt`, `temperature` |
@@ -204,6 +238,9 @@ graph TD
         IM[ImageModel]
         SM[SpeechModel]
         TM[TranscriptionModel]
+        VM[VideoModel]
+        MM[MusicModel]
+        RM[RealtimeModel]
         CM[CompletionModel]
         REG[ProviderRegistry]
         MW[Middleware]
@@ -228,8 +265,15 @@ graph TD
     ANT -->|implements| LM
     GOO -->|implements| LM
     GOO -->|implements| EM
+    GOO -->|implements| IM
+    GOO -->|implements| VM
+    GOO -->|implements| MM
+    GOO -->|implements| RM
     DS -->|implements| LM
     XAI -->|implements| LM
+    XAI -->|implements| IM
+    XAI -->|implements| SM
+    XAI -->|implements| TM
     OC -->|implements| LM
     
     REG -->|resolves| LM

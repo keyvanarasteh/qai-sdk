@@ -136,6 +136,52 @@ while let Some(part) = stream.next().await {
 }
 ```
 
+### Advanced: Agentic & Specialized Modalities
+
+The QAI SDK provides first-class support for provider-specific agentic tools and specialized modalities like video and music generation.
+
+#### xAI Advanced Tools (Web Search, Code Execution)
+```rust
+let model = provider.chat("grok-2");
+let options = GenerateOptions {
+    server_tools: Some(vec![
+        ServerTool { tool_type: "web_search".into(), ..Default::default() },
+        ServerTool { tool_type: "code_execution".into(), ..Default::default() },
+    ]),
+    include_citations: Some(true),
+    ..Default::default()
+};
+let result = model.generate(prompt, options).await?;
+
+for citation in result.citations {
+    println!("Source: {} - {}", citation.source, citation.snippet.unwrap_or_default());
+}
+```
+
+#### Gemini Specialized Modalities (Image, Video, Music)
+```rust
+// Image Generation (Imagen 3)
+let imagen = provider.image("imagen-3.0-generate-001");
+let img_res = imagen.generate(ImageGenerateOptions { 
+    prompt: "Cyberpunk forest".into(), 
+    ..Default::default() 
+}).await?;
+
+// Video Generation (Veo 2)
+let veo = provider.video_model("veo-2.0-generate-001");
+let vid_res = veo.generate(VideoGenerateOptions { 
+    prompt: "A drone flying through a neon city".into(), 
+    ..Default::default() 
+}).await?;
+
+// Music Generation (Lyria)
+let lyria = provider.music_model("lyria-3-pro-001");
+let music_res = lyria.generate(MusicGenerateOptions { 
+    prompt: "Upbeat electronic track with heavy bass".into(), 
+    ..Default::default() 
+}).await?;
+```
+
 ### Switch Providers in One Line
 
 ```rust

@@ -237,6 +237,76 @@ let result = responses_model.generate(prompt, options).await?;
 
 ---
 
+## Audio & Voice
+
+xAI supports high-quality text-to-speech (TTS), speech-to-text (STT), and conversational voice agents.
+
+### Text-to-Speech (TTS)
+
+```rust
+let speech_model = provider.speech("grok-voice-tts");
+let result = speech_model.generate(SpeechGenerateOptions {
+    text: "Hello, I am Grok.".into(),
+    voice: Some("grok-standard".into()),
+    ..Default::default()
+}).await?;
+```
+
+### Speech-to-Text (STT)
+
+```rust
+let trans_model = provider.transcription("grok-voice-stt");
+let result = trans_model.generate(TranscriptionGenerateOptions {
+    audio: audio_bytes,
+    ..Default::default()
+}).await?;
+```
+
+---
+
+## Advanced Agentic Tools
+
+xAI models (e.g., `grok-2`) support advanced server-side tools that don't require client-side implementation.
+
+### Web Search & Code Execution
+
+```rust
+let options = GenerateOptions {
+    server_tools: Some(vec![
+        ServerTool { tool_type: "web_search".into(), ..Default::default() },
+        ServerTool { tool_type: "code_execution".into(), ..Default::default() },
+    ]),
+    include_citations: Some(true),
+    ..Default::default()
+};
+
+let result = model.generate(prompt, options).await?;
+
+// View citations
+for citation in result.citations {
+    println!("Source: {} -> {}", citation.source, citation.snippet.unwrap_or_default());
+}
+```
+
+### Collections Search (RAG)
+
+Search through specific sets of URIs or documents provided in the request.
+
+```rust
+let options = GenerateOptions {
+    server_tools: Some(vec![
+        ServerTool { 
+            tool_type: "collections_search".into(), 
+            collection_uris: Some(vec!["https://docs.x.ai".into()]),
+            ..Default::default() 
+        },
+    ]),
+    ..Default::default()
+};
+```
+
+---
+
 ## Prompt Caching
 
 xAI automatically caches the prefix of your message history. When subsequent requests share the same prefix, cached tokens are served at reduced cost. **No code changes are needed** for basic caching — it happens transparently.
