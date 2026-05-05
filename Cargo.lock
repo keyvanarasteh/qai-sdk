@@ -1178,7 +1178,7 @@ dependencies = [
 
 [[package]]
 name = "qai-sdk"
-version = "0.1.24"
+version = "0.1.26"
 dependencies = [
  "anyhow",
  "async-stream",

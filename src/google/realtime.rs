@@ -68,7 +68,7 @@ impl crate::core::RealtimeModel for GoogleRealtimeModel {
         Ok(Box::pin(stream))
     }
 
-    async fn send(&self, event: RealtimeEvent) -> Result<()> {
+    async fn send(&self, _event: RealtimeEvent) -> Result<()> {
         // In a real implementation, we'd need to maintain the write half of the WebSocket.
         // For the trait to be useful, it probably needs a handle to the connection.
         // This is a simplified version.

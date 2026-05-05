@@ -95,18 +95,25 @@ impl crate::core::VideoModel for GoogleVideoModel {
 
         let video_resp: GoogleVideoResponse = resp.json().await?;
 
-        let videos: Vec<String> = video_resp
-            .predictions
-            .iter()
-            .filter_map(|p| p.bytes_base64_encoded.clone())
-            .collect();
+        let first_pred = video_resp.predictions.into_iter().next();
 
-        // Note: Some models might return a GCS URI instead of bytes if it's long-running.
-        // For now, we assume bytes if available.
+        let mut data = None;
+        let mut url = None;
+
+        if let Some(pred) = first_pred {
+            if let Some(b64) = pred.bytes_base64_encoded {
+                use base64::Engine as _;
+                data = base64::engine::general_purpose::STANDARD.decode(b64).ok();
+            }
+            if let Some(gcs) = pred.gcs_uri {
+                url = Some(gcs);
+            }
+        }
 
         Ok(VideoGenerateResult {
-            videos,
-            revised_prompt: None,
+            url,
+            data,
+            revision: None,
         })
     }
 }

@@ -359,6 +359,14 @@ impl GoogleModel {
                             response: result,
                         });
                     }
+                    Content::Spatial { boxes } => {
+                        let mut text_boxes = Vec::new();
+                        for b in boxes {
+                            let label_str = b.label.as_deref().unwrap_or("object");
+                            text_boxes.push(format!("[{}, {}, {}, {}] {}", b.y_min, b.x_min, b.y_max, b.x_max, label_str));
+                        }
+                        parts.push(GooglePart::Text { text: text_boxes.join("\n"), thought: None });
+                    }
                 }
             }
 
