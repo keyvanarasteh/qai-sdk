@@ -109,6 +109,55 @@ for tc in &result.tool_calls {
 | Streaming | Standard SSE format |
 | System Prompts | Fully supported via `Role::System` |
 
+## Vision (Multimodal)
+
+xAI supports vision capabilities through the `grok-2-vision-1212` model. You can pass images as either base64-encoded strings or direct URLs using the standard `Content::Image` structure.
+
+```rust
+let image_url = "https://example.com/image.jpg";
+
+let prompt = Prompt {
+    messages: vec![Message {
+        role: Role::User,
+        content: vec![
+            Content::Text { text: "What's in this image?".into() },
+            Content::Image { source: ImageSource::Url { url: image_url.into() } },
+        ],
+    }],
+};
+
+let result = model.generate(prompt, GenerateOptions {
+    model_id: "grok-2-vision-1212".into(),
+    ..Default::default()
+}).await?;
+```
+
+**Example:** [`xai_vision.rs`](../examples/xai_vision.rs)
+
+---
+
+## Image Generation
+
+xAI provides image generation via the `grok-imagine-image` model. The SDK supports this natively through the `ImageModel` interface.
+
+```rust
+let image_model = provider.image("grok-imagine-image");
+
+let result = image_model.generate(ImageGenerateOptions {
+    model_id: "grok-imagine-image".into(),
+    prompt: "A futuristic cyberpunk city at night".into(),
+    n: Some(1),
+    size: Some("1024x1024".into()),
+    response_format: Some("url".into()), // Can also be "b64_json"
+}).await?;
+
+if let Some(url) = result.images.first() {
+    println!("Generated Image URL: {}", url);
+}
+```
+
+**Example:** [`xai_image_generation.rs`](../examples/xai_image_generation.rs)
+
 ---
 
 ## Reasoning / Thinking
