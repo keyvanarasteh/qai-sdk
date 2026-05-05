@@ -11,6 +11,7 @@
 //! - `google`
 //! - `deepseek`
 //! - `xai`
+//! - `ollama`
 //! - `openai-compatible`
 
 pub mod core;
@@ -29,6 +30,9 @@ pub mod deepseek;
 
 #[cfg(feature = "xai")]
 pub mod xai;
+
+#[cfg(feature = "ollama")]
+pub mod ollama;
 
 #[cfg(feature = "openai-compatible")]
 pub mod openai_compatible;
@@ -58,6 +62,9 @@ pub use crate::deepseek::create_deepseek;
 #[cfg(feature = "xai")]
 pub use crate::xai::create_xai;
 
+#[cfg(feature = "ollama")]
+pub use crate::ollama::create_ollama;
+
 #[cfg(feature = "openai-compatible")]
 pub use crate::openai_compatible::{create_openai_compatible, OpenAICompatibleProviderSettings};
 
@@ -75,6 +82,9 @@ pub use crate::deepseek::DeepSeekModel;
 
 #[cfg(feature = "xai")]
 pub use crate::xai::XAIModel;
+
+#[cfg(feature = "ollama")]
+pub use crate::ollama::OllamaModel;
 
 #[cfg(feature = "openai-compatible")]
 pub use crate::openai_compatible::OpenAICompatibleModel;
