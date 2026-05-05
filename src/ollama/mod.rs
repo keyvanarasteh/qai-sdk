@@ -244,6 +244,42 @@ impl OllamaProvider {
         }
         res.json().await.map_err(|e| crate::core::error::ProviderError::InvalidResponse(e.to_string()))
     }
+
+    /// Perform a web search.
+    pub async fn web_search(&self, req: types::WebSearchRequest) -> crate::core::Result<types::WebSearchResponse> {
+        let url = format!("{}/api/web_search", self.get_api_base());
+        let client = Client::new();
+        
+        let mut request_builder = client.post(&url);
+        let api_key = self.resolve_api_key();
+        if !api_key.is_empty() {
+            request_builder = request_builder.bearer_auth(api_key);
+        }
+
+        let res = request_builder.json(&req).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        res.json().await.map_err(|e| crate::core::error::ProviderError::InvalidResponse(e.to_string()))
+    }
+
+    /// Fetch a web page's content.
+    pub async fn web_fetch(&self, req: types::WebFetchRequest) -> crate::core::Result<types::WebFetchResponse> {
+        let url = format!("{}/api/web_fetch", self.get_api_base());
+        let client = Client::new();
+
+        let mut request_builder = client.post(&url);
+        let api_key = self.resolve_api_key();
+        if !api_key.is_empty() {
+            request_builder = request_builder.bearer_auth(api_key);
+        }
+
+        let res = request_builder.json(&req).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        res.json().await.map_err(|e| crate::core::error::ProviderError::InvalidResponse(e.to_string()))
+    }
 }
 
 /// Create an `Ollama` provider instance with the given settings.

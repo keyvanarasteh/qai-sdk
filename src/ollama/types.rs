@@ -116,3 +116,35 @@ pub struct OllamaCreateRequest {
 pub struct OllamaVersionResponse {
     pub version: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WebSearchRequest {
+    pub query: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_results: Option<u32>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WebSearchResult {
+    pub title: String,
+    pub url: String,
+    pub content: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WebSearchResponse {
+    pub results: Vec<WebSearchResult>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WebFetchRequest {
+    pub url: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WebFetchResponse {
+    pub title: String,
+    pub content: String,
+    #[serde(default)]
+    pub links: Vec<String>,
+}
