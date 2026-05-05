@@ -80,9 +80,9 @@ This map covers the detailed implementation steps for expanding the `qai-sdk` wi
 - [x] **xAI Advanced Usage**: Implement hybrid tool orchestration (server-side + client-side) and `max_turns` limit. ([Docs](https://docs.x.ai/developers/tools/advanced-usage))
 
 ### Google Gemini Specialized Modalities
-- [ ] **Gemini Image Generation**: Support `imagen` models (e.g., `imagen-3.0-generate-001`) via REST. Handle `Image` output parts. ([Docs](https://ai.google.dev/gemini-api/docs/image-generation#rest))
-- [ ] **Gemini Video Generation**: Support `veo` models (e.g., `veo-2.0-generate-001`) via REST. Implement `GenerateVideoConfig` (resolution, duration). ([Docs](https://ai.google.dev/gemini-api/docs/video))
-- [ ] **Gemini Music Generation**: Support `lyria` models (e.g., `lyria-3-pro-001`) via REST. Handle `audio_config` and `response_modalities: ["AUDIO"]`. ([Docs](https://ai.google.dev/gemini-api/docs/music-generation#rest))
-- [ ] **Gemini Realtime Music**: Implement WebSocket-based streaming for `lyria-realtime-exp`. Handle control messages and steerable prompts. ([Docs](https://ai.google.dev/gemini-api/docs/realtime-music-generation#rest))
-- [ ] **Gemini Robotics**: Support `robotics-er-1.6` models. Implement spatial reasoning parts (bounding boxes, point tracking). ([Docs](https://ai.google.dev/gemini-api/docs/robotics-overview#rest))
-- [ ] **Gemini Video Understanding**: Enhance `file_data` support for large videos. Implement `video_metadata` with clipping and custom FPS. ([Docs](https://ai.google.dev/gemini-api/docs/video-understanding#rest))
+- [x] **Gemini Image Generation**: Support `imagen` models (e.g., `imagen-3.0-generate-001`) via REST. Handle `Image` output parts. ([Docs](https://ai.google.dev/gemini-api/docs/image-generation#rest))
+- [x] **Gemini Video Generation**: Support `veo` models (e.g., `veo-2.0-generate-001`) via REST. Implement `GenerateVideoConfig` (resolution, duration). ([Docs](https://ai.google.dev/gemini-api/docs/video))
+- [x] **Gemini Music Generation**: Support `lyria` models (e.g., `lyria-3-pro-001`) via REST. Handle `audio_config` and `response_modalities: ["AUDIO"]`. ([Docs](https://ai.google.dev/gemini-api/docs/music-generation#rest))
+- [x] **Gemini Realtime Music**: Implement WebSocket-based streaming for `lyria-realtime-exp`. Handle control messages and steerable prompts. ([Docs](https://ai.google.dev/gemini-api/docs/realtime-music-generation#rest))
+- [x] **Gemini Robotics**: Support `robotics-er-1.6` models. Implement spatial reasoning parts (bounding boxes, point tracking). ([Docs](https://ai.google.dev/gemini-api/docs/robotics-overview#rest))
+- [x] **Gemini Video Understanding**: Enhance `file_data` support for large videos. Implement `video_metadata` with clipping and custom FPS. ([Docs](https://ai.google.dev/gemini-api/docs/video-understanding#rest))
