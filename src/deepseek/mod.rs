@@ -99,6 +99,43 @@ impl DeepSeekProvider {
     pub fn language_model(&self, model_id: &str) -> DeepSeekModel {
         self.chat(model_id)
     }
+
+    /// Fetches the user's available balance and granted top-up information from the DeepSeek API.
+    pub async fn get_balance(&self) -> crate::core::Result<types::DeepSeekBalanceResponse> {
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("DEEPSEEK_API_KEY").ok())
+            .unwrap_or_default();
+
+        let base_url = self
+            .settings
+            .base_url
+            .clone()
+            .unwrap_or_else(|| "https://api.deepseek.com".to_string());
+
+        let url = format!("{}/user/balance", base_url);
+
+        let client = Client::new();
+        let response = client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", api_key))
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let error_text = response.text().await.unwrap_or_default();
+            return Err(crate::core::ProviderError::Network(error_text));
+        }
+
+        let balance: types::DeepSeekBalanceResponse = response
+            .json()
+            .await
+            .map_err(|e| crate::core::ProviderError::InvalidResponse(e.to_string()))?;
+
+        Ok(balance)
+    }
 }
 
 /// Create a `DeepSeek` provider instance with the given settings.

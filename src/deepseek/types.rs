@@ -102,3 +102,19 @@ impl Default for DeepSeekThinkingConfig {
         }
     }
 }
+
+// --- Account Balance Types ---
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeepSeekBalanceInfo {
+    pub currency: String,
+    pub total_balance: String,
+    pub granted_balance: String,
+    pub topped_up_balance: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeepSeekBalanceResponse {
+    pub is_available: bool,
+    pub balance_infos: Vec<DeepSeekBalanceInfo>,
+}
