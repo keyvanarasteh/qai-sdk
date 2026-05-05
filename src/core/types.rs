@@ -74,6 +74,11 @@ pub struct GenerateOptions {
     pub tool_choice: Option<serde_json::Value>,
     /// When true, enables parallel tool call execution by the model.
     pub parallel_tool_calls: Option<bool>,
+    /// Extra HTTP headers to include in the API request.
+    /// Useful for provider-specific features like xAI's `x-grok-conv-id` for prompt caching
+    /// or custom proxy headers.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extra_headers: Option<std::collections::HashMap<String, String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -19,30 +19,34 @@
 
 </div>
 
-A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI**, **Anthropic Claude**, **Google Gemini**, **DeepSeek**, **xAI Grok**, and any **OpenAI-compatible** endpoint.
+A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI**, **Anthropic Claude**, **Google Gemini**, **DeepSeek**, **xAI Grok**, **GroqCloud**, and any **OpenAI-compatible** endpoint.
 
 ## Features
 
-| Capability | OpenAI | Anthropic | Google | DeepSeek | xAI | Ollama | Compatible |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Chat / Language Model | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Tool Calling | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Structured Output (`generate_object`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Provider Registry | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Middleware Layer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Universal Agent | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Vision / Multimodal | ✅ | ✅ | ✅ | — | — | ✅ | — |
-| Embeddings | ✅ | — | ✅ | — | — | ✅ | — |
-| Image Generation | ✅ | — | ✅ | — | — | — | — |
-| Speech (TTS) | ✅ | — | — | — | — | — | — |
-| Transcription (STT) | ✅ | — | — | — | — | — | — |
-| Text Completion | ✅ | — | — | — | — | — | — |
-| Responses API | ✅ | — | — | — | — | — | — |
-| Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Reasoning / Thinking Mode | ✅ | — | — | ✅ | — | ✅ | ✅ |
-| Prompt KV Caching | ✅ | ✅ | ✅ | ✅ | — | — | ✅ |
-| Native Management APIs | — | — | — | — | — | ✅ | — |
+| Capability | OpenAI | Anthropic | Google | DeepSeek | xAI | GroqCloud | Ollama | Compatible |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Chat / Language Model | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Tool Calling | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Structured Output (`generate_object`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Provider Registry | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Middleware Layer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Universal Agent | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Reasoning / Thinking | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Prompt KV Caching | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | ✅ |
+| Vision / Multimodal | ✅ | ✅ | ✅ | — | — | ✅ | ✅ | — |
+| Embeddings | ✅ | — | ✅ | — | — | — | ✅ | — |
+| Image Generation | ✅ | — | ✅ | — | ✅ | — | — | — |
+| Speech (TTS) | ✅ | — | — | — | — | ✅ | — | — |
+| Transcription (STT) | ✅ | — | — | — | — | ✅ | — | — |
+| Text Completion | ✅ | — | — | — | — | — | — | — |
+| Responses API | ✅ | — | — | — | ✅ | ✅ | — | — |
+| Content Moderation | — | — | — | — | — | ✅ | — | — |
+| Built-in Web Search | — | — | — | — | — | ✅ | — | — |
+| Remote MCP Tools | — | — | — | — | — | ✅ | — | — |
+| Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Custom HTTP Headers | ✅ | — | — | — | ✅ | — | ✅ | ✅ |
+| Native Management APIs | — | — | — | — | — | — | ✅ | — |
 
 ## Unified API Demo
 
@@ -101,9 +105,7 @@ async fn main() -> anyhow::Result<()> {
             model_id: "gpt-4o".to_string(),
             max_tokens: Some(100),
             temperature: Some(0.7),
-            top_p: None,
-            stop_sequences: None,
-            tools: None,
+            ..Default::default()
         },
     ).await?;
 
@@ -124,6 +126,7 @@ let mut stream = model.generate_stream(prompt, options).await?;
 while let Some(part) = stream.next().await {
     match part {
         StreamPart::TextDelta { delta } => print!("{delta}"),
+        StreamPart::ReasoningDelta { delta } => print!("🧠 {delta}"),
         StreamPart::Finish { finish_reason } => println!("\n[{finish_reason}]"),
         _ => {}
     }
@@ -143,10 +146,50 @@ let provider = create_google(settings.clone());
 let provider = create_deepseek(settings.clone());
 // xAI Grok
 let provider = create_xai(settings.clone());
+// GroqCloud
+let provider = create_groqcloud(settings.clone());
 // Ollama
 let provider = create_ollama(settings.clone());
 // Any OpenAI-compatible API
 let provider = create_openai_compatible(settings);
+```
+
+### Reasoning / Thinking
+
+```rust
+// Works across Gemini, Claude, Grok, DeepSeek, OpenAI
+let result = model.generate(prompt, GenerateOptions {
+    model_id: "claude-sonnet-4-6".into(),
+    max_tokens: Some(16000),
+    reasoning_effort: Some("high".to_string()),
+    reasoning_format: Some("parsed".to_string()),
+    ..Default::default()
+}).await?;
+
+if let Some(reasoning) = &result.reasoning {
+    println!("Thinking: {}", reasoning);
+}
+println!("Answer: {}", result.text);
+```
+
+### Prompt Caching (xAI with Sticky Routing)
+
+```rust
+use std::collections::HashMap;
+
+let mut headers = HashMap::new();
+headers.insert("x-grok-conv-id".to_string(), "my-session-id".to_string());
+
+let result = model.generate(prompt, GenerateOptions {
+    model_id: "grok-3-fast".into(),
+    extra_headers: Some(headers),
+    ..Default::default()
+}).await?;
+
+// Cache metrics are exposed in usage
+if let Some(cached) = result.usage.cache_hit_tokens {
+    println!("Cached {} tokens", cached);
+}
 ```
 
 ### Provider Registry — Resolve Models by String
@@ -236,6 +279,7 @@ Dive deep into specific provider features and initialization parameters in our c
 - [Google Gemini Provider `qai_sdk::google`](docs/google.md)
 - [DeepSeek Provider `qai_sdk::deepseek`](docs/deepseek.md)
 - [xAI Grok Provider `qai_sdk::xai`](docs/xai.md)
+- [GroqCloud Provider `qai_sdk::groqcloud`](docs/groqcloud.md)
 - [Ollama Provider `qai_sdk::ollama`](docs/ollama.md)
 - [OpenAI Compatible Provider `qai_sdk::openai_compatible`](docs/openai_compatible.md)
 - [Model Context Protocol `qai_sdk::mcp`](docs/mcp.md)
@@ -257,10 +301,11 @@ qai-sdk
 │   ├── middleware      — Composable LanguageModelMiddleware (DefaultSettings, ExtractReasoning)
 │   └── agent           — Universal Agent with builder pattern & max_steps tool loop
 ├── openai              — OpenAI API (GPT, DALL-E, Whisper, TTS, Responses)
-├── anthropic           — Anthropic API (Claude)
-├── google              — Google API (Gemini)
+├── anthropic           — Anthropic API (Claude, Extended/Adaptive Thinking)
+├── google              — Google API (Gemini, Thinking/Reasoning)
 ├── deepseek            — DeepSeek API (via OpenAI-compatible pipeline)
-├── xai                 — xAI API (Grok, via OpenAI-compatible pipeline)
+├── xai                 — xAI API (Grok, Reasoning, Prompt Caching, Image Gen, Responses)
+├── groqcloud           — GroqCloud API (Chat, Vision, STT, TTS, Reasoning, Moderation, Web Search, MCP)
 ├── ollama              — Ollama API (Cloud and Local, Management APIs, via OpenAI-compatible pipeline)
 ├── openai_compatible   — Any OpenAI-compatible endpoint (LM Studio)
 └── mcp                 — Model Context Protocol (JSON-RPC, Stdio/SSE, resources, prompts)
@@ -268,12 +313,16 @@ qai-sdk
 
 ## Examples
 
-See the [`examples/`](examples/) directory for 17 comprehensive examples covering:
+See the [`examples/`](examples/) directory for 42 comprehensive examples covering:
 
 - Basic chat, streaming, and multimodal conversations
-- Tool calling / function calling
+- Tool calling / function calling with built-in and remote tools
+- Reasoning / thinking across Gemini, Claude, Grok, and DeepSeek
+- Prompt caching with xAI's sticky routing
+- GroqCloud: vision, speech (TTS/STT), moderation, web search, MCP
 - Embeddings, image generation, speech, and transcription
-- OpenAI Responses API
+- OpenAI Responses API and xAI Responses API
+- Structured output with JSON Schema
 - Error handling patterns
 - Provider factory pattern
 - OpenAI-compatible endpoints (Ollama, LM Studio, etc.)
@@ -295,6 +344,7 @@ cargo run --example chat_basic
 | `GOOGLE_API_KEY` | Google Gemini |
 | `DEEPSEEK_API_KEY` | DeepSeek |
 | `XAI_API_KEY` | xAI |
+| `GROQ_API_KEY` | GroqCloud |
 | `OLLAMA_API_KEY` | Ollama (for Cloud) |
 
 ## Contributing

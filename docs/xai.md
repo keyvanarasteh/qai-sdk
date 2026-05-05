@@ -186,3 +186,55 @@ let result = responses_model.generate(prompt, options).await?;
 
 - [`xai_reasoning.rs`](../examples/xai_reasoning.rs) — Auto-reasoning, streaming deltas, Responses API
 
+---
+
+## Prompt Caching
+
+xAI automatically caches the prefix of your message history. When subsequent requests share the same prefix, cached tokens are served at reduced cost. **No code changes are needed** for basic caching — it happens transparently.
+
+### How It Works
+
+1. **First request** — full prompt is processed and cached server-side
+2. **Subsequent requests** — if messages at the start match a previous request exactly, the matching prefix is served from cache
+3. **Billing** — cached tokens are billed at a substantially lower rate
+
+### Maximizing Cache Hits with `x-grok-conv-id`
+
+By default, requests may be routed to different servers. Use the `x-grok-conv-id` header to route all requests in the same conversation to the same server, maximizing cache hit rates:
+
+```rust
+use std::collections::HashMap;
+
+let mut headers = HashMap::new();
+headers.insert("x-grok-conv-id".to_string(), "my-conversation-id".to_string());
+
+let result = model.generate(prompt, GenerateOptions {
+    model_id: "grok-3-fast".into(),
+    max_tokens: Some(1024),
+    extra_headers: Some(headers),
+    ..Default::default()
+}).await?;
+
+// Check cache metrics
+if let Some(cached) = result.usage.cache_hit_tokens {
+    println!("Cached tokens: {} (saved on billing)", cached);
+}
+```
+
+### What Breaks Caching
+
+- **Editing earlier messages** — any modification to messages in the cached prefix invalidates the cache from that point
+- **Removing messages** — deleting messages from the conversation history
+- **Reordering messages** — changing the order of messages
+- **Changing system prompt** — even minor edits to the system prompt break the cache
+
+### Best Practices
+
+1. **Keep system prompts static** — put long, stable context in the system prompt
+2. **Only append new messages** — never edit or remove earlier messages
+3. **Use `x-grok-conv-id`** via `extra_headers` for multi-turn conversations
+4. **Reuse conversation IDs** — use the same `x-grok-conv-id` across a session
+
+### Example
+
+- [`xai_prompt_caching.rs`](../examples/xai_prompt_caching.rs) — Multi-turn conversation with cache metrics

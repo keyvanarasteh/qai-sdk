@@ -72,15 +72,22 @@ impl crate::core::LanguageModel for OpenAIModel {
         prompt: Prompt,
         options: GenerateOptions,
     ) -> crate::core::Result<GenerateResult> {
+        let extra_headers = options.extra_headers.clone();
         let request = self.prepare_request(prompt, options)?;
 
-        let response = self
+        let mut req_builder = self
             .client
             .post(format!("{}/chat/completions", self.base_url))
-            .header("Authorization", &format!("Bearer {}", self.api_key))
-            .json(&request)
-            .send()
-            .await?;
+            .header("Authorization", &format!("Bearer {}", self.api_key));
+
+        // Apply extra headers (e.g., x-grok-conv-id for xAI prompt caching)
+        if let Some(headers) = &extra_headers {
+            for (key, value) in headers {
+                req_builder = req_builder.header(key.as_str(), value.as_str());
+            }
+        }
+
+        let response = req_builder.json(&request).send().await?;
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
@@ -152,16 +159,23 @@ impl crate::core::LanguageModel for OpenAIModel {
         prompt: Prompt,
         options: GenerateOptions,
     ) -> crate::core::Result<BoxStream<'static, StreamPart>> {
+        let extra_headers = options.extra_headers.clone();
         let mut request = self.prepare_request(prompt, options)?;
         request.stream = Some(true);
 
-        let response = self
+        let mut req_builder = self
             .client
             .post(format!("{}/chat/completions", self.base_url))
-            .header("Authorization", &format!("Bearer {}", self.api_key))
-            .json(&request)
-            .send()
-            .await?;
+            .header("Authorization", &format!("Bearer {}", self.api_key));
+
+        // Apply extra headers (e.g., x-grok-conv-id for xAI prompt caching)
+        if let Some(headers) = &extra_headers {
+            for (key, value) in headers {
+                req_builder = req_builder.header(key.as_str(), value.as_str());
+            }
+        }
+
+        let response = req_builder.json(&request).send().await?;
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
