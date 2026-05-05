@@ -100,18 +100,56 @@ for tc in &result.tool_calls {
 
 ## DeepSeek-R1 Reasoning Mode
 
-For reasoning models like `deepseek-reasoner`, use the `ExtractReasoningMiddleware` to separate chain-of-thought from final answers:
+For reasoning models like `deepseek-reasoner`, the SDK provides native, zero-middleware support for separating "Thinking" from the final answer.
 
 ```rust
-use qai_sdk::core::middleware::*;
+// Standard Generation
+let result = model.generate(prompt, options).await?;
+if let Some(reasoning) = result.reasoning {
+    println!("Thinking Process: {}", reasoning);
+}
+println!("Final Answer: {}", result.text);
 
-let wrapped = wrap_language_model(
-    model,
-    vec![Box::new(ExtractReasoningMiddleware::default())],
-);
+// Streaming Generation
+let mut stream = model.generate_stream(prompt, options).await?;
+while let Some(part) = stream.next().await {
+    match part {
+        StreamPart::ReasoningDelta { delta } => print!("{}", delta), // The thought process
+        StreamPart::TextDelta { delta } => print!("{}", delta),      // The actual answer
+        _ => {}
+    }
+}
+```
 
-// The middleware strips <think>...</think> blocks, leaving clean output
-let result = wrapped.generate(prompt, options).await?;
+---
+
+## Context Caching (KV Cache)
+
+DeepSeek's Context Caching is natively tracked via the `Usage` struct returned in both `generate` and `generate_stream`:
+
+```rust
+let result = model.generate(prompt, options).await?;
+
+if let Some(usage) = result.usage {
+    println!("Cache Hit Tokens: {}", usage.cache_hit_tokens.unwrap_or(0));
+    println!("Cache Miss Tokens: {}", usage.cache_miss_tokens.unwrap_or(0));
+}
+```
+
+---
+
+## Account Management
+
+The `DeepSeekProvider` includes native API wrappers for DeepSeek-specific endpoints:
+
+```rust
+// Fetch your available account balance and top-up info
+let balance = provider.get_balance().await?;
+println!("Available: {}", balance.is_available);
+
+// List all models available to your account
+let models = provider.list_models().await?;
+println!("Total Models: {}", models.data.len());
 ```
 
 ---

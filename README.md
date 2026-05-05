@@ -40,6 +40,8 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 | Text Completion | ✅ | — | — | — | — | — |
 | Responses API | ✅ | — | — | — | — | — |
 | Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Reasoning / Thinking Mode | ✅ | — | — | ✅ | — | ✅ |
+| Prompt KV Caching | ✅ | ✅ | ✅ | ✅ | — | ✅ |
 
 ## Unified API Demo
 
