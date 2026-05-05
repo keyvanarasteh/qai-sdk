@@ -341,7 +341,7 @@ pub struct EmbeddingUsage {
 
 // --- Image Generation Types ---
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ImageGenerateOptions {
     pub model_id: String,
     pub prompt: String,

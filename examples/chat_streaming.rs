@@ -71,6 +71,7 @@ async fn main() -> Result<()> {
             StreamPart::ExecutedTool { tool } => {
                 println!("\n[Executed tool: {}]", tool.name);
             }
+            StreamPart::Citation { .. } => {}
         }
     }
 

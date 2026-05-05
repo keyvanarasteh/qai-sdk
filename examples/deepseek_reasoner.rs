@@ -91,6 +91,7 @@ async fn main() -> Result<()> {
             StreamPart::Error { message } => {
                 println!("\nError: {}", message);
             }
+            StreamPart::Citation { .. } => {}
         }
     }
 
