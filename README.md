@@ -23,25 +23,26 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 
 ## Features
 
-| Capability | OpenAI | Anthropic | Google | DeepSeek | xAI | Compatible |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| Chat / Language Model | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Tool Calling | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Structured Output (`generate_object`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Provider Registry | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Middleware Layer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Universal Agent | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Vision / Multimodal | ✅ | ✅ | ✅ | — | — | — |
-| Embeddings | ✅ | — | ✅ | — | — | — |
-| Image Generation | ✅ | — | ✅ | — | — | — |
-| Speech (TTS) | ✅ | — | — | — | — | — |
-| Transcription (STT) | ✅ | — | — | — | — | — |
-| Text Completion | ✅ | — | — | — | — | — |
-| Responses API | ✅ | — | — | — | — | — |
-| Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Reasoning / Thinking Mode | ✅ | — | — | ✅ | — | ✅ |
-| Prompt KV Caching | ✅ | ✅ | ✅ | ✅ | — | ✅ |
+| Capability | OpenAI | Anthropic | Google | DeepSeek | xAI | Ollama | Compatible |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Chat / Language Model | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Tool Calling | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Structured Output (`generate_object`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Provider Registry | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Middleware Layer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Universal Agent | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vision / Multimodal | ✅ | ✅ | ✅ | — | — | ✅ | — |
+| Embeddings | ✅ | — | ✅ | — | — | ✅ | — |
+| Image Generation | ✅ | — | ✅ | — | — | — | — |
+| Speech (TTS) | ✅ | — | — | — | — | — | — |
+| Transcription (STT) | ✅ | — | — | — | — | — | — |
+| Text Completion | ✅ | — | — | — | — | — | — |
+| Responses API | ✅ | — | — | — | — | — | — |
+| Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Reasoning / Thinking Mode | ✅ | — | — | ✅ | — | ✅ | ✅ |
+| Prompt KV Caching | ✅ | ✅ | ✅ | ✅ | — | — | ✅ |
+| Native Management APIs | — | — | — | — | — | ✅ | — |
 
 ## Unified API Demo
 
@@ -142,6 +143,8 @@ let provider = create_google(settings.clone());
 let provider = create_deepseek(settings.clone());
 // xAI Grok
 let provider = create_xai(settings.clone());
+// Ollama
+let provider = create_ollama(settings.clone());
 // Any OpenAI-compatible API
 let provider = create_openai_compatible(settings);
 ```
@@ -233,6 +236,7 @@ Dive deep into specific provider features and initialization parameters in our c
 - [Google Gemini Provider `qai_sdk::google`](docs/google.md)
 - [DeepSeek Provider `qai_sdk::deepseek`](docs/deepseek.md)
 - [xAI Grok Provider `qai_sdk::xai`](docs/xai.md)
+- [Ollama Provider `qai_sdk::ollama`](docs/ollama.md)
 - [OpenAI Compatible Provider `qai_sdk::openai_compatible`](docs/openai_compatible.md)
 - [Model Context Protocol `qai_sdk::mcp`](docs/mcp.md)
 - [Structured Output `qai_sdk::core::structured`](docs/structured.md)
@@ -257,7 +261,8 @@ qai-sdk
 ├── google              — Google API (Gemini)
 ├── deepseek            — DeepSeek API (via OpenAI-compatible pipeline)
 ├── xai                 — xAI API (Grok, via OpenAI-compatible pipeline)
-├── openai_compatible   — Any OpenAI-compatible endpoint (Ollama, LM Studio)
+├── ollama              — Ollama API (Cloud and Local, Management APIs, via OpenAI-compatible pipeline)
+├── openai_compatible   — Any OpenAI-compatible endpoint (LM Studio)
 └── mcp                 — Model Context Protocol (JSON-RPC, Stdio/SSE, resources, prompts)
 ```
 
@@ -290,6 +295,7 @@ cargo run --example chat_basic
 | `GOOGLE_API_KEY` | Google Gemini |
 | `DEEPSEEK_API_KEY` | DeepSeek |
 | `XAI_API_KEY` | xAI |
+| `OLLAMA_API_KEY` | Ollama (for Cloud) |
 
 ## Contributing
 
