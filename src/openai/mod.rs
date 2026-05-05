@@ -372,6 +372,8 @@ impl OpenAIModel {
             tools: openai_tools,
             tool_choice: None, // Default to auto
             response_format: options.response_format,
+            reasoning_format: options.reasoning_format,
+            reasoning_effort: options.reasoning_effort,
         })
     }
 }

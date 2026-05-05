@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12] - 2026-05-05
+
+### Added
+
+- **Reasoning Configuration**: Added `reasoning_format` and `reasoning_effort` to `GenerateOptions` and `OpenAIRequest` payloads to support advanced logic configuration for reasoning models natively in Groq (e.g., `qwen/qwen3-32b`).
+- **Content Moderation**: Added examples and documentation for integrating safety models like `openai/gpt-oss-safeguard-20b` for prompt injection detection and policy enforcement.
+- **OpenAI Schema Robustness**: Added `alias = "reasoning"` to the `reasoning_content` field to correctly parse the "reasoning" key returned by certain OpenAI-compatible providers like Groq.
+
 ## [0.1.11] - 2026-05-05
 
 ### Added

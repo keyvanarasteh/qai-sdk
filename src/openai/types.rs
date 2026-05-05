@@ -20,6 +20,10 @@ pub struct OpenAIRequest {
     pub tool_choice: Option<OpenAIToolChoice>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub response_format: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_format: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_effort: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -120,7 +124,7 @@ pub struct OpenAIChoice {
 pub struct OpenAIResponseMessage {
     pub role: String,
     pub content: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", alias = "reasoning")]
     pub reasoning_content: Option<String>,
     pub tool_calls: Option<Vec<OpenAIToolCall>>,
 }
@@ -163,7 +167,7 @@ pub struct OpenAIStreamChoice {
 pub struct OpenAIStreamDelta {
     pub role: Option<String>,
     pub content: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", alias = "reasoning")]
     pub reasoning_content: Option<String>,
     pub tool_calls: Option<Vec<OpenAIStreamToolCall>>,
 }

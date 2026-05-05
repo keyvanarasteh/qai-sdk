@@ -56,7 +56,7 @@ pub enum ImageSource {
     Url { url: String },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GenerateOptions {
     pub model_id: String,
     pub max_tokens: Option<u32>,
@@ -65,6 +65,10 @@ pub struct GenerateOptions {
     pub stop_sequences: Option<Vec<String>>,
     pub tools: Option<Vec<ToolDefinition>>,
     pub response_format: Option<serde_json::Value>,
+    /// Specifies the format of the reasoning output (e.g., "raw", "parsed", "hidden").
+    pub reasoning_format: Option<String>,
+    /// Specifies the level of effort for reasoning (e.g., "low", "medium", "high").
+    pub reasoning_effort: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
