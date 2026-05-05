@@ -4,7 +4,7 @@
 
 # GroqCloud Provider (`qai_sdk::groqcloud`)
 
-Integration with [GroqCloud](https://console.groq.com/) for lightning-fast AI inference. This provider uses Groq's highly-recommended OpenAI-compatible `/v1` layer to provide complete native support for Chat Completions, Tool Calling, Structured Outputs, Text-to-Speech (TTS), and Speech-to-Text (STT).
+Integration with [GroqCloud](https://console.groq.com/) for lightning-fast AI inference. This provider uses Groq's highly-recommended OpenAI-compatible `/v1` layer to provide complete native support for Chat Completions, Vision (Multimodal), Tool Calling, Structured Outputs, Text-to-Speech (TTS), and Speech-to-Text (STT).
 
 ---
 
@@ -12,7 +12,7 @@ Integration with [GroqCloud](https://console.groq.com/) for lightning-fast AI in
 
 | Trait | Models |
 |---|---|
-| `LanguageModel` | Any Groq-supported LLM (e.g. `llama-3.3-70b-versatile`, `mixtral-8x7b-32768`) |
+| `LanguageModel` | `llama-3.3-70b-versatile`, `meta-llama/llama-4-scout-17b-16e-instruct` (Vision) |
 | `SpeechModel` | `canopylabs/orpheus-v1-english`, `canopylabs/orpheus-arabic-saudi` |
 | `TranscriptionModel` | `whisper-large-v3`, `whisper-large-v3-turbo` |
 
@@ -64,6 +64,35 @@ println!("Fast Generation: {}", result.text);
 
 ### Tool Calling & Structured Outputs
 Because the `groqcloud` module wraps the native `openai` traits under the hood, Tool Calling (`tools`) and Native JSON Output enforcement (`response_format: {"type": "json_object"}`) work out-of-the-box exactly like they do with OpenAI and Ollama.
+
+---
+
+## Vision (Multimodal)
+
+Groq supports ultra-fast image understanding through multimodal models like `meta-llama/llama-4-scout-17b-16e-instruct`. You can pass images as Base64 data or URLs exactly like OpenAI:
+
+```rust
+let vision_model = provider.chat("meta-llama/llama-4-scout-17b-16e-instruct");
+
+let result = vision_model.generate(
+    Prompt {
+        messages: vec![
+            Message {
+                role: Role::User,
+                content: vec![
+                    Content::Text { text: "What's in this image?".into() },
+                    Content::Image {
+                        source: ImageSource::Url {
+                            url: "https://upload.wikimedia.org/wikipedia/commons/f/f2/LPU-v1-die.jpg".into(),
+                        },
+                    },
+                ],
+            },
+        ],
+    },
+    GenerateOptions::default(),
+).await?;
+```
 
 ---
 
