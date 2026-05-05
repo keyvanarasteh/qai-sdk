@@ -90,6 +90,9 @@ pub struct GenerateResult {
     /// Empty if the model returned only text.
     #[serde(default)]
     pub tool_calls: Vec<ToolCallResult>,
+    /// Intermediate reasoning (e.g., "thinking") produced by the model before its final text.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -192,6 +195,9 @@ impl Usage {
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum StreamPart {
     TextDelta {
+        delta: String,
+    },
+    ReasoningDelta {
         delta: String,
     },
     ToolCallDelta {

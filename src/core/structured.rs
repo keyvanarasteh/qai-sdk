@@ -469,6 +469,9 @@ pub async fn stream_object(
                 StreamPart::Error { message } => {
                     yield ObjectStreamPart::Error { message };
                 }
+                StreamPart::ReasoningDelta { .. } => {
+                    // Ignore reasoning output for structured JSON parsing
+                }
             }
         }
 

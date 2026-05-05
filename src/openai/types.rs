@@ -120,6 +120,8 @@ pub struct OpenAIChoice {
 pub struct OpenAIResponseMessage {
     pub role: String,
     pub content: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_content: Option<String>,
     pub tool_calls: Option<Vec<OpenAIToolCall>>,
 }
 
@@ -161,6 +163,8 @@ pub struct OpenAIStreamChoice {
 pub struct OpenAIStreamDelta {
     pub role: Option<String>,
     pub content: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_content: Option<String>,
     pub tool_calls: Option<Vec<OpenAIStreamToolCall>>,
 }
 

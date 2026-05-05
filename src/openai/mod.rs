@@ -139,6 +139,10 @@ impl crate::core::LanguageModel for OpenAIModel {
                 .clone()
                 .unwrap_or_default(),
             tool_calls,
+            reasoning: openai_response.choices[0]
+                .message
+                .reasoning_content
+                .clone(),
         })
     }
 
@@ -192,6 +196,10 @@ impl crate::core::LanguageModel for OpenAIModel {
                                 for choice in chunk.choices {
                                     if let Some(delta_content) = choice.delta.content {
                                         yield StreamPart::TextDelta { delta: delta_content };
+                                    }
+
+                                    if let Some(reasoning) = choice.delta.reasoning_content {
+                                        yield StreamPart::ReasoningDelta { delta: reasoning };
                                     }
 
                                     if let Some(tool_calls) = choice.delta.tool_calls {

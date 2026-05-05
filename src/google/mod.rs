@@ -133,6 +133,7 @@ impl crate::core::LanguageModel for GoogleModel {
                 .clone()
                 .unwrap_or_else(|| "stop".to_string()),
             tool_calls,
+            reasoning: None,
         })
     }
 

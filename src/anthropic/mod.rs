@@ -129,6 +129,7 @@ impl crate::core::LanguageModel for AnthropicModel {
                 .stop_reason
                 .unwrap_or_else(|| "stop".to_string()),
             tool_calls,
+            reasoning: None,
         })
     }
 
