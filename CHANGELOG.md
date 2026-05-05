@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.24] - 2026-05-06
+
+### Added
+
+- **xAI Advanced Agentic Tooling**:
+  - Implemented `web_search` and `code_execution` server-side tools for xAI Grok models (e.g., `grok-2`).
+  - Added support for `collections_search` (RAG on specific URIs) and `remote_mcp` (direct server-side MCP orchestration).
+  - Integrated granular control flags: `include_citations`, `include_tool_outputs`, and `max_turns` in `GenerateOptions`.
+- **Rich Metadata & Citations**:
+  - Introduced the `Citation` structure in `GenerateResult` for detailed source attribution (source name, snippet, index, URI).
+  - Added `StreamPart::Citation` for real-time, granular citation delivery during streaming.
+  - Updated `GenerateResult` across all providers to support citation metadata.
+- **Provider Architecture Refinement**:
+  - Refactored `OpenAITool` from a rigid struct to a flexible `enum` to support xAI-specific built-in tools.
+  - Hardened `GenerateOptions` initializers across Anthropic, Google, DeepSeek, and OpenAI providers for better forward-compatibility.
+- **Examples**:
+  - `xai_web_search.rs`: Demonstrates search grounding with real-time citations.
+  - `xai_code_execution.rs`: Demonstrates server-side Python execution via Grok.
+
 ## [0.1.23] - 2026-05-06
 
 ### Added

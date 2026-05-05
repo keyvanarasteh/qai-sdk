@@ -99,7 +99,12 @@ pub struct GenerateOptions {
     /// or custom proxy headers.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub extra_headers: Option<std::collections::HashMap<String, String>>,
-
+    /// Provider-native tools that are executed on the server side (e.g., Code Interpreter, Web Search).
+    pub server_tools: Option<Vec<ServerTool>>,
+    /// When true, the model will include citations in its response if available.
+    pub include_citations: Option<bool>,
+    /// When true, enables real-time streaming of tool outputs (for observability).
+    pub include_tool_outputs: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -132,6 +137,23 @@ pub struct GenerateResult {
     /// Empty for standard local tool calling.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub executed_tools: Vec<ExecutedTool>,
+    /// Source citations provided by the model for its claims.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub citations: Vec<Citation>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Citation {
+    /// The source name or identifier (e.g., "Wikipedia", "example.com").
+    pub source: String,
+    /// The specific text snippet from the source, if available.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub snippet: Option<String>,
+    /// The 1-based index of the citation as it appears in the text.
+    pub index: u32,
+    /// The URI or URL to the source, if available.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub uri: Option<String>,
 }
 
 /// Metadata about a tool that was executed server-side by the provider.
@@ -274,6 +296,9 @@ pub enum StreamPart {
     },
     ExecutedTool {
         tool: ExecutedTool,
+    },
+    Citation {
+        citation: Citation,
     },
 }
 

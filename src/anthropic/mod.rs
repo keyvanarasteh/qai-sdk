@@ -168,6 +168,7 @@ impl crate::core::LanguageModel for AnthropicModel {
             tool_calls,
             reasoning,
             executed_tools: Vec::new(),
+            citations: Vec::new(),
         })
     }
 

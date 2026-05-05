@@ -157,6 +157,7 @@ impl crate::core::LanguageModel for GoogleModel {
             tool_calls,
             reasoning,
             executed_tools,
+            citations: Vec::new(),
         })
     }
 

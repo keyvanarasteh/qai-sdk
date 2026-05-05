@@ -134,6 +134,23 @@ impl crate::core::LanguageModel for OpenAIModel {
             })
             .unwrap_or_default();
 
+        // Extract citations if available
+        let citations = openai_response.choices[0]
+            .message
+            .citations
+            .as_ref()
+            .map(|cs| {
+                cs.iter()
+                    .map(|c| crate::core::types::Citation {
+                        source: c.source.clone(),
+                        snippet: c.snippet.clone(),
+                        index: c.index,
+                        uri: c.uri.clone(),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+
         Ok(GenerateResult {
             text: openai_response.choices[0]
                 .message
@@ -150,7 +167,8 @@ impl crate::core::LanguageModel for OpenAIModel {
                 .message
                 .reasoning_content
                 .clone(),
-            executed_tools: Vec::new(),
+            executed_tools: Vec::new(), // TODO: Parse server-side tool outputs if identifiable
+            citations,
         })
     }
 
@@ -224,6 +242,19 @@ impl crate::core::LanguageModel for OpenAIModel {
                                                 id: tc.id,
                                                 name: tc.function.as_ref().and_then(|f| f.name.clone()),
                                                 arguments_delta: tc.function.as_ref().and_then(|f| f.arguments.clone()),
+                                            };
+                                        }
+                                    }
+
+                                    if let Some(citations) = choice.delta.citations {
+                                        for c in citations {
+                                            yield StreamPart::Citation {
+                                                citation: crate::core::types::Citation {
+                                                    source: c.source,
+                                                    snippet: c.snippet,
+                                                    index: c.index,
+                                                    uri: c.uri,
+                                                },
                                             };
                                         }
                                     }
@@ -356,24 +387,61 @@ impl OpenAIModel {
             }
         }
 
-        let openai_tools = if options.tools.as_ref().is_some_and(|t| !t.is_empty()) {
-            Some(
-                options
-                    .tools
-                    .unwrap()
-                    .into_iter()
-                    .map(|t| OpenAITool {
-                        tool_type: "function".to_string(),
-                        function: OpenAIFunctionDefinition {
-                            name: t.name,
-                            description: t.description,
-                            parameters: t.parameters,
-                        },
-                    })
-                    .collect(),
-            )
-        } else {
+        let mut openai_tools = Vec::new();
+
+        // Map standard function tools
+        if let Some(tools) = options.tools {
+            for t in tools {
+                openai_tools.push(OpenAITool::Function {
+                    function: OpenAIFunctionDefinition {
+                        name: t.name,
+                        description: t.description,
+                        parameters: t.parameters,
+                    },
+                });
+            }
+        }
+
+        // Map server-side tools (xAI Web Search, Code Execution, etc.)
+        if let Some(server_tools) = options.server_tools {
+            for st in server_tools {
+                match st.tool_type.as_str() {
+                    "web_search" => openai_tools.push(OpenAITool::WebSearch),
+                    "code_execution" => openai_tools.push(OpenAITool::CodeExecution),
+                    "collections_search" => {
+                        if let Ok(config) = serde_json::from_value::<serde_json::Value>(st.config) {
+                            if let Some(uris) = config.get("collection_uris").and_then(|v| v.as_array()) {
+                                openai_tools.push(OpenAITool::CollectionsSearch {
+                                    collection_uris: uris.iter().filter_map(|v| v.as_str().map(String::from)).collect(),
+                                });
+                            }
+                        }
+                    }
+                    "remote_mcp" => {
+                        if let Ok(config) = serde_json::from_value::<serde_json::Value>(st.config) {
+                            if let Some(url) = config.get("server_url").and_then(|v| v.as_str()) {
+                                let allowed_tools = config.get("allowed_tools").and_then(|v| v.as_array()).map(|arr| {
+                                    arr.iter().filter_map(|v| v.as_str().map(String::from)).collect()
+                                });
+                                openai_tools.push(OpenAITool::RemoteMcp {
+                                    server_url: url.to_string(),
+                                    allowed_tools,
+                                });
+                            }
+                        }
+                    }
+                    _ => {
+                        // For other types, we could try to pass them through if we make OpenAITool more flexible
+                        // but for now we'll skip or log
+                    }
+                }
+            }
+        }
+
+        let tools = if openai_tools.is_empty() {
             None
+        } else {
+            Some(openai_tools)
         };
 
         // Convert tool_choice from serde_json::Value to OpenAIToolChoice if provided
@@ -393,12 +461,16 @@ impl OpenAIModel {
             top_p: options.top_p,
             stop: options.stop_sequences,
             stream: Some(false),
-            tools: openai_tools,
+            tools,
             tool_choice,
             response_format: options.response_format,
             reasoning_format: options.reasoning_format,
             reasoning_effort: options.reasoning_effort,
             parallel_tool_calls: options.parallel_tool_calls,
+            stream_options: None, // Only for streaming
+            include_citations: options.include_citations,
+            include_tool_outputs: options.include_tool_outputs,
+            max_turns: None, // Not yet supported in core request
         })
     }
 }

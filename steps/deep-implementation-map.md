@@ -66,3 +66,23 @@ This map covers the detailed implementation steps for expanding the `qai-sdk` wi
 
 ### Multi-Agent
 - [ ] **xAI Multi-agent**: Support multi-agent text generation. ([Multi-agent](https://docs.x.ai/developers/model-capabilities/text/multi-agent))
+
+## 7. Advanced Agentic Features & Specialized Modalities (Phase 7)
+
+### xAI Advanced Tooling
+- [x] **xAI Web Search**: Integrate native `web_search` tool. Support `search_results` and `search_queries` in response metadata. ([Docs](https://docs.x.ai/developers/tools/web-search))
+- [x] **xAI Code Execution**: Support `code_execution` tool. Handle `code_execution_call` and `code_execution_result` blocks in message history. ([Docs](https://docs.x.ai/developers/tools/code-execution))
+- [x] **xAI Collections Search**: Implement `collections_search` tool. Handle `collection_uris` and citation indices. ([Docs](https://docs.x.ai/developers/tools/collections-search))
+- [x] **xAI Remote MCP**: Support `remote_mcp` tool configuration with `server_url` and `allowed_tools`. ([Docs](https://docs.x.ai/developers/tools/remote-mcp))
+- [x] **xAI Citations**: Implement `include_citations` parameter and parse `citations` array with `source`, `snippet`, and `index` mapping. ([Docs](https://docs.x.ai/developers/tools/citations))
+- [x] **xAI Streaming & Sync**: Implement `include_tool_outputs` for real-time observability of tool execution during streaming. ([Docs](https://docs.x.ai/developers/tools/streaming-and-sync))
+- [x] **xAI Tool Usage Details**: Expose `tool_calls` and `server_side_tool_usage` in usage metrics. ([Docs](https://docs.x.ai/developers/tools/tool-usage-details))
+- [x] **xAI Advanced Usage**: Implement hybrid tool orchestration (server-side + client-side) and `max_turns` limit. ([Docs](https://docs.x.ai/developers/tools/advanced-usage))
+
+### Google Gemini Specialized Modalities
+- [ ] **Gemini Image Generation**: Support `imagen` models (e.g., `imagen-3.0-generate-001`) via REST. Handle `Image` output parts. ([Docs](https://ai.google.dev/gemini-api/docs/image-generation#rest))
+- [ ] **Gemini Video Generation**: Support `veo` models (e.g., `veo-2.0-generate-001`) via REST. Implement `GenerateVideoConfig` (resolution, duration). ([Docs](https://ai.google.dev/gemini-api/docs/video))
+- [ ] **Gemini Music Generation**: Support `lyria` models (e.g., `lyria-3-pro-001`) via REST. Handle `audio_config` and `response_modalities: ["AUDIO"]`. ([Docs](https://ai.google.dev/gemini-api/docs/music-generation#rest))
+- [ ] **Gemini Realtime Music**: Implement WebSocket-based streaming for `lyria-realtime-exp`. Handle control messages and steerable prompts. ([Docs](https://ai.google.dev/gemini-api/docs/realtime-music-generation#rest))
+- [ ] **Gemini Robotics**: Support `robotics-er-1.6` models. Implement spatial reasoning parts (bounding boxes, point tracking). ([Docs](https://ai.google.dev/gemini-api/docs/robotics-overview#rest))
+- [ ] **Gemini Video Understanding**: Enhance `file_data` support for large videos. Implement `video_metadata` with clipping and custom FPS. ([Docs](https://ai.google.dev/gemini-api/docs/video-understanding#rest))

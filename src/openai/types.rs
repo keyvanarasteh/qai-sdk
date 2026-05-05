@@ -26,13 +26,32 @@ pub struct OpenAIRequest {
     pub reasoning_effort: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parallel_tool_calls: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream_options: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_citations: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_tool_outputs: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_turns: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OpenAITool {
-    #[serde(rename = "type")]
-    pub tool_type: String, // "function"
-    pub function: OpenAIFunctionDefinition,
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum OpenAITool {
+    Function {
+        function: OpenAIFunctionDefinition,
+    },
+    WebSearch,
+    CodeExecution,
+    CollectionsSearch {
+        collection_uris: Vec<String>,
+    },
+    RemoteMcp {
+        server_url: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        allowed_tools: Option<Vec<String>>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -126,9 +145,18 @@ pub struct OpenAIChoice {
 pub struct OpenAIResponseMessage {
     pub role: String,
     pub content: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "reasoning")]
     pub reasoning_content: Option<String>,
     pub tool_calls: Option<Vec<OpenAIToolCall>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub citations: Option<Vec<XaiCitation>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct XaiCitation {
+    pub source: String,
+    pub snippet: Option<String>,
+    pub index: u32,
+    pub uri: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -172,6 +200,8 @@ pub struct OpenAIStreamDelta {
     #[serde(skip_serializing_if = "Option::is_none", alias = "reasoning")]
     pub reasoning_content: Option<String>,
     pub tool_calls: Option<Vec<OpenAIStreamToolCall>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub citations: Option<Vec<XaiCitation>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

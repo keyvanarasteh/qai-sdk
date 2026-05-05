@@ -241,6 +241,9 @@ async fn generate_object_once(
                 tool_choice: None,
                 parallel_tool_calls: None,
                 extra_headers: None,
+                server_tools: None,
+                include_citations: None,
+                include_tool_outputs: None,
             };
 
             let result = model.generate(prompt, gen_options).await?;
@@ -279,6 +282,7 @@ async fn generate_object_once(
                 tools: Some(vec![tool]),
                 response_format: None, reasoning_format: None, reasoning_effort: None,
                 tool_choice: None, parallel_tool_calls: None, extra_headers: None,
+                server_tools: None, include_citations: None, include_tool_outputs: None,
             };
 
             let result = model.generate(prompt, gen_options).await?;
@@ -403,6 +407,9 @@ pub async fn stream_object(
             tool_choice: None,
             parallel_tool_calls: None,
             extra_headers: None,
+            server_tools: None,
+            include_citations: None,
+            include_tool_outputs: None,
         },
         OutputMode::Tool => {
             let tool = ToolDefinition {
@@ -419,6 +426,7 @@ pub async fn stream_object(
                 tools: Some(vec![tool]),
                 response_format: None, reasoning_format: None, reasoning_effort: None,
                 tool_choice: None, parallel_tool_calls: None, extra_headers: None,
+                server_tools: None, include_citations: None, include_tool_outputs: None,
             }
         }
     };
@@ -488,6 +496,9 @@ pub async fn stream_object(
                 }
                 StreamPart::ReasoningDelta { .. } => {
                     // Ignore reasoning output for structured JSON parsing
+                }
+                StreamPart::Citation { .. } => {
+                    // Ignore citations for structured JSON parsing
                 }
             }
         }

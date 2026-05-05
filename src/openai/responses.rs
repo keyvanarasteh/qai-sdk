@@ -247,6 +247,7 @@ impl crate::core::LanguageModel for OpenAIResponsesModel {
             tool_calls: Vec::new(),
             reasoning: None,
             executed_tools: Vec::new(),
+            citations: Vec::new(),
         })
     }
 
