@@ -231,6 +231,8 @@ pub enum ResponsesTool {
         #[serde(skip_serializing_if = "Option::is_none")]
         search_context_size: Option<String>,
     },
+    VisitWebsite,
+    CodeExecutor,
     CodeInterpreter {
         #[serde(skip_serializing_if = "Option::is_none")]
         container: Option<Value>,

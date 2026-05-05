@@ -119,11 +119,19 @@ impl OpenAIResponsesModel {
         let tools = options.tools.map(|tool_defs| {
             tool_defs
                 .into_iter()
-                .map(|t| ResponsesTool::Function {
-                    name: t.name,
-                    description: Some(t.description),
-                    parameters: t.parameters,
-                    strict: None,
+                .map(|t| match t.name.as_str() {
+                    "web_search" => ResponsesTool::WebSearch {
+                        search_context_size: None,
+                        user_location: None,
+                    },
+                    "visit_website" => ResponsesTool::VisitWebsite,
+                    "code_executor" | "code_interpreter" => ResponsesTool::CodeExecutor,
+                    _ => ResponsesTool::Function {
+                        name: t.name,
+                        description: Some(t.description),
+                        parameters: t.parameters,
+                        strict: None,
+                    },
                 })
                 .collect()
         });

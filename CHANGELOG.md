@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.23] - 2026-05-06
+
+### Added
+
+- **New Core Traits**:
+  - `VideoModel`: Formal abstraction for text-to-video generation.
+  - `RealtimeModel`: Formal abstraction for WebSocket-based bidirectional voice/text agents.
+- **xAI Multimodal Expansion**:
+  - Implemented `SpeechModel` (TTS) and `TranscriptionModel` (STT) for xAI Grok.
+  - Added `VideoModel` support for `grok-imagine-video` with automatic asynchronous polling.
+  - Added `RealtimeModel` skeleton for xAI Voice Agents (OpenAI-compatible WebSocket).
+- **Standardized Reasoning & Thinking**:
+  - Unified `reasoning_effort` and `reasoning_format` across Anthropic, Google Gemini, and xAI providers.
+  - Mapped Anthropic's "Extended Thinking" and Gemini's "Thinking Config" to the core `GenerateOptions`.
+- **Groq Built-in Tooling**:
+  - Integrated Groq's Responses API built-in tools (`web_search`, `visit_website`, `code_executor`) into the provider registry.
+- **Dependencies**:
+  - Added `tokio-tungstenite` for WebSocket support.
+  - Added `http` crate for low-level request building.
+
 ## [0.1.22] - 2026-05-06
 
 ### Added

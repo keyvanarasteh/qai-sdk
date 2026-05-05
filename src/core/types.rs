@@ -5,6 +5,26 @@ pub struct Prompt {
     pub messages: Vec<Message>,
 }
 
+impl Prompt {
+    #[must_use]
+    pub fn new(messages: Vec<Message>) -> Self {
+        Self { messages }
+    }
+
+    /// Creates a prompt from a single user message.
+    #[must_use]
+    pub fn from_user(text: impl Into<String>) -> Self {
+        Self {
+            messages: vec![Message {
+                role: Role::User,
+                content: vec![Content::Text {
+                    text: text.into(),
+                }],
+            }],
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Message {
     pub role: Role,

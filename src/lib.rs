@@ -49,6 +49,35 @@ pub mod test_utils;
 pub use crate::core::types::*;
 pub use crate::core::*;
 
+pub mod prelude {
+    pub use crate::core::types::*;
+    pub use crate::core::*;
+    
+    #[cfg(feature = "openai")]
+    pub use crate::openai::{create_openai, OpenAIModel};
+    
+    #[cfg(feature = "anthropic")]
+    pub use crate::anthropic::{create_anthropic, AnthropicModel};
+    
+    #[cfg(feature = "google")]
+    pub use crate::google::{create_google, GoogleModel};
+    
+    #[cfg(feature = "deepseek")]
+    pub use crate::deepseek::{create_deepseek, DeepSeekModel};
+    
+    #[cfg(feature = "xai")]
+    pub use crate::xai::{create_xai, XAIModel};
+    
+    #[cfg(feature = "ollama")]
+    pub use crate::ollama::{create_ollama, OllamaModel};
+    
+    #[cfg(feature = "openai-compatible")]
+    pub use crate::openai_compatible::{create_openai_compatible, OpenAICompatibleModel};
+    
+    #[cfg(feature = "groqcloud")]
+    pub use crate::groqcloud::{create_groqcloud, GroqCloudModel};
+}
+
 // Export all providers if their features are enabled
 #[cfg(feature = "openai")]
 pub use crate::openai::create_openai;
