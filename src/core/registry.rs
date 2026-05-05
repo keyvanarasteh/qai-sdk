@@ -16,7 +16,7 @@
 //! ```
 
 use crate::core::{
-    EmbeddingModel, ImageModel, LanguageModel, Result,
+    EmbeddingModel, ImageModel, LanguageModel, SpeechModel, TranscriptionModel, Result,
 };
 use crate::core::error::ProviderError;
 use std::collections::HashMap;
@@ -33,6 +33,16 @@ pub trait Provider: Send + Sync {
 
     /// Create an image model by model ID. Optional.
     fn image_model(&self, _model_id: &str) -> Option<Box<dyn ImageModel>> {
+        None
+    }
+
+    /// Create a transcription model by model ID. Optional.
+    fn transcription_model(&self, _model_id: &str) -> Option<Box<dyn TranscriptionModel>> {
+        None
+    }
+
+    /// Create a speech model by model ID. Optional.
+    fn speech_model(&self, _model_id: &str) -> Option<Box<dyn SpeechModel>> {
         None
     }
 }
@@ -124,6 +134,36 @@ impl ProviderRegistry {
         provider.image_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
                 "Provider '{provider_id}' does not support image model '{model_id}'"
+            ))
+        })
+    }
+
+    /// Resolve a transcription model from a `"provider:model"` string.
+    pub fn transcription_model(&self, id: &str) -> Result<Box<dyn TranscriptionModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "No provider registered with name '{provider_id}'"
+            ))
+        })?;
+        provider.transcription_model(&model_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "Provider '{provider_id}' does not support transcription model '{model_id}'"
+            ))
+        })
+    }
+
+    /// Resolve a speech model from a `"provider:model"` string.
+    pub fn speech_model(&self, id: &str) -> Result<Box<dyn SpeechModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "No provider registered with name '{provider_id}'"
+            ))
+        })?;
+        provider.speech_model(&model_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "Provider '{provider_id}' does not support speech model '{model_id}'"
             ))
         })
     }

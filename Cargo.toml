@@ -1,6 +1,6 @@
 [package]
 name = "qai-sdk"
-version = "0.1.9"
+version = "0.1.10"
 edition = "2021"
 description = "Universal Rust SDK for AI Providers"
 license = "MIT OR Apache-2.0"
@@ -11,13 +11,14 @@ keywords = ["ai", "llm", "openai", "claude", "gemini"]
 categories = ["api-bindings", "web-programming::http-client"]
 
 [features]
-default = ["openai", "anthropic", "google", "deepseek", "xai", "ollama", "openai-compatible", "mcp"]
+default = ["openai", "anthropic", "google", "deepseek", "xai", "ollama", "groqcloud", "openai-compatible", "mcp"]
 openai = []
 anthropic = []
 google = []
 deepseek = ["openai"]
 xai = ["openai"]
 ollama = ["openai"]
+groqcloud = ["openai"]
 openai-compatible = ["openai"]
 mcp = ["tokio/process", "tokio/io-util", "tokio/sync", "tokio/rt"]
 

@@ -37,6 +37,9 @@ pub mod ollama;
 #[cfg(feature = "openai-compatible")]
 pub mod openai_compatible;
 
+#[cfg(feature = "groqcloud")]
+pub mod groqcloud;
+
 #[cfg(feature = "mcp")]
 pub mod mcp;
 
@@ -68,6 +71,9 @@ pub use crate::ollama::create_ollama;
 #[cfg(feature = "openai-compatible")]
 pub use crate::openai_compatible::{create_openai_compatible, OpenAICompatibleProviderSettings};
 
+#[cfg(feature = "groqcloud")]
+pub use crate::groqcloud::create_groqcloud;
+
 #[cfg(feature = "openai")]
 pub use crate::openai::OpenAIModel;
 
@@ -88,3 +94,6 @@ pub use crate::ollama::OllamaModel;
 
 #[cfg(feature = "openai-compatible")]
 pub use crate::openai_compatible::OpenAICompatibleModel;
+
+#[cfg(feature = "groqcloud")]
+pub use crate::groqcloud::GroqCloudModel;

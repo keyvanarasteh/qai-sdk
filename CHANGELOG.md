@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-05-05
+
+### Added
+
+- **GroqCloud Integration**: Full native support for Groq's high-performance API endpoints.
+- **Ultra-Fast Generation**: Direct support for Groq's LPU-powered chat generation (`llama-3.3-70b-versatile`, etc.) with Tool Calling and Structured Output enforcement via `response_format`.
+- **Speech-to-Text (STT)**: Direct support for Groq's `whisper-large-v3` and `whisper-large-v3-turbo` audio transcription endpoints mapping to `TranscriptionModel`.
+- **Text-to-Speech (TTS)**: Direct support for Groq's `canopylabs/orpheus` models for near-instant speech synthesis mapping to `SpeechModel`.
+- **Core Registry Expansion**: Upgraded the core SDK `ProviderRegistry` and `Provider` traits to natively resolve `transcription_model` and `speech_model` across all implementations.
+
 ## [0.1.9] - 2026-05-05
 
 ### Added
