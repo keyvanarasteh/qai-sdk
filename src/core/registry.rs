@@ -16,7 +16,8 @@
 //! ```
 
 use crate::core::{
-    EmbeddingModel, ImageModel, LanguageModel, SpeechModel, TranscriptionModel, Result,
+    CompletionModel, EmbeddingModel, ImageModel, LanguageModel, Result, SpeechModel,
+    TranscriptionModel,
 };
 use crate::core::error::ProviderError;
 use std::collections::HashMap;
@@ -43,6 +44,11 @@ pub trait Provider: Send + Sync {
 
     /// Create a speech model by model ID. Optional.
     fn speech_model(&self, _model_id: &str) -> Option<Box<dyn SpeechModel>> {
+        None
+    }
+
+    /// Create a text completion model by model ID. Optional.
+    fn completion_model(&self, _model_id: &str) -> Option<Box<dyn CompletionModel>> {
         None
     }
 }
@@ -164,6 +170,21 @@ impl ProviderRegistry {
         provider.speech_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
                 "Provider '{provider_id}' does not support speech model '{model_id}'"
+            ))
+        })
+    }
+
+    /// Resolve a text completion model from a `"provider:model"` string.
+    pub fn completion_model(&self, id: &str) -> Result<Box<dyn CompletionModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "No provider registered with name '{provider_id}'"
+            ))
+        })?;
+        provider.completion_model(&model_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "Provider '{provider_id}' does not support completion model '{model_id}'"
             ))
         })
     }

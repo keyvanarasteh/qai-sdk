@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.19] - 2026-05-06
+
+### Added
+
+- **DeepSeek FIM (Fill-In-the-Middle)**:
+  - Added native support for the DeepSeek `/beta/completions` API.
+  - Implemented the `CompletionModel` interface for DeepSeek to support `suffix` inputs.
+  - Exposed `completion_model` resolving in the `ProviderRegistry` for DeepSeek.
+  - Added `deepseek_fim.rs` example.
+
 ## [0.1.18] - 2026-05-06
 
 ### Added

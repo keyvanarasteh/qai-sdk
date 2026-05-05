@@ -17,6 +17,7 @@
 //! let model = provider.chat("deepseek-chat");
 //! ```
 
+pub mod completion;
 pub mod error;
 pub mod types;
 
@@ -40,6 +41,14 @@ impl DeepSeekModel {
                 client: Client::new(),
             },
         }
+    }
+
+    #[must_use]
+    pub fn completion(&self) -> completion::DeepSeekCompletionModel {
+        completion::DeepSeekCompletionModel::new(
+            self.inner.api_key.clone(),
+            self.inner.base_url.clone(),
+        )
     }
 }
 
@@ -138,6 +147,24 @@ impl DeepSeekProvider {
     }
 
     /// Retrieves the list of available models from the DeepSeek API.
+    /// Returns a completion model interface for DeepSeek FIM (Fill-In-the-Middle) completions.
+    #[must_use]
+    pub fn completion(&self, _model_id: &str) -> completion::DeepSeekCompletionModel {
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("DEEPSEEK_API_KEY").ok())
+            .unwrap_or_default();
+        let base_url = self
+            .settings
+            .base_url
+            .clone()
+            .unwrap_or_else(|| "https://api.deepseek.com".to_string());
+        completion::DeepSeekCompletionModel::new(api_key, base_url)
+    }
+
+    /// Fetches the list of models supported by DeepSeek.
     pub async fn list_models(&self) -> crate::core::Result<types::DeepSeekModelsResponse> {
         let api_key = self
             .settings
@@ -184,5 +211,8 @@ pub fn create_deepseek(settings: ProviderSettings) -> DeepSeekProvider {
 impl crate::core::registry::Provider for DeepSeekProvider {
     fn language_model(&self, model_id: &str) -> Option<Box<dyn crate::core::LanguageModel>> {
         Some(Box::new(self.chat(model_id)))
+    }
+    fn completion_model(&self, model_id: &str) -> Option<Box<dyn crate::core::CompletionModel>> {
+        Some(Box::new(self.completion(model_id)))
     }
 }
