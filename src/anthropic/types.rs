@@ -22,6 +22,28 @@ pub struct AnthropicRequest {
     pub tools: Option<Vec<AnthropicTool>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tool_choice: Option<AnthropicToolChoice>,
+    /// Extended thinking / adaptive thinking configuration.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thinking: Option<AnthropicThinkingConfig>,
+}
+
+/// Configuration for Claude's extended thinking / adaptive thinking.
+///
+/// - Adaptive (recommended for Claude 4.6+): `{type: "adaptive"}`, optionally with `display`.
+/// - Manual (legacy): `{type: "enabled", budget_tokens: N}`, optionally with `display`.
+/// - Disabled: `{type: "disabled"}`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AnthropicThinkingConfig {
+    /// Thinking mode: "adaptive", "enabled", or "disabled".
+    #[serde(rename = "type")]
+    pub thinking_type: String,
+    /// Token budget for thinking. Only used with `type: "enabled"`.
+    /// Must be less than `max_tokens`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget_tokens: Option<u32>,
+    /// Controls how thinking content is returned: "summarized" or "omitted".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub display: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,6 +72,13 @@ pub struct AnthropicMessage {
 pub enum AnthropicContent {
     Text {
         text: String,
+    },
+    /// Thinking content block returned when extended thinking is enabled.
+    Thinking {
+        thinking: String,
+        /// Cryptographic signature for multi-turn thinking continuity.
+        #[serde(default)]
+        signature: Option<String>,
     },
     Image {
         source: AnthropicImageSource,
@@ -135,6 +164,10 @@ pub enum AnthropicStreamEvent {
 pub enum AnthropicDelta {
     TextDelta { text: String },
     InputJsonDelta { partial_json: String },
+    /// Thinking delta streamed during extended thinking.
+    ThinkingDelta { thinking: String },
+    /// Signature delta for thinking block finalization.
+    SignatureDelta { signature: String },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

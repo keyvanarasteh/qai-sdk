@@ -25,7 +25,7 @@ pub mod types;
 
 use crate::anthropic::types::{
     AnthropicContent, AnthropicImageSource, AnthropicMessage, AnthropicRequest, AnthropicResponse,
-    AnthropicStreamEvent, AnthropicSystemContent, AnthropicTool,
+    AnthropicStreamEvent, AnthropicSystemContent, AnthropicThinkingConfig, AnthropicTool,
 };
 use crate::core::types::{
     Content, FileSource, GenerateOptions, GenerateResult, ImageSource, Prompt, Role, StreamPart,
@@ -106,6 +106,28 @@ impl crate::core::LanguageModel for AnthropicModel {
             })
             .collect::<String>();
 
+        // Extract thinking/reasoning content
+        let reasoning_parts: Vec<String> = anthropic_response
+            .content
+            .iter()
+            .filter_map(|c| {
+                if let AnthropicContent::Thinking { thinking, .. } = c {
+                    if !thinking.is_empty() {
+                        Some(thinking.clone())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let reasoning = if reasoning_parts.is_empty() {
+            None
+        } else {
+            Some(reasoning_parts.join("\n"))
+        };
+
         // Extract native tool calls from ToolUse content blocks
         let tool_calls = anthropic_response
             .content
@@ -129,7 +151,7 @@ impl crate::core::LanguageModel for AnthropicModel {
                 .stop_reason
                 .unwrap_or_else(|| "stop".to_string()),
             tool_calls,
-            reasoning: None,
+            reasoning,
             executed_tools: Vec::new(),
         })
     }
@@ -181,6 +203,12 @@ impl crate::core::LanguageModel for AnthropicModel {
                                             name: None,
                                             arguments_delta: Some(partial_json)
                                         };
+                                    }
+                                    types::AnthropicDelta::ThinkingDelta { thinking } => {
+                                        yield StreamPart::ReasoningDelta { delta: thinking };
+                                    }
+                                    types::AnthropicDelta::SignatureDelta { .. } => {
+                                        // Signature deltas are internal; no user-facing stream part needed
                                     }
                                 }
                             }
@@ -311,6 +339,48 @@ impl AnthropicModel {
             None
         };
 
+        // Build thinking config from GenerateOptions
+        let thinking = if options.reasoning_format.is_some()
+            || options.reasoning_effort.is_some()
+        {
+            let effort = options.reasoning_effort.as_deref().unwrap_or("high");
+            let effort_lower = effort.to_lowercase();
+
+            // Determine thinking type and budget
+            let (thinking_type, budget_tokens) = match effort_lower.as_str() {
+                "off" | "none" | "disabled" => ("disabled".to_string(), None),
+                "adaptive" | "auto" | "dynamic" => ("adaptive".to_string(), None),
+                // Named effort levels → adaptive mode (Anthropic's effort parameter is separate)
+                "low" | "medium" | "high" | "max" | "xhigh" | "minimal" => {
+                    ("adaptive".to_string(), None)
+                }
+                _ => {
+                    // Try to parse as integer for manual budget_tokens
+                    if let Ok(budget) = effort.parse::<u32>() {
+                        ("enabled".to_string(), Some(budget))
+                    } else {
+                        ("adaptive".to_string(), None)
+                    }
+                }
+            };
+
+            // Determine display mode from reasoning_format
+            let display = match options.reasoning_format.as_deref() {
+                Some("parsed" | "summarized") => Some("summarized".to_string()),
+                Some("omitted" | "hidden") => Some("omitted".to_string()),
+                Some("raw") => Some("summarized".to_string()),
+                _ => Some("summarized".to_string()),
+            };
+
+            Some(AnthropicThinkingConfig {
+                thinking_type,
+                budget_tokens,
+                display,
+            })
+        } else {
+            None
+        };
+
         let request = AnthropicRequest {
             model: options.model_id,
             messages,
@@ -320,13 +390,14 @@ impl AnthropicModel {
                 Some(system_content)
             },
             max_tokens: options.max_tokens.unwrap_or(1024),
-            temperature: options.temperature,
-            top_p: options.top_p,
+            temperature: if thinking.is_some() { None } else { options.temperature },
+            top_p: if thinking.is_some() { None } else { options.top_p },
             top_k: None,
             stop_sequences: options.stop_sequences,
             stream: None,
             tools: anthropic_tools,
-            tool_choice: None, // Default to auto
+            tool_choice: None,
+            thinking,
         };
 
         Ok((request, Vec::new())) // Tool list not used for return currently

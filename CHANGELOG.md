@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-05-06
+
+### Added
+
+- **Gemini Thinking/Reasoning**: Full support for Gemini 3 and 2.5 thinking models.
+  - `GoogleThinkingConfig`: `include_thoughts`, `thinking_level` (Gemini 3), `thinking_budget` (Gemini 2.5).
+  - `GooglePart::Text` gains `thought: Option<bool>` flag for identifying thought summaries.
+  - `reasoning_effort` auto-maps to `thinking_level` or `thinking_budget`.
+  - Thought summaries extracted into `GenerateResult.reasoning`.
+  - Streaming emits `StreamPart::ReasoningDelta` for thought parts.
+  - New `gemini_thinking.rs` example.
+
+- **Anthropic Extended/Adaptive Thinking**: Full support for Claude extended thinking and adaptive thinking.
+  - `AnthropicThinkingConfig`: `type` (adaptive/enabled/disabled), `budget_tokens`, `display` (summarized/omitted).
+  - `AnthropicContent::Thinking` variant for thinking content blocks with signature support.
+  - `AnthropicDelta::ThinkingDelta` and `SignatureDelta` for streaming thinking events.
+  - `reasoning_effort` maps to adaptive mode (`"adaptive"`, named levels) or manual budget (numeric).
+  - `reasoning_format` maps to display mode (`"parsed"` → summarized, `"omitted"` → omitted).
+  - Temperature/top_p automatically cleared when thinking is enabled (Anthropic requirement).
+  - Thinking blocks extracted into `GenerateResult.reasoning`.
+  - Streaming emits `StreamPart::ReasoningDelta` for `thinking_delta` events.
+  - New `anthropic_thinking.rs` example.
+
+- **xAI Reasoning**: Documentation and example for xAI Grok reasoning models (via OpenAI-compatible pipeline).
+  - New `xai_reasoning.rs` example.
+
+### Documentation
+
+- Updated `docs/google.md` with Thinking/Reasoning section and modern model table.
+- Updated `docs/anthropic.md` with Extended/Adaptive Thinking section and modern model table.
+- Updated `docs/xai.md` with Reasoning section.
+
 ## [0.1.15] - 2026-05-06
 
 ### Added
