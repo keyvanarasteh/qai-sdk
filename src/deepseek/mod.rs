@@ -136,6 +136,43 @@ impl DeepSeekProvider {
 
         Ok(balance)
     }
+
+    /// Retrieves the list of available models from the DeepSeek API.
+    pub async fn list_models(&self) -> crate::core::Result<types::DeepSeekModelsResponse> {
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("DEEPSEEK_API_KEY").ok())
+            .unwrap_or_default();
+
+        let base_url = self
+            .settings
+            .base_url
+            .clone()
+            .unwrap_or_else(|| "https://api.deepseek.com".to_string());
+
+        let url = format!("{}/models", base_url);
+
+        let client = Client::new();
+        let response = client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", api_key))
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let error_text = response.text().await.unwrap_or_default();
+            return Err(crate::core::ProviderError::Network(error_text));
+        }
+
+        let models: types::DeepSeekModelsResponse = response
+            .json()
+            .await
+            .map_err(|e| crate::core::ProviderError::InvalidResponse(e.to_string()))?;
+
+        Ok(models)
+    }
 }
 
 /// Create a `DeepSeek` provider instance with the given settings.

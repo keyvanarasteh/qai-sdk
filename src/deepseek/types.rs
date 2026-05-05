@@ -118,3 +118,18 @@ pub struct DeepSeekBalanceResponse {
     pub is_available: bool,
     pub balance_infos: Vec<DeepSeekBalanceInfo>,
 }
+
+// --- Models Types ---
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeepSeekModelInfo {
+    pub id: String,
+    pub object: String,
+    pub owned_by: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeepSeekModelsResponse {
+    pub object: String,
+    pub data: Vec<DeepSeekModelInfo>,
+}
