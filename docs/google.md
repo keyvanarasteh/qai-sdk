@@ -12,8 +12,9 @@ Integration with the Google Generative AI API for the Gemini multimodal model fa
 
 | Trait | Models |
 |---|---|
-| `LanguageModel` | gemini-2.0-flash, gemini-1.5-pro, gemini-1.5-flash, gemini-1.0-pro |
-| `EmbeddingModel` | text-embedding-004 |
+| `LanguageModel` | `gemini-3-flash-preview`, `gemini-2.5-flash-preview-05-20`, `gemini-2.0-flash`, `gemini-1.5-pro` |
+| `EmbeddingModel` | `text-embedding-004` |
+| `ImageModel` | `imagen-3.0-generate-002` |
 
 ---
 
@@ -159,6 +160,72 @@ Gemini uses configurable safety thresholds. Default balanced settings are applie
 | `HARM_CATEGORY_HATE_SPEECH` | `BLOCK_MEDIUM_AND_ABOVE` |
 | `HARM_CATEGORY_SEXUALLY_EXPLICIT` | `BLOCK_MEDIUM_AND_ABOVE` |
 | `HARM_CATEGORY_DANGEROUS_CONTENT` | `BLOCK_MEDIUM_AND_ABOVE` |
+
+---
+
+## Thinking / Reasoning
+
+Gemini 3 and 2.5 models support a "thinking" mode where the model reasons through problems step-by-step before answering. Thought summaries can be included in the response.
+
+### Enabling Thinking
+
+Use `reasoning_format` and `reasoning_effort` in `GenerateOptions`:
+
+```rust
+let options = GenerateOptions {
+    model_id: "gemini-3-flash-preview".into(),
+    max_tokens: Some(4096),
+    // "parsed" or "raw" to include thought summaries in the response
+    reasoning_format: Some("parsed".to_string()),
+    // Gemini 3: "minimal", "low", "medium", "high"
+    // Gemini 2.5: numeric budget ("1024"), "off", or "dynamic"
+    reasoning_effort: Some("high".to_string()),
+    ..Default::default()
+};
+
+let result = model.generate(prompt, options).await?;
+
+// Thought summaries appear in result.reasoning
+if let Some(reasoning) = &result.reasoning {
+    println!("Thinking: {}", reasoning);
+}
+println!("Answer: {}", result.text);
+```
+
+### Streaming with Thought Deltas
+
+In streaming mode, thought summaries arrive as `StreamPart::ReasoningDelta` events:
+
+```rust
+while let Some(part) = stream.next().await {
+    match part {
+        StreamPart::ReasoningDelta { delta } => print!("🧠 {}", delta),
+        StreamPart::TextDelta { delta } => print!("{}", delta),
+        _ => {}
+    }
+}
+```
+
+### Thinking Level vs Budget
+
+| Model Series | Parameter | Values |
+|---|---|---|
+| Gemini 3 (`gemini-3-*`) | `thinking_level` | `"minimal"`, `"low"`, `"medium"`, `"high"` |
+| Gemini 2.5 (`gemini-2.5-*`) | `thinking_budget` | `0` (off), `128`–`32768` tokens, `-1` (dynamic) |
+
+The SDK maps `reasoning_effort` values automatically:
+- `"minimal"` / `"low"` / `"medium"` / `"high"` → `thinking_level`
+- `"off"` / `"none"` → `thinking_budget = 0`
+- `"dynamic"` → `thinking_budget = -1`
+- Numeric string (e.g. `"1024"`) → `thinking_budget = 1024`
+
+### Thought Signatures
+
+For enterprise use, Gemini supports **thought signatures** — cryptographically signed thinking content that can be verified for provenance and integrity. See [Thought Signatures](https://ai.google.dev/gemini-api/docs/thought-signatures) for details.
+
+### Example
+
+- [`gemini_thinking.rs`](../examples/gemini_thinking.rs) — Thinking with thought summaries, streaming, and budgets
 
 ---
 

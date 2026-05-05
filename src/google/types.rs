@@ -34,6 +34,10 @@ pub struct GoogleContent {
 pub enum GooglePart {
     Text {
         text: String,
+        /// When `true`, this text part is a thought summary from the model's
+        /// internal reasoning process (requires `includeThoughts: true`).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        thought: Option<bool>,
     },
     InlineData {
         mime_type: String,
@@ -61,6 +65,27 @@ pub struct GoogleGenerationConfig {
     pub response_mime_type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub response_schema: Option<serde_json::Value>,
+    /// Configuration for the model's thinking/reasoning behavior.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thinking_config: Option<GoogleThinkingConfig>,
+}
+
+/// Controls the model's thinking/reasoning behavior.
+///
+/// For Gemini 3 models, use `thinking_level` ("minimal", "low", "medium", "high").
+/// For Gemini 2.5 models, use `thinking_budget` (token count, 0 to disable, -1 for dynamic).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GoogleThinkingConfig {
+    /// Whether to include thought summaries in the response.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_thoughts: Option<bool>,
+    /// Thinking level for Gemini 3+ models: "minimal", "low", "medium", "high".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thinking_level: Option<String>,
+    /// Thinking budget for Gemini 2.5 models (token count). 0 = off, -1 = dynamic.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thinking_budget: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -82,4 +107,7 @@ pub struct GoogleUsageMetadata {
     pub prompt_token_count: u32,
     pub candidates_token_count: u32,
     pub total_token_count: u32,
+    /// Number of tokens used for reasoning/thinking.
+    #[serde(default)]
+    pub thoughts_token_count: Option<u32>,
 }

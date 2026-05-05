@@ -32,7 +32,7 @@ use crate::core::types::{
 };
 use crate::google::types::{
     GoogleContent, GoogleFunctionDeclaration, GoogleGenerationConfig, GooglePart, GoogleRequest,
-    GoogleResponse, GoogleTool,
+    GoogleResponse, GoogleThinkingConfig, GoogleTool,
 };
 use anyhow::anyhow;
 use async_trait::async_trait;
@@ -106,12 +106,17 @@ impl crate::core::LanguageModel for GoogleModel {
                 })?;
 
         let mut text_parts = Vec::new();
+        let mut thought_parts = Vec::new();
         let mut tool_calls = Vec::new();
 
         for part in &candidate.content.parts {
             match part {
-                GooglePart::Text { text } => {
-                    text_parts.push(text.clone());
+                GooglePart::Text { text, thought } => {
+                    if thought.unwrap_or(false) {
+                        thought_parts.push(text.clone());
+                    } else {
+                        text_parts.push(text.clone());
+                    }
                 }
                 GooglePart::FunctionCall { name, args } => {
                     tool_calls.push(crate::core::types::ToolCallResult {
@@ -124,6 +129,11 @@ impl crate::core::LanguageModel for GoogleModel {
         }
 
         let text = text_parts.join("");
+        let reasoning = if thought_parts.is_empty() {
+            None
+        } else {
+            Some(thought_parts.join(""))
+        };
 
         Ok(GenerateResult {
             text,
@@ -133,7 +143,7 @@ impl crate::core::LanguageModel for GoogleModel {
                 .clone()
                 .unwrap_or_else(|| "stop".to_string()),
             tool_calls,
-            reasoning: None,
+            reasoning,
             executed_tools: Vec::new(),
         })
     }
@@ -178,8 +188,12 @@ impl crate::core::LanguageModel for GoogleModel {
                                 if let Some(candidate) = google_response.candidates.first() {
                                     for part in &candidate.content.parts {
                                         match part {
-                                            GooglePart::Text { text } => {
-                                                yield StreamPart::TextDelta { delta: text.clone() };
+                                            GooglePart::Text { text, thought } => {
+                                                if thought.unwrap_or(false) {
+                                                    yield StreamPart::ReasoningDelta { delta: text.clone() };
+                                                } else {
+                                                    yield StreamPart::TextDelta { delta: text.clone() };
+                                                }
                                             }
                                             GooglePart::FunctionCall { name, args } => {
                                                 yield StreamPart::ToolCallDelta {
@@ -229,7 +243,7 @@ impl GoogleModel {
                     let mut parts = Vec::new();
                     for content in msg.content {
                         if let Content::Text { text } = content {
-                            parts.push(GooglePart::Text { text });
+                            parts.push(GooglePart::Text { text, thought: None });
                         }
                     }
                     system_instruction = Some(GoogleContent {
@@ -247,7 +261,7 @@ impl GoogleModel {
             for content in msg.content {
                 match content {
                     Content::Text { text } => {
-                        parts.push(GooglePart::Text { text });
+                        parts.push(GooglePart::Text { text, thought: None });
                     }
                     Content::Image { source } => {
                         let (mime_type, data) = match source {
@@ -317,6 +331,54 @@ impl GoogleModel {
             }
         }
 
+        // Build thinking config from GenerateOptions
+        let thinking_config = if options.reasoning_format.is_some()
+            || options.reasoning_effort.is_some()
+        {
+            let mut tc = GoogleThinkingConfig {
+                include_thoughts: None,
+                thinking_level: None,
+                thinking_budget: None,
+            };
+
+            // "parsed" format → include thought summaries in response
+            if options
+                .reasoning_format
+                .as_deref()
+                .is_some_and(|f| f == "parsed" || f == "raw")
+            {
+                tc.include_thoughts = Some(true);
+            }
+
+            // Map reasoning_effort to thinking_level (Gemini 3) or thinking_budget (Gemini 2.5)
+            if let Some(ref effort) = options.reasoning_effort {
+                let effort_lower = effort.to_lowercase();
+                match effort_lower.as_str() {
+                    "minimal" | "low" | "medium" | "high" => {
+                        tc.thinking_level = Some(effort_lower);
+                    }
+                    "off" | "none" => {
+                        tc.thinking_budget = Some(0);
+                    }
+                    "dynamic" => {
+                        tc.thinking_budget = Some(-1);
+                    }
+                    _ => {
+                        // Try to parse as integer for thinking_budget
+                        if let Ok(budget) = effort.parse::<i32>() {
+                            tc.thinking_budget = Some(budget);
+                        } else {
+                            tc.thinking_level = Some(effort_lower);
+                        }
+                    }
+                }
+            }
+
+            Some(tc)
+        } else {
+            None
+        };
+
         Ok(GoogleRequest {
             contents,
             system_instruction,
@@ -328,6 +390,7 @@ impl GoogleModel {
                 stop_sequences: options.stop_sequences.clone(),
                 response_mime_type,
                 response_schema,
+                thinking_config,
             }),
             tools: google_tools,
         })
