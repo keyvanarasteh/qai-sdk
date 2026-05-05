@@ -78,6 +78,28 @@ ObjectGenerateOptions {
 
 ---
 
+## Prompt Caching
+
+Groq automatically caches prefixes (like large system prompts, tool definitions, or few-shot examples) for supported models (e.g., `openai/gpt-oss-120b`). Caching operates transparently with zero code changes needed.
+
+When caching occurs, it reduces latency and token costs by 50% for the cached portions. `qai-sdk` automatically maps these metrics so you can easily observe cache hits in your response's `usage` field:
+
+```rust
+let result = chat_model.generate(prompt, options).await?;
+
+println!("Prompt Tokens: {}", result.usage.prompt_tokens);
+if let Some(cached) = result.usage.cache_hit_tokens {
+    println!("Tokens served from cache: {} ({}%)", 
+        cached, 
+        (cached as f32 / result.usage.prompt_tokens as f32) * 100.0
+    );
+}
+```
+
+*Tip: Place static content (instructions, schemas) at the beginning of your prompt, and variable content (user queries) at the end to maximize your cache hit rate.*
+
+---
+
 ## Vision (Multimodal)
 
 Groq supports ultra-fast image understanding through multimodal models like `meta-llama/llama-4-scout-17b-16e-instruct`. You can pass images as Base64 data or URLs exactly like OpenAI:
