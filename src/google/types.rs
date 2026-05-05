@@ -19,6 +19,9 @@ pub struct GoogleTool {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub google_search_retrieval: Option<GoogleSearchRetrieval>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code_execution: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -72,6 +75,14 @@ pub enum GooglePart {
     FunctionResponse {
         name: String,
         response: serde_json::Value,
+    },
+    ExecutableCode {
+        language: String,
+        code: String,
+    },
+    CodeExecutionResult {
+        outcome: String,
+        output: String,
     },
 }
 

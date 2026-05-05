@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.25] - 2026-05-05
+
+### Added
+- **Gemini Specialized Modalities**:
+  - `ImageModel` support for Imagen 3 (`imagen-3.0-generate-001`).
+  - `VideoModel` support for Veo 2 (`veo-2.0-generate-001`).
+  - `MusicModel` support for Lyria (`lyria-3-pro-001`).
+  - `RealtimeModel` support for Multimodal Live API (WebSocket).
+  - Spatial Reasoning & Bounding Box support in `Content::Spatial`.
+  - Built-in `code_execution` tool support for Gemini.
+- **Core Expansion**:
+  - `VideoModel`, `MusicModel`, and `RealtimeModel` traits.
+  - `VideoGenerateOptions`, `MusicGenerateOptions`, and `RealtimeEvent` types.
+  - `BoundingBox` and `Spatial` content variant.
+
 ## [0.1.24] - 2026-05-06
 
 ### Added

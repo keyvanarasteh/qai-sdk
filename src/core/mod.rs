@@ -30,6 +30,7 @@ use crate::core::types::{
     CompletionOptions, CompletionResult, EmbeddingOptions, EmbeddingResult, GenerateOptions,
     GenerateResult, ImageGenerateOptions, ImageGenerateResult, Prompt, SpeechOptions, SpeechResult,
     StreamPart, TranscriptionOptions, TranscriptionResult, VideoGenerateOptions, VideoGenerateResult,
+    MusicGenerateOptions, MusicGenerateResult,
     RealtimeEvent,
 };
 use async_trait::async_trait;
@@ -90,6 +91,12 @@ pub trait TranscriptionModel: Send + Sync {
 pub trait VideoModel: Send + Sync {
     /// Generates videos from a text prompt.
     async fn generate(&self, options: VideoGenerateOptions) -> Result<VideoGenerateResult>;
+}
+
+#[async_trait]
+pub trait MusicModel: Send + Sync {
+    /// Generates music from a text prompt.
+    async fn generate(&self, options: MusicGenerateOptions) -> Result<MusicGenerateResult>;
 }
 
 #[async_trait]

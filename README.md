@@ -37,15 +37,15 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 | Vision / Multimodal | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | — |
 | Embeddings | ✅ | — | ✅ | — | — | — | ✅ | — |
 | Image Generation | ✅ | — | ✅ | — | ✅ | — | — | — |
-| Video Generation | — | — | — | — | ✅ | — | — | — |
-| Realtime Voice (WebSocket) | ✅ | — | — | — | ✅ | — | — | — |
+| Video Generation | — | — | ✅ | — | ✅ | — | — | — |
+| Realtime Voice (WebSocket) | ✅ | — | ✅ | — | ✅ | — | — | — |
 | Speech (TTS) | ✅ | — | ✅ | — | ✅ | ✅ | — | — |
 | Transcription (STT) | ✅ | — | — | — | ✅ | ✅ | — | — |
 | Text Completion | ✅ | — | — | ✅ | — | — | — | — |
 | Responses API | ✅ | — | — | — | ✅ | ✅ | — | — |
 | Content Moderation | — | — | — | — | — | ✅ | — | — |
 | Built-in Web Search | — | — | ✅ | — | ✅ | ✅ | — | — |
-| Built-in Code Execution | — | — | — | — | ✅ | ✅ | — | — |
+| Built-in Code Execution | — | — | ✅ | — | ✅ | ✅ | — | — |
 | Remote MCP Tools | — | — | — | — | ✅ | ✅ | — | — |
 | Model Context Protocol (MCP) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Custom HTTP Headers | ✅ | — | — | — | ✅ | — | ✅ | ✅ |

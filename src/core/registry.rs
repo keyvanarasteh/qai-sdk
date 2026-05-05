@@ -16,8 +16,8 @@
 //! ```
 
 use crate::core::{
-    CompletionModel, EmbeddingModel, ImageModel, LanguageModel, Result, SpeechModel,
-    TranscriptionModel,
+    CompletionModel, EmbeddingModel, ImageModel, LanguageModel, MusicModel, RealtimeModel, Result,
+    SpeechModel, TranscriptionModel, VideoModel,
 };
 use crate::core::error::ProviderError;
 use std::collections::HashMap;
@@ -49,6 +49,21 @@ pub trait Provider: Send + Sync {
 
     /// Create a text completion model by model ID. Optional.
     fn completion_model(&self, _model_id: &str) -> Option<Box<dyn CompletionModel>> {
+        None
+    }
+
+    /// Create a video model by model ID. Optional.
+    fn video_model(&self, _model_id: &str) -> Option<Box<dyn VideoModel>> {
+        None
+    }
+
+    /// Create a music model by model ID. Optional.
+    fn music_model(&self, _model_id: &str) -> Option<Box<dyn MusicModel>> {
+        None
+    }
+
+    /// Create a realtime model by model ID. Optional.
+    fn realtime_model(&self, _model_id: &str) -> Option<Box<dyn RealtimeModel>> {
         None
     }
 }
@@ -185,6 +200,51 @@ impl ProviderRegistry {
         provider.completion_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
                 "Provider '{provider_id}' does not support completion model '{model_id}'"
+            ))
+        })
+    }
+
+    /// Resolve a video model from a `"provider:model"` string.
+    pub fn video_model(&self, id: &str) -> Result<Box<dyn VideoModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "No provider registered with name '{provider_id}'"
+            ))
+        })?;
+        provider.video_model(&model_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "Provider '{provider_id}' does not support video model '{model_id}'"
+            ))
+        })
+    }
+
+    /// Resolve a music model from a `"provider:model"` string.
+    pub fn music_model(&self, id: &str) -> Result<Box<dyn MusicModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "No provider registered with name '{provider_id}'"
+            ))
+        })?;
+        provider.music_model(&model_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "Provider '{provider_id}' does not support music model '{model_id}'"
+            ))
+        })
+    }
+
+    /// Resolve a realtime model from a `"provider:model"` string.
+    pub fn realtime_model(&self, id: &str) -> Result<Box<dyn RealtimeModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "No provider registered with name '{provider_id}'"
+            ))
+        })?;
+        provider.realtime_model(&model_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "Provider '{provider_id}' does not support realtime model '{model_id}'"
             ))
         })
     }

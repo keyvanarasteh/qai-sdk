@@ -49,6 +49,10 @@ pub enum Content {
     Image {
         source: ImageSource,
     },
+    /// Spatial reasoning data (e.g. bounding boxes for robotics/vision).
+    Spatial {
+        boxes: Vec<BoundingBox>,
+    },
     File {
         source: FileSource,
     },
@@ -424,6 +428,9 @@ pub struct VideoGenerateOptions {
     pub height: Option<u32>,
     /// Seed for reproducible generation.
     pub seed: Option<u64>,
+    pub n: Option<u32>,
+    pub size: Option<String>,
+    pub fps: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -434,6 +441,22 @@ pub struct VideoGenerateResult {
     pub data: Option<Vec<u8>>,
     /// Revision or internal ID of the generation.
     pub revision: Option<String>,
+}
+
+/// Options for generating music.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct MusicGenerateOptions {
+    pub model_id: String,
+    pub prompt: String,
+    pub n: Option<u32>,
+    pub duration: Option<u32>,
+}
+
+/// Result of music generation.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct MusicGenerateResult {
+    /// List of base64-encoded audio bytes.
+    pub audio: Vec<String>,
 }
 
 // --- Realtime Types ---
@@ -460,4 +483,14 @@ pub struct ServerTool {
     /// Provider-specific configuration for this tool, serialized as JSON.
     #[serde(flatten)]
     pub config: serde_json::Value,
+}
+
+/// A bounding box for spatial reasoning.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct BoundingBox {
+    pub y_min: f32,
+    pub x_min: f32,
+    pub y_max: f32,
+    pub x_max: f32,
+    pub label: Option<String>,
 }

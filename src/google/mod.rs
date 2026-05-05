@@ -21,11 +21,15 @@
 pub mod embedding;
 pub mod error;
 pub mod image;
+pub mod music;
+pub mod realtime;
 pub mod speech;
 #[cfg(test)]
 mod tests;
 pub mod tools;
 pub mod types;
+pub mod video;
+use serde_json::json;
 
 use crate::core::types::{
     Content, FileSource, GenerateOptions, GenerateResult, ImageSource, Prompt, Role, StreamPart,
@@ -109,6 +113,7 @@ impl crate::core::LanguageModel for GoogleModel {
         let mut text_parts = Vec::new();
         let mut thought_parts = Vec::new();
         let mut tool_calls = Vec::new();
+        let mut executed_tools = Vec::new();
 
         for part in &candidate.content.parts {
             match part {
@@ -124,6 +129,22 @@ impl crate::core::LanguageModel for GoogleModel {
                         name: name.clone(),
                         arguments: args.clone(),
                     });
+                }
+                GooglePart::ExecutableCode { language, code } => {
+                    executed_tools.push(crate::core::types::ExecutedTool {
+                        name: "code_execution".to_string(),
+                        tool_type: "code_execution".to_string(),
+                        arguments: Some(json!({ "language": language, "code": code })),
+                        output: None,
+                        server_label: Some("Executing Code".to_string()),
+                    });
+                }
+                GooglePart::CodeExecutionResult { outcome, output } => {
+                    if let Some(last_tool) = executed_tools.last_mut() {
+                        if last_tool.tool_type == "code_execution" {
+                            last_tool.output = Some(json!({ "outcome": outcome, "output": output }));
+                        }
+                    }
                 }
                 _ => {}
             }
@@ -214,6 +235,28 @@ impl crate::core::LanguageModel for GoogleModel {
                                                     id: None,
                                                     name: Some(name.clone()),
                                                     arguments_delta: Some(args.to_string()),
+                                                };
+                                            }
+                                            GooglePart::ExecutableCode { language, code } => {
+                                                yield StreamPart::ExecutedTool {
+                                                    tool: crate::core::types::ExecutedTool {
+                                                        name: "code_execution".to_string(),
+                                                        tool_type: "code_execution".to_string(),
+                                                        arguments: Some(serde_json::json!({ "language": language, "code": code })),
+                                                        output: None,
+                                                        server_label: Some("Executing Code".to_string()),
+                                                    }
+                                                };
+                                            }
+                                            GooglePart::CodeExecutionResult { outcome, output } => {
+                                                yield StreamPart::ExecutedTool {
+                                                    tool: crate::core::types::ExecutedTool {
+                                                        name: "code_execution".to_string(),
+                                                        tool_type: "code_execution".to_string(),
+                                                        arguments: None,
+                                                        output: Some(serde_json::json!({ "outcome": outcome, "output": output })),
+                                                        server_label: Some("Code Execution Result".to_string()),
+                                                    }
                                                 };
                                             }
                                             _ => {}
@@ -326,35 +369,58 @@ impl GoogleModel {
         }
 
         let mut google_tools = Vec::new();
+        let mut functions = Vec::new();
+
         if let Some(tools) = &options.tools {
-            let mut functions = Vec::new();
             for t in tools {
-                if t.name == "google_search_retrieval" {
-                    google_tools.push(GoogleTool {
-                        function_declarations: None,
-                        google_search_retrieval: Some(types::GoogleSearchRetrieval {
-                            dynamic_retrieval_config: Some(types::DynamicRetrievalConfig {
-                                mode: Some("MODE_DYNAMIC".to_string()),
-                                dynamic_threshold: Some(0.3),
-                            }),
-                        }),
-                    });
-                } else {
-                    functions.push(GoogleFunctionDeclaration {
-                        name: t.name.clone(),
-                        description: t.description.clone(),
-                        parameters: t.parameters.clone(),
-                    });
-                }
-            }
-            if !functions.is_empty() {
-                google_tools.push(GoogleTool {
-                    function_declarations: Some(functions),
-                    google_search_retrieval: None,
+                functions.push(GoogleFunctionDeclaration {
+                    name: t.name.clone(),
+                    description: t.description.clone(),
+                    parameters: t.parameters.clone(),
                 });
             }
         }
-        let google_tools_opt = if google_tools.is_empty() { None } else { Some(google_tools) };
+
+        if !functions.is_empty() {
+            google_tools.push(GoogleTool {
+                function_declarations: Some(functions),
+                google_search_retrieval: None,
+                code_execution: None,
+            });
+        }
+
+        if let Some(server_tools) = &options.server_tools {
+            for st in server_tools {
+                match st.tool_type.as_str() {
+                    "web_search" | "google_search" => {
+                        google_tools.push(GoogleTool {
+                            function_declarations: None,
+                            google_search_retrieval: Some(types::GoogleSearchRetrieval {
+                                dynamic_retrieval_config: Some(types::DynamicRetrievalConfig {
+                                    mode: Some("MODE_DYNAMIC".to_string()),
+                                    dynamic_threshold: Some(0.3),
+                                }),
+                            }),
+                            code_execution: None,
+                        });
+                    }
+                    "code_execution" | "code_interpreter" => {
+                        google_tools.push(GoogleTool {
+                            function_declarations: None,
+                            google_search_retrieval: None,
+                            code_execution: Some(serde_json::json!({})),
+                        });
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        let google_tools_opt = if google_tools.is_empty() {
+            None
+        } else {
+            Some(google_tools)
+        };
 
         let mut response_mime_type = None;
         let mut response_schema = None;
@@ -517,6 +583,52 @@ impl GoogleProvider {
         }
         model
     }
+
+    /// Creates a video generation model.
+    #[must_use]
+    pub fn video_model(&self, _model_id: &str) -> video::GoogleVideoModel {
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
+            .unwrap_or_default();
+        let mut model = video::GoogleVideoModel::new(api_key);
+        if let Some(ref base_url) = self.settings.base_url {
+            model.base_url = base_url.clone();
+        }
+        model
+    }
+
+    /// Creates a music generation model.
+    #[must_use]
+    pub fn music_model(&self, _model_id: &str) -> music::GoogleMusicModel {
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
+            .unwrap_or_default();
+        let base_url = self
+            .settings
+            .base_url
+            .clone()
+            .unwrap_or_else(|| "https://generativelanguage.googleapis.com/v1beta".to_string());
+        music::GoogleMusicModel::new(api_key, base_url)
+    }
+
+    /// Creates a realtime model.
+    #[must_use]
+    pub fn realtime_model(&self, model_id: &str) -> realtime::GoogleRealtimeModel {
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
+            .unwrap_or_default();
+        let base_url = "generativelanguage.googleapis.com".to_string();
+        realtime::GoogleRealtimeModel::new(api_key, model_id.to_string(), base_url)
+    }
 }
 
 /// Create a Google provider instance with the given settings.
@@ -540,5 +652,14 @@ impl crate::core::registry::Provider for GoogleProvider {
     }
     fn speech_model(&self, model_id: &str) -> Option<Box<dyn crate::core::SpeechModel>> {
         Some(Box::new(self.speech_model(model_id)))
+    }
+    fn video_model(&self, model_id: &str) -> Option<Box<dyn crate::core::VideoModel>> {
+        Some(Box::new(self.video_model(model_id)))
+    }
+    fn music_model(&self, model_id: &str) -> Option<Box<dyn crate::core::MusicModel>> {
+        Some(Box::new(self.music_model(model_id)))
+    }
+    fn realtime_model(&self, model_id: &str) -> Option<Box<dyn crate::core::RealtimeModel>> {
+        Some(Box::new(self.realtime_model(model_id)))
     }
 }
