@@ -26,8 +26,7 @@ async fn main() -> Result<()> {
         temperature: Some(0.9),
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     // ===================================================================
@@ -68,6 +67,7 @@ async fn main() -> Result<()> {
             StreamPart::Error { message } => {
                 eprintln!("\n❌ Error: {}", message);
             }
+            StreamPart::ReasoningDelta { .. } => {}
         }
     }
 

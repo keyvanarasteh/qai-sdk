@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15] - 2026-05-06
+
+### Added
+
+- **GroqCloud Tool Use**: Full three-tier tool ecosystem — Built-in Tools (Web Search, Visit Website), Remote MCP server integration, and enhanced Local Tool Calling.
+- **`tool_choice`**: Added `tool_choice: Option<serde_json::Value>` to `GenerateOptions` for fine-grained control over tool selection (`"auto"`, `"required"`, `"none"`, or specific function).
+- **`parallel_tool_calls`**: Added `parallel_tool_calls: Option<bool>` to `GenerateOptions` for enabling parallel tool execution.
+- **`executed_tools`**: Added `executed_tools: Vec<ExecutedTool>` to `GenerateResult` for surfacing metadata about server-side executed tools (web search, MCP calls).
+- **`GroqTool` types**: New `groqcloud::tools` module with `GroqTool` enum (Function, WebSearch, VisitWebsite, Mcp), `GroqUserLocation`, `GroqMcpAllowedTool`, and ergonomic constructors.
+- **`GroqCloudResponsesModel`**: New Responses API wrapper for agentic workflows via Groq.
+- **Compound model support**: New `.compound()` and `.responses()` factory methods on `GroqCloudProvider`.
+- **Examples**: `groqcloud_web_search.rs`, `groqcloud_mcp.rs`, `groqcloud_tool_calling.rs`.
+
+### Fixed
+
+- Pre-existing compilation issues in `groqcloud_chat.rs`, `groqcloud_reasoning.rs`, `groqcloud_vision.rs`, `ollama_basic.rs`, `chat_streaming.rs` examples (Usage type access, missing trait imports, non-exhaustive match arms).
+- All example files now use `..Default::default()` for forward-compatible `GenerateOptions` construction.
+
 ## [0.1.14] - 2026-05-05
 
 ### Documented

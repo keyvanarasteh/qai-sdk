@@ -20,10 +20,7 @@ fn test_openai_request_mapping() {
         model_id: "gpt-4-turbo".to_string(),
         max_tokens: Some(100),
         temperature: Some(0.7),
-        top_p: None,
-        stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let request = model.prepare_request(prompt, options).unwrap();

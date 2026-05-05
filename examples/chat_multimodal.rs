@@ -39,8 +39,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt, options).await?;
@@ -79,8 +78,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt, options).await?;
@@ -129,8 +127,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt, options).await?;

@@ -33,8 +33,7 @@ async fn main() -> Result<()> {
         temperature: Some(0.7),
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     // --- OpenAI ---

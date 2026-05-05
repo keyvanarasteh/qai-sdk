@@ -43,8 +43,7 @@ async fn main() -> Result<()> {
         temperature: Some(0.7),
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Together Chat: {}", result.text);
@@ -83,8 +82,7 @@ async fn main() -> Result<()> {
         temperature: Some(0.5),
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Groq response: {}\n", result.text);
@@ -107,8 +105,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Fireworks response: {}\n", result.text);
@@ -131,8 +128,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("OpenRouter response: {}\n", result.text);
@@ -155,8 +151,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
     let result = model.generate(prompt.clone(), options.clone()).await?;
     println!("Mistral response: {}\n", result.text);
@@ -179,8 +174,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     // Ollama may not be running, so handle errors gracefully
@@ -200,8 +194,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let mut stream = model.generate_stream(prompt.clone(), options).await?;

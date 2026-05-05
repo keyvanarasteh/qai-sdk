@@ -268,6 +268,7 @@ impl Agent {
                     Some(self.tools.clone())
                 },
                 response_format: None, reasoning_format: None, reasoning_effort: None,
+                tool_choice: None, parallel_tool_calls: None,
             };
 
             let result = self.model.generate(prompt, options).await?;
@@ -388,6 +389,7 @@ impl Agent {
                         Some(self.tools.clone())
                     },
                     response_format: None, reasoning_format: None, reasoning_effort: None,
+                    tool_choice: None, parallel_tool_calls: None,
                 };
 
                 let mut inner_stream = match self.model.generate_stream(prompt, options).await {

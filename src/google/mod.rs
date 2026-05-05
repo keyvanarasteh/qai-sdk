@@ -134,6 +134,7 @@ impl crate::core::LanguageModel for GoogleModel {
                 .unwrap_or_else(|| "stop".to_string()),
             tool_calls,
             reasoning: None,
+            executed_tools: Vec::new(),
         })
     }
 

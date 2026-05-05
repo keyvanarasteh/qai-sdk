@@ -18,10 +18,7 @@ fn test_google_request_mapping() {
         model_id: "gemini-1.5-pro".to_string(),
         max_tokens: Some(100),
         temperature: Some(0.9),
-        top_p: None,
-        stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let request = model.prepare_request(prompt, &options).unwrap();

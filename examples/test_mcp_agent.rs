@@ -34,12 +34,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     let options = GenerateOptions {
         model_id: "gpt-4o".to_string(),
-        max_tokens: None,
-        temperature: None,
-        top_p: None,
-        stop_sequences: None,
         tools: None, // Tools are automatically populated by the loop
-        response_format: None,
+        ..Default::default()
     };
 
     // 3. Just one line to run the entire loop!

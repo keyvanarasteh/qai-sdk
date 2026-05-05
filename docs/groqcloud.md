@@ -243,3 +243,119 @@ let result = tts_model.synthesize(SpeechOptions {
 
 std::fs::write("output.wav", result.audio).unwrap();
 ```
+
+---
+
+## Tool Use
+
+Groq provides a three-tier tool ecosystem for building agentic applications:
+
+### 1. Built-In Tools (Web Search & Visit Website)
+
+Groq's **compound models** (`groq/compound`, `groq/compound-mini`) include server-side built-in tools that are executed automatically by Groq's infrastructure. No local code is needed to handle tool execution.
+
+```rust
+use qai_sdk::groqcloud::tools::GroqTool;
+
+// Create built-in tool definitions
+let web_search = GroqTool::builtin_web_search(Some(5)); // max 5 results
+let visit_site = GroqTool::builtin_visit_website();
+
+// With location context for localized results
+use qai_sdk::groqcloud::tools::GroqUserLocation;
+let localized_search = GroqTool::builtin_web_search_with_config(
+    Some(3),
+    Some("high".to_string()),
+    Some(GroqUserLocation::full("Istanbul", "Istanbul", "TR")),
+);
+```
+
+**Supported Models**: Only `groq/compound` and `groq/compound-mini`.
+
+### 2. Remote MCP Integration
+
+Groq acts as an MCP client — you provide an HTTPS MCP server URL and optional auth headers, and Groq handles tool discovery and execution server-side.
+
+```rust
+use qai_sdk::groqcloud::tools::GroqTool;
+use std::collections::HashMap;
+
+// Simple MCP server (no auth)
+let mcp_tool = GroqTool::mcp("my-server", "https://mcp.example.com/sse");
+
+// With authentication headers
+let mut headers = HashMap::new();
+headers.insert("Authorization".into(), "Bearer hf_xxx".into());
+let hf_mcp = GroqTool::mcp_with_auth(
+    "huggingface",
+    "https://huggingface.co/mcp",
+    headers,
+);
+```
+
+### 3. Local Tool Calling
+
+Standard OpenAI-compatible function calling. The model returns `tool_calls` and your application executes them locally using the `Agent` framework.
+
+```rust
+use qai_sdk::core::agent::Agent;
+
+let agent = Agent::builder()
+    .model(Box::new(provider.chat("llama-3.3-70b-versatile")))
+    .model_id("llama-3.3-70b-versatile")
+    .system("You are a helpful assistant.")
+    .tools(vec![weather_tool, calculator_tool])
+    .tool_handler(|name, args| async move {
+        match name.as_str() {
+            "get_weather" => Ok(serde_json::json!({"temp": 22})),
+            _ => Err(anyhow::anyhow!("Unknown tool")),
+        }
+    })
+    .temperature(0.0)
+    .max_steps(5)
+    .build()?;
+
+let result = agent.run("What's the weather in Istanbul?").await?;
+```
+
+### Tool Choice Control
+
+Use `tool_choice` to control how the model selects tools:
+
+```rust
+let options = GenerateOptions {
+    model_id: "llama-3.3-70b-versatile".into(),
+    tools: Some(vec![weather_tool]),
+    // "auto" (default), "required", "none", or specific function
+    tool_choice: Some(serde_json::json!("required")),
+    // Enable parallel tool execution
+    parallel_tool_calls: Some(true),
+    ..Default::default()
+};
+```
+
+### Supported Models for Tool Calling
+
+| Model | Built-In Tools | Local Tool Calling | MCP |
+|---|:---:|:---:|:---:|
+| `groq/compound` | ✅ | ✅ | ✅ |
+| `groq/compound-mini` | ✅ | ✅ | ✅ |
+| `llama-3.3-70b-versatile` | ❌ | ✅ | ❌ |
+| `llama-3.1-8b-instant` | ❌ | ✅ | ❌ |
+| `meta-llama/llama-4-scout-17b-16e-instruct` | ❌ | ✅ | ❌ |
+| `qwen/qwen3-32b` | ❌ | ✅ | ❌ |
+| `mistral-saba-24b` | ❌ | ✅ | ❌ |
+
+### Best Practices
+
+- **Temperature**: Use `0.0` – `0.5` for reliable tool calling
+- **Tool Descriptions**: Clear, specific descriptions improve tool selection accuracy
+- **Compound Models**: For web-augmented answers, always use `groq/compound` or `groq/compound-mini`
+- **Parallel Calls**: Enable `parallel_tool_calls` when tools are independent
+- **Error Handling**: Always handle `ToolCallResult` errors gracefully in multi-turn loops
+
+### Examples
+
+- [`groqcloud_web_search.rs`](../examples/groqcloud_web_search.rs) — Built-in web search + visit website
+- [`groqcloud_mcp.rs`](../examples/groqcloud_mcp.rs) — Remote MCP server integration
+- [`groqcloud_tool_calling.rs`](../examples/groqcloud_tool_calling.rs) — Local tool calling with Agent framework

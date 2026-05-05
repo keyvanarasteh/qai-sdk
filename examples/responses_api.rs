@@ -37,8 +37,7 @@ async fn main() -> Result<()> {
         temperature: Some(0.7),
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt, options).await?;
@@ -76,8 +75,7 @@ async fn main() -> Result<()> {
         temperature: Some(0.3),
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt, options).await?;
@@ -102,8 +100,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let mut stream = model.generate_stream(prompt, options).await?;
@@ -157,10 +154,8 @@ async fn main() -> Result<()> {
         model_id: "gpt-4o-mini".to_string(),
         max_tokens: Some(200),
         temperature: Some(0.0),
-        top_p: None,
-        stop_sequences: None,
         tools: Some(tools),
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt, options).await?;
@@ -192,8 +187,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     let result = xai_model.generate(prompt, options).await?;

@@ -69,6 +69,11 @@ pub struct GenerateOptions {
     pub reasoning_format: Option<String>,
     /// Specifies the level of effort for reasoning (e.g., "low", "medium", "high").
     pub reasoning_effort: Option<String>,
+    /// Controls which (if any) tool the model should call.
+    /// Accepts `"auto"`, `"required"`, `"none"`, or `{"type":"function","function":{"name":"..."}}`.
+    pub tool_choice: Option<serde_json::Value>,
+    /// When true, enables parallel tool call execution by the model.
+    pub parallel_tool_calls: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -97,6 +102,28 @@ pub struct GenerateResult {
     /// Intermediate reasoning (e.g., "thinking") produced by the model before its final text.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reasoning: Option<String>,
+    /// Metadata about tools that were executed server-side (e.g., built-in web search, MCP calls).
+    /// Empty for standard local tool calling.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub executed_tools: Vec<ExecutedTool>,
+}
+
+/// Metadata about a tool that was executed server-side by the provider.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExecutedTool {
+    /// The tool name (e.g., "web_search", "visit_website", MCP tool name).
+    pub name: String,
+    /// The type of tool execution ("web_search", "visit_website", "mcp_call").
+    pub tool_type: String,
+    /// The arguments passed to the tool, if available.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arguments: Option<serde_json::Value>,
+    /// The output/result of the tool execution, if available.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output: Option<serde_json::Value>,
+    /// The server/label that executed this tool (for MCP tools).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub server_label: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

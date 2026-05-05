@@ -213,8 +213,7 @@ async fn main() -> Result<()> {
         temperature: None,
         top_p: None,
         stop_sequences: None,
-        tools: None,
-        response_format: None,
+        ..Default::default()
     };
 
     match model.generate(prompt, options).await {

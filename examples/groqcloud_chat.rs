@@ -48,12 +48,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("\n--- Groq Response ---\n{}", result.text);
 
-    if let Some(usage) = result.usage {
-        println!(
-            "\n[Usage] Prompt: {}, Completion: {}",
-            usage.prompt_tokens, usage.completion_tokens
-        );
-    }
+    println!(
+        "\n[Usage] Prompt: {}, Completion: {}",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
 
     Ok(())
 }

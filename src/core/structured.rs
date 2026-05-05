@@ -238,6 +238,8 @@ async fn generate_object_once(
                 })),
                 reasoning_format: None,
                 reasoning_effort: None,
+                tool_choice: None,
+                parallel_tool_calls: None,
             };
 
             let result = model.generate(prompt, gen_options).await?;
@@ -275,6 +277,7 @@ async fn generate_object_once(
                 stop_sequences: None,
                 tools: Some(vec![tool]),
                 response_format: None, reasoning_format: None, reasoning_effort: None,
+                tool_choice: None, parallel_tool_calls: None,
             };
 
             let result = model.generate(prompt, gen_options).await?;
@@ -396,6 +399,8 @@ pub async fn stream_object(
             })),
             reasoning_format: None,
             reasoning_effort: None,
+            tool_choice: None,
+            parallel_tool_calls: None,
         },
         OutputMode::Tool => {
             let tool = ToolDefinition {
@@ -411,6 +416,7 @@ pub async fn stream_object(
                 stop_sequences: None,
                 tools: Some(vec![tool]),
                 response_format: None, reasoning_format: None, reasoning_effort: None,
+                tool_choice: None, parallel_tool_calls: None,
             }
         }
     };

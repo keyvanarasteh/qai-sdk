@@ -1,7 +1,8 @@
 //! # QAI `GroqCloud`
 //!
 //! Provider for GroqCloud's ultra-fast API endpoints. Groq implements the `OpenAI`
-//! API format for chat, speech-to-text, and text-to-speech.
+//! API format for chat, speech-to-text, and text-to-speech, plus a Responses API
+//! for agentic tool-use workflows.
 //!
 //! ## Usage
 //!
@@ -15,14 +16,19 @@
 //! });
 //!
 //! let chat = provider.chat("llama-3.3-70b-versatile");
+//! let compound = provider.compound("groq/compound");
 //! let stt = provider.transcription("whisper-large-v3-turbo");
 //! let tts = provider.speech("canopylabs/orpheus-v1-english");
+//! let responses = provider.responses("groq/compound");
 //! ```
+
+pub mod tools;
 
 use crate::core::types::{
     GenerateOptions, GenerateResult, Prompt, ProviderSettings, SpeechOptions, SpeechResult,
     StreamPart, TranscriptionOptions, TranscriptionResult,
 };
+use crate::openai::responses::OpenAIResponsesModel;
 use crate::openai::speech::OpenAISpeechModel;
 use crate::openai::transcription::OpenAITranscriptionModel;
 use crate::openai::OpenAIModel;
@@ -53,6 +59,46 @@ impl GroqCloudModel {
 #[async_trait]
 impl crate::core::LanguageModel for GroqCloudModel {
     #[tracing::instrument(skip(self, prompt), fields(model = options.model_id))]
+    async fn generate(
+        &self,
+        prompt: Prompt,
+        options: GenerateOptions,
+    ) -> crate::core::Result<GenerateResult> {
+        self.inner.generate(prompt, options).await
+    }
+
+    async fn generate_stream(
+        &self,
+        prompt: Prompt,
+        options: GenerateOptions,
+    ) -> crate::core::Result<BoxStream<'static, StreamPart>> {
+        self.inner.generate_stream(prompt, options).await
+    }
+}
+
+/// GroqCloud Responses API model wrapper.
+///
+/// Provides access to Groq's Responses API for agentic tool-use workflows,
+/// including built-in tools (web search, visit website) and remote MCP servers.
+pub struct GroqCloudResponsesModel {
+    pub inner: OpenAIResponsesModel,
+}
+
+impl GroqCloudResponsesModel {
+    #[must_use]
+    pub fn new(api_key: String) -> Self {
+        Self {
+            inner: OpenAIResponsesModel {
+                api_key,
+                base_url: GROQ_BASE_URL.to_string(),
+                client: Client::new(),
+            },
+        }
+    }
+}
+
+#[async_trait]
+impl crate::core::LanguageModel for GroqCloudResponsesModel {
     async fn generate(
         &self,
         prompt: Prompt,
@@ -142,6 +188,27 @@ impl GroqCloudProvider {
     #[must_use]
     pub fn language_model(&self, model_id: &str) -> GroqCloudModel {
         self.chat(model_id)
+    }
+
+    /// Creates a compound model instance for built-in tool use (web search, visit website).
+    ///
+    /// Compound models (`groq/compound`, `groq/compound-mini`) automatically
+    /// select and execute built-in tools server-side. Use this with
+    /// [`tools::GroqTool::builtin_web_search`] and [`tools::GroqTool::builtin_visit_website`].
+    #[must_use]
+    pub fn compound(&self, _model_id: &str) -> GroqCloudModel {
+        let api_key = self.get_api_key();
+        GroqCloudModel::new(api_key)
+    }
+
+    /// Creates a Responses API model for agentic workflows.
+    ///
+    /// The Responses API supports richer output including multi-step tool execution,
+    /// MCP integration, and reasoning content.
+    #[must_use]
+    pub fn responses(&self, _model_id: &str) -> GroqCloudResponsesModel {
+        let api_key = self.get_api_key();
+        GroqCloudResponsesModel::new(api_key)
     }
 
     /// Creates a transcription (Speech-to-Text) model.

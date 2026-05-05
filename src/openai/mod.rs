@@ -38,7 +38,7 @@ use crate::core::types::{
 };
 use crate::openai::types::{
     OpenAIContent, OpenAIFunctionCall, OpenAIFunctionDefinition, OpenAIImageUrl, OpenAIMessage,
-    OpenAIRequest, OpenAIResponse, OpenAIStreamChunk, OpenAITool, OpenAIToolCall,
+    OpenAIRequest, OpenAIResponse, OpenAIStreamChunk, OpenAITool, OpenAIToolCall, OpenAIToolChoice,
 };
 use anyhow::anyhow;
 use async_trait::async_trait;
@@ -143,6 +143,7 @@ impl crate::core::LanguageModel for OpenAIModel {
                 .message
                 .reasoning_content
                 .clone(),
+            executed_tools: Vec::new(),
         })
     }
 
@@ -361,6 +362,15 @@ impl OpenAIModel {
             None
         };
 
+        // Convert tool_choice from serde_json::Value to OpenAIToolChoice if provided
+        let tool_choice = options.tool_choice.and_then(|v| {
+            if let Some(s) = v.as_str() {
+                Some(OpenAIToolChoice::String(s.to_string()))
+            } else {
+                serde_json::from_value::<OpenAIToolChoice>(v).ok()
+            }
+        });
+
         Ok(OpenAIRequest {
             model: options.model_id,
             messages,
@@ -370,10 +380,11 @@ impl OpenAIModel {
             stop: options.stop_sequences,
             stream: Some(false),
             tools: openai_tools,
-            tool_choice: None, // Default to auto
+            tool_choice,
             response_format: options.response_format,
             reasoning_format: options.reasoning_format,
             reasoning_effort: options.reasoning_effort,
+            parallel_tool_calls: options.parallel_tool_calls,
         })
     }
 }

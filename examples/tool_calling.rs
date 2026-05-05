@@ -71,10 +71,8 @@ async fn main() -> Result<()> {
         model_id: "gpt-4o-mini".to_string(),
         max_tokens: Some(500),
         temperature: Some(0.0),
-        top_p: None,
-        stop_sequences: None,
         tools: Some(tools.clone()),
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt.clone(), options.clone()).await?;
@@ -93,10 +91,8 @@ async fn main() -> Result<()> {
         model_id: "claude-3-haiku-20240307".to_string(),
         max_tokens: Some(500),
         temperature: Some(0.0),
-        top_p: None,
-        stop_sequences: None,
         tools: Some(tools.clone()),
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt.clone(), options).await?;
@@ -141,11 +137,8 @@ async fn main() -> Result<()> {
     let options = GenerateOptions {
         model_id: "gpt-4o-mini".to_string(),
         max_tokens: Some(200),
-        temperature: None,
-        top_p: None,
-        stop_sequences: None,
         tools: Some(tools),
-        response_format: None,
+        ..Default::default()
     };
 
     let result = model.generate(prompt_with_result, options).await?;
