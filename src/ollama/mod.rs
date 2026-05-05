@@ -123,6 +123,127 @@ impl OllamaProvider {
     pub fn embedding(&self, model_id: &str) -> OllamaModel {
         self.chat(model_id)
     }
+
+    /// Internal helper to construct the base URL for native `/api/` endpoints
+    /// by stripping the `/v1` compatibility suffix if present.
+    fn get_api_base(&self) -> String {
+        let base = self
+            .settings
+            .base_url
+            .clone()
+            .or_else(|| std::env::var("OLLAMA_BASE_URL").ok())
+            .unwrap_or_else(|| types::DEFAULT_OLLAMA_LOCAL_URL.to_string());
+        
+        if base.ends_with("/v1") {
+            base[..base.len() - 3].to_string()
+        } else if base.ends_with("/v1/") {
+            base[..base.len() - 4].to_string()
+        } else {
+            base
+        }
+    }
+
+    /// List models that are available locally.
+    pub async fn list_models(&self) -> crate::core::Result<types::OllamaListResponse> {
+        let url = format!("{}/api/tags", self.get_api_base());
+        let client = Client::new();
+        let res = client.get(&url).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        res.json().await.map_err(|e| crate::core::error::ProviderError::InvalidResponse(e.to_string()))
+    }
+
+    /// List models that are currently running in memory.
+    pub async fn list_running_models(&self) -> crate::core::Result<types::OllamaPsResponse> {
+        let url = format!("{}/api/ps", self.get_api_base());
+        let client = Client::new();
+        let res = client.get(&url).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        res.json().await.map_err(|e| crate::core::error::ProviderError::InvalidResponse(e.to_string()))
+    }
+
+    /// Show detailed information for a specific model.
+    pub async fn show_model_info(&self, req: types::OllamaShowRequest) -> crate::core::Result<types::OllamaShowResponse> {
+        let url = format!("{}/api/show", self.get_api_base());
+        let client = Client::new();
+        let res = client.post(&url).json(&req).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        res.json().await.map_err(|e| crate::core::error::ProviderError::InvalidResponse(e.to_string()))
+    }
+
+    /// Copy a model. Creates a model with another name from an existing model.
+    pub async fn copy_model(&self, req: types::OllamaCopyRequest) -> crate::core::Result<()> {
+        let url = format!("{}/api/copy", self.get_api_base());
+        let client = Client::new();
+        let res = client.post(&url).json(&req).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        Ok(())
+    }
+
+    /// Delete a model and its data.
+    pub async fn delete_model(&self, req: types::OllamaDeleteRequest) -> crate::core::Result<()> {
+        let url = format!("{}/api/delete", self.get_api_base());
+        let client = Client::new();
+        let res = client.delete(&url).json(&req).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        Ok(())
+    }
+
+    /// Create a model from a Modelfile (blocking non-streaming implementation).
+    pub async fn create_model(&self, mut req: types::OllamaCreateRequest) -> crate::core::Result<()> {
+        req.stream = Some(false); // Force non-streaming for simplicity in this helper
+        let url = format!("{}/api/create", self.get_api_base());
+        let client = Client::new();
+        let res = client.post(&url).json(&req).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        Ok(())
+    }
+
+    /// Pull a model from a registry (blocking non-streaming implementation).
+    pub async fn pull_model(&self, mut req: types::OllamaPullRequest) -> crate::core::Result<types::OllamaPullResponse> {
+        req.stream = Some(false); // Force non-streaming for simplicity
+        let url = format!("{}/api/pull", self.get_api_base());
+        let client = Client::new();
+        let res = client.post(&url).json(&req).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        res.json().await.map_err(|e| crate::core::error::ProviderError::InvalidResponse(e.to_string()))
+    }
+
+    /// Push a model to a registry (blocking non-streaming implementation).
+    pub async fn push_model(&self, mut req: types::OllamaPushRequest) -> crate::core::Result<()> {
+        req.stream = Some(false); // Force non-streaming for simplicity
+        let url = format!("{}/api/push", self.get_api_base());
+        let client = Client::new();
+        let res = client.post(&url).json(&req).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        Ok(())
+    }
+
+    /// Get the version of the Ollama server.
+    pub async fn get_version(&self) -> crate::core::Result<types::OllamaVersionResponse> {
+        let url = format!("{}/api/version", self.get_api_base());
+        let client = Client::new();
+        let res = client.get(&url).send().await.map_err(|e| crate::core::error::ProviderError::Network(e.to_string()))?;
+        if !res.status().is_success() {
+            return Err(crate::core::error::ProviderError::InvalidResponse(format!("Ollama API error: {}", res.status())));
+        }
+        res.json().await.map_err(|e| crate::core::error::ProviderError::InvalidResponse(e.to_string()))
+    }
 }
 
 /// Create an `Ollama` provider instance with the given settings.
