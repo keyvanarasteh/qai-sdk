@@ -34,7 +34,7 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 | Universal Agent | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Reasoning / Thinking | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Prompt KV Caching | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | ✅ |
-| Vision / Multimodal | ✅ | ✅ | ✅ | — | — | ✅ | ✅ | — |
+| Vision / Multimodal | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | — |
 | Embeddings | ✅ | — | ✅ | — | — | — | ✅ | — |
 | Image Generation | ✅ | — | ✅ | — | ✅ | — | — | — |
 | Speech (TTS) | ✅ | — | — | — | — | ✅ | — | — |
