@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.22] - 2026-05-06
+
+### Added
+
+- **xAI Prompt Caching**:
+  - Implemented automatic mapping of `extra_headers` down to the HTTP client for OpenAI-compatible providers, enabling `x-grok-conv-id` for sticky routing and optimal prompt caching on xAI.
+  - Added `xai_prompt_caching.rs` example demonstrating multi-turn cache hits.
+
 ## [0.1.21] - 2026-05-06
 
 ### Added
