@@ -310,7 +310,7 @@ pub struct ImageGenerateResult {
 
 // --- Completion Types ---
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CompletionOptions {
     pub model_id: String,
     pub prompt: String,

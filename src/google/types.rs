@@ -87,9 +87,31 @@ pub struct GoogleGenerationConfig {
     pub response_mime_type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub response_schema: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub response_modalities: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub speech_config: Option<GoogleSpeechConfig>,
     /// Configuration for the model's thinking/reasoning behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub thinking_config: Option<GoogleThinkingConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GoogleSpeechConfig {
+    pub voice_config: GoogleVoiceConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GoogleVoiceConfig {
+    pub prebuilt_voice_config: GooglePrebuiltVoiceConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GooglePrebuiltVoiceConfig {
+    pub voice_name: String,
 }
 
 /// Controls the model's thinking/reasoning behavior.

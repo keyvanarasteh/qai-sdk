@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.21] - 2026-05-06
+
+### Added
+
+- **Google Gemini Audio Generation**:
+  - Implemented `speech_model()` for the Google provider, enabling Text-to-Speech (TTS) capabilities using Gemini models (e.g., `gemini-2.5-flash`).
+  - Added `response_modalities` and `speech_config` support to `GoogleGenerationConfig` to correctly request audio modalities.
+  - Added `gemini_audio_generation.rs` example demonstrating TTS capabilities.
+
 ## [0.1.20] - 2026-05-06
 
 ### Added

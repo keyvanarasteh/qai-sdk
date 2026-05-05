@@ -21,6 +21,7 @@
 pub mod embedding;
 pub mod error;
 pub mod image;
+pub mod speech;
 #[cfg(test)]
 mod tests;
 pub mod tools;
@@ -427,6 +428,8 @@ impl GoogleModel {
                 stop_sequences: options.stop_sequences.clone(),
                 response_mime_type,
                 response_schema,
+                response_modalities: None,
+                speech_config: None,
                 thinking_config,
             }),
         })
@@ -481,6 +484,23 @@ impl GoogleProvider {
         model
     }
 
+    /// Creates a speech generation (TTS) model.
+    #[must_use]
+    pub fn speech_model(&self, _model_id: &str) -> speech::GoogleSpeechModel {
+        let api_key = self
+            .settings
+            .api_key
+            .clone()
+            .or_else(|| std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").ok())
+            .unwrap_or_default();
+        let base_url = self
+            .settings
+            .base_url
+            .clone()
+            .unwrap_or_else(|| "https://generativelanguage.googleapis.com/v1beta".to_string());
+        speech::GoogleSpeechModel::new(api_key, base_url)
+    }
+
     /// Creates an image generation model.
     #[must_use]
     pub fn image(&self, _model_id: &str) -> image::GoogleImageModel {
@@ -508,12 +528,16 @@ impl crate::core::registry::Provider for GoogleProvider {
     fn language_model(&self, model_id: &str) -> Option<Box<dyn crate::core::LanguageModel>> {
         Some(Box::new(self.chat(model_id)))
     }
-
-    fn embedding_model(&self, model_id: &str) -> Option<Box<dyn crate::core::EmbeddingModel>> {
+    fn embedding_model(
+        &self,
+        model_id: &str,
+    ) -> Option<Box<dyn crate::core::EmbeddingModel>> {
         Some(Box::new(self.embedding(model_id)))
     }
-
     fn image_model(&self, model_id: &str) -> Option<Box<dyn crate::core::ImageModel>> {
         Some(Box::new(self.image(model_id)))
+    }
+    fn speech_model(&self, model_id: &str) -> Option<Box<dyn crate::core::SpeechModel>> {
+        Some(Box::new(self.speech_model(model_id)))
     }
 }

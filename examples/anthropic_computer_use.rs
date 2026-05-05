@@ -27,7 +27,14 @@ async fn main() -> anyhow::Result<()> {
 
     let model = provider.chat("claude-3-5-sonnet-20241022");
 
-    let prompt = Prompt::user("Please look at my screen and tell me what you see, then run 'ls' in bash.");
+    let prompt = Prompt {
+        messages: vec![qai_sdk::core::types::Message {
+            role: qai_sdk::core::types::Role::User,
+            content: vec![qai_sdk::core::types::Content::Text {
+                text: "Please look at my screen and tell me what you see, then run 'ls' in bash.".to_string(),
+            }],
+        }],
+    };
 
     // Define the beta tools
     let computer_tool = ToolDefinition {

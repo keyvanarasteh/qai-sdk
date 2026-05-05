@@ -37,7 +37,7 @@ A modular, type-safe Rust SDK for AI providers. One unified API across **OpenAI*
 | Vision / Multimodal | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | — |
 | Embeddings | ✅ | — | ✅ | — | — | — | ✅ | — |
 | Image Generation | ✅ | — | ✅ | — | ✅ | — | — | — |
-| Speech (TTS) | ✅ | — | — | — | — | ✅ | — | — |
+| Speech (TTS) | ✅ | — | ✅ | — | — | ✅ | — | — |
 | Transcription (STT) | ✅ | — | — | — | — | ✅ | — | — |
 | Text Completion | ✅ | — | — | ✅ | — | — | — | — |
 | Responses API | ✅ | — | — | — | ✅ | ✅ | — | — |
