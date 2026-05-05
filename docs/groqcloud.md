@@ -65,6 +65,17 @@ println!("Fast Generation: {}", result.text);
 ### Tool Calling & Structured Outputs
 Because the `groqcloud` module wraps the native `openai` traits under the hood, Tool Calling (`tools`) and Native JSON Output enforcement (`response_format: {"type": "json_object"}`) work out-of-the-box exactly like they do with OpenAI and Ollama.
 
+When using the `generate_object` wrapper for JSON Schemas, note that Groq supports two modes for structured outputs: Strict Mode (requires supported models like `gpt-oss-20b`) and Best-Effort Mode. You can disable strict validation if your selected model does not support it:
+
+```rust
+ObjectGenerateOptions {
+    model_id: "meta-llama/llama-4-scout-17b-16e-instruct".into(),
+    schema: my_schema,
+    strict: Some(false), // Disable strict validation for unsupported models
+    ..Default::default()
+}
+```
+
 ---
 
 ## Vision (Multimodal)

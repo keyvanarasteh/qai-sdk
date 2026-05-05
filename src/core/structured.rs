@@ -52,6 +52,8 @@ pub struct ObjectGenerateOptions {
     pub system: Option<String>,
     /// Maximum number of retries on schema validation failure (default: 2).
     pub max_retries: u32,
+    /// Whether to enforce strict schema adherence (default: true). Some providers/models may require this to be false.
+    pub strict: Option<bool>,
 }
 
 /// Result from `generate_object`.
@@ -231,7 +233,7 @@ async fn generate_object_once(
                         "name": tool_name,
                         "description": tool_desc,
                         "schema": options.schema.clone(),
-                        "strict": true
+                        "strict": options.strict.unwrap_or(true)
                     }
                 })),
                 reasoning_format: None,
@@ -389,7 +391,7 @@ pub async fn stream_object(
                     "name": tool_name.clone(),
                     "description": tool_desc.clone(),
                     "schema": options.schema.clone(),
-                    "strict": true
+                    "strict": options.strict.unwrap_or(true)
                 }
             })),
             reasoning_format: None,
@@ -607,6 +609,7 @@ impl Default for ObjectGenerateOptions {
             temperature: None,
             system: None,
             max_retries: 2,
+            strict: None,
         }
     }
 }

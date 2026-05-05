@@ -57,6 +57,19 @@ flowchart TD
 
 ## Key Types
 
-- **`ObjectGenerateOptions`** — Schema, mode, model params
+- **`ObjectGenerateOptions`** — Schema, mode, model params, and `strict` flag.
 - **`ObjectGenerateResult`** — `.object` (parsed JSON), `.raw_text`, `.usage`
 - **`OutputMode`** — `Json` or `Tool`
+
+## Strict Mode
+
+By default, the SDK sets `"strict": true` when generating structured JSON (which forces the model to use constrained decoding). However, some models or providers (like many Groq models) may only support best-effort structured outputs. You can disable strict mode explicitly:
+
+```rust
+ObjectGenerateOptions {
+    model_id: "meta-llama/llama-4-scout-17b-16e-instruct".to_string(),
+    schema: ...,
+    strict: Some(false), // Disable strict mode for best-effort schema adherence
+    ..Default::default()
+}
+```

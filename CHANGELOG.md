@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] - 2026-05-05
+
+### Added
+
+- **Structured Outputs (Strict Mode Control)**: Added `strict: Option<bool>` to `ObjectGenerateOptions` allowing users to explicitly enable or disable strict JSON schema enforcement (e.g., using `strict: false` for best-effort schemas on models like `meta-llama/llama-4-scout-17b-16e-instruct` on GroqCloud).
+
 ## [0.1.12] - 2026-05-05
 
 ### Added
