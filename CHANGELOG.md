@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.20] - 2026-05-06
+
+### Added
+
+- **Anthropic Computer Use**:
+  - Implemented support for Anthropic's Computer Use Beta.
+  - Added native mapping for `computer_20241022`, `bash_20241022`, and `text_editor_20241022` tools.
+  - The SDK automatically sets the required `anthropic-beta` header when these tools are present in the request.
+  - Added `anthropic_computer_use.rs` example.
+
 ## [0.1.19] - 2026-05-06
 
 ### Added

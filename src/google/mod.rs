@@ -330,8 +330,8 @@ impl GoogleModel {
                 if t.name == "google_search_retrieval" {
                     google_tools.push(GoogleTool {
                         function_declarations: None,
-                        google_search_retrieval: Some(crate::google::types::GoogleSearchRetrieval {
-                            dynamic_retrieval_config: Some(crate::google::types::DynamicRetrievalConfig {
+                        google_search_retrieval: Some(types::GoogleSearchRetrieval {
+                            dynamic_retrieval_config: Some(types::DynamicRetrievalConfig {
                                 mode: Some("MODE_DYNAMIC".to_string()),
                                 dynamic_threshold: Some(0.3),
                             }),

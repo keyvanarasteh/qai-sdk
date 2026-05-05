@@ -47,10 +47,27 @@ pub struct AnthropicThinkingConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AnthropicTool {
-    pub name: String,
-    pub description: String,
-    pub input_schema: serde_json::Value,
+#[serde(untagged)]
+pub enum AnthropicTool {
+    ComputerUse {
+        #[serde(rename = "type")]
+        tool_type: String, // "computer_20241022"
+        name: String,      // "computer"
+        display_width_px: u32,
+        display_height_px: u32,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        display_number: Option<u32>,
+    },
+    BashOrTextEditor {
+        #[serde(rename = "type")]
+        tool_type: String, // "bash_20241022" or "text_editor_20241022"
+        name: String,      // "bash" or "str_replace_editor"
+    },
+    Custom {
+        name: String,
+        description: String,
+        input_schema: serde_json::Value,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

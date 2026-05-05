@@ -65,14 +65,29 @@ impl crate::core::LanguageModel for AnthropicModel {
     ) -> crate::core::Result<GenerateResult> {
         let (request, _) = self.prepare_request(prompt, options)?;
 
-        let response = self
+        let mut req_builder = self
             .client
             .post(format!("{}/messages", self.base_url))
             .header("x-api-key", &self.api_key)
-            .header("anthropic-version", "2023-06-01")
-            .json(&request)
-            .send()
-            .await?;
+            .header("anthropic-version", "2023-06-01");
+
+        let mut has_beta_tools = false;
+        if let Some(tools) = &request.tools {
+            for tool in tools {
+                match tool {
+                    AnthropicTool::ComputerUse { .. } | AnthropicTool::BashOrTextEditor { .. } => {
+                        has_beta_tools = true;
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if has_beta_tools {
+            req_builder = req_builder.header("anthropic-beta", "computer-use-2024-10-22");
+        }
+
+        let response = req_builder.json(&request).send().await?;
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
@@ -164,14 +179,29 @@ impl crate::core::LanguageModel for AnthropicModel {
         let (mut request, _) = self.prepare_request(prompt, options)?;
         request.stream = Some(true);
 
-        let response = self
+        let mut req_builder = self
             .client
             .post(format!("{}/messages", self.base_url))
             .header("x-api-key", &self.api_key)
-            .header("anthropic-version", "2023-06-01")
-            .json(&request)
-            .send()
-            .await?;
+            .header("anthropic-version", "2023-06-01");
+
+        let mut has_beta_tools = false;
+        if let Some(tools) = &request.tools {
+            for tool in tools {
+                match tool {
+                    AnthropicTool::ComputerUse { .. } | AnthropicTool::BashOrTextEditor { .. } => {
+                        has_beta_tools = true;
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if has_beta_tools {
+            req_builder = req_builder.header("anthropic-beta", "computer-use-2024-10-22");
+        }
+
+        let response = req_builder.json(&request).send().await?;
 
         if !response.status().is_success() {
             let error_text = response.text().await?;
@@ -328,10 +358,35 @@ impl AnthropicModel {
                     .tools
                     .unwrap()
                     .into_iter()
-                    .map(|t| AnthropicTool {
-                        name: t.name,
-                        description: t.description,
-                        input_schema: t.parameters,
+                    .map(|t| {
+                        if t.name == "computer_20241022" {
+                            let width = t.parameters.get("display_width_px").and_then(|v| v.as_u64()).unwrap_or(1024) as u32;
+                            let height = t.parameters.get("display_height_px").and_then(|v| v.as_u64()).unwrap_or(768) as u32;
+                            let display_number = t.parameters.get("display_number").and_then(|v| v.as_u64()).map(|v| v as u32);
+                            AnthropicTool::ComputerUse {
+                                tool_type: "computer_20241022".to_string(),
+                                name: "computer".to_string(),
+                                display_width_px: width,
+                                display_height_px: height,
+                                display_number,
+                            }
+                        } else if t.name == "bash_20241022" {
+                            AnthropicTool::BashOrTextEditor {
+                                tool_type: "bash_20241022".to_string(),
+                                name: "bash".to_string(),
+                            }
+                        } else if t.name == "text_editor_20241022" {
+                            AnthropicTool::BashOrTextEditor {
+                                tool_type: "text_editor_20241022".to_string(),
+                                name: "str_replace_editor".to_string(),
+                            }
+                        } else {
+                            AnthropicTool::Custom {
+                                name: t.name,
+                                description: t.description,
+                                input_schema: t.parameters,
+                            }
+                        }
                     })
                     .collect(),
             )
