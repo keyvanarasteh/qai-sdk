@@ -17,7 +17,13 @@
 //! ```
 
 pub mod types;
+pub mod options;
+pub mod modelfile;
+pub mod runner;
 
+pub use options::OllamaOptionsBuilder;
+pub use modelfile::ModelfileBuilder;
+pub use runner::LocalOllamaRunner;
 use crate::core::types::{GenerateOptions, GenerateResult, Prompt, ProviderSettings, StreamPart};
 use crate::openai::OpenAIModel;
 use async_trait::async_trait;

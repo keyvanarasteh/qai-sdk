@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-05-05
+
+### Added
+
+- **Ollama Configuration Helpers**: Added strongly-typed `OllamaOptionsBuilder` for easy access to `num_ctx`, `keep_alive`, `mirostat`, `seed`, and other runtime configuration map parameters natively in Rust.
+- **Ollama Modelfile Builder**: Introduced `ModelfileBuilder` to programmatically construct Dockerfile-like Modelfiles with `FROM`, `PARAMETER`, `ADAPTER`, and `SYSTEM` blocks for importing and customizing models natively.
+- **Local Ollama Runner**: Introduced `LocalOllamaRunner`, a programmatic `std::process` wrapper to configure and execute local Ollama server instances seamlessly. Features builder methods for environment parameters like `OLLAMA_HOST`, `OLLAMA_MAX_QUEUE`, `OLLAMA_NUM_PARALLEL`, and `OLLAMA_NO_CLOUD`.
+
 ## [0.1.8] - 2026-05-05
 
 ### Added

@@ -131,3 +131,45 @@ Supported management functions: `list_models`, `list_running_models`, `show_mode
 | Protocol | `chat/completions` (OpenAI format) | `chat/completions` |
 | Auth Header | None | `Authorization: Bearer <API_KEY>` |
 
+---
+
+## SDK Helpers (Configuration, Runner, & Modelfile)
+
+Ollama relies heavily on server-side environment variables and custom JSON payloads. The `qai-sdk` provides specialized, strongly-typed builders to seamlessly configure and control these aspects from Rust:
+
+### 1. `OllamaOptionsBuilder`
+Allows passing strict Ollama-specific configuration options like `num_ctx` (context length) or `keep_alive` directly into the `custom` generation options:
+```rust
+use qai_sdk::ollama::OllamaOptionsBuilder;
+
+let options = OllamaOptionsBuilder::new()
+    .num_ctx(64000)
+    .keep_alive("24h")
+    .temperature(0.8)
+    .build();
+```
+
+### 2. `ModelfileBuilder`
+Programmatically build Dockerfile-like Modelfiles to import Safetensors/GGUFs or configure adapters:
+```rust
+use qai_sdk::ollama::ModelfileBuilder;
+
+let modelfile = ModelfileBuilder::new()
+    .from("llama3.2")
+    .parameter("temperature", "0.8")
+    .system("You are a helpful assistant.")
+    .build();
+```
+
+### 3. `LocalOllamaRunner`
+A wrapper around `std::process::Command` that lets you natively boot and configure the local Ollama server from Rust, managing GPU limits and parallel processing:
+```rust
+use qai_sdk::ollama::LocalOllamaRunner;
+
+let child_process = LocalOllamaRunner::new()
+    .host("0.0.0.0:11434")
+    .context_length(64000)
+    .max_loaded_models(3)
+    .disable_cloud(true)
+    .spawn()?;
+```
