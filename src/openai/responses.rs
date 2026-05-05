@@ -221,10 +221,14 @@ impl crate::core::LanguageModel for OpenAIResponsesModel {
             Usage {
                 prompt_tokens: 0,
                 completion_tokens: 0,
+                cache_hit_tokens: None,
+                cache_miss_tokens: None,
             },
             |u| Usage {
                 prompt_tokens: u.input_tokens,
                 completion_tokens: u.output_tokens,
+                cache_hit_tokens: None,
+                cache_miss_tokens: None,
             },
         );
 
@@ -291,6 +295,8 @@ impl crate::core::LanguageModel for OpenAIResponsesModel {
                                     usage: Usage {
                                         prompt_tokens: usage.input_tokens,
                                         completion_tokens: usage.output_tokens,
+                                        cache_hit_tokens: None,
+                                        cache_miss_tokens: None,
                                     },
                                 })
                             } else {

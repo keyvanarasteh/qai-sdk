@@ -96,6 +96,10 @@ pub struct GenerateResult {
 pub struct Usage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cache_hit_tokens: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cache_miss_tokens: Option<u32>,
 }
 
 impl Usage {
@@ -173,6 +177,8 @@ impl Usage {
             Some(Usage {
                 prompt_tokens: p,
                 completion_tokens: c,
+                cache_hit_tokens: None,
+                cache_miss_tokens: None,
             })
         } else {
             None

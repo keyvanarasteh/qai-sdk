@@ -85,6 +85,8 @@ impl crate::core::LanguageModel for AnthropicModel {
         let mut usage = Usage {
             prompt_tokens: anthropic_response.usage.input_tokens,
             completion_tokens: anthropic_response.usage.output_tokens,
+            cache_hit_tokens: None,
+            cache_miss_tokens: None,
         };
 
         // Header extraction as fallback/supplement
@@ -163,7 +165,7 @@ impl crate::core::LanguageModel for AnthropicModel {
                         match parsed {
                             Ok(AnthropicStreamEvent::MessageStart { message }) => {
                                 prompt_tokens = message.usage.input_tokens;
-                                yield StreamPart::Usage { usage: Usage { prompt_tokens, completion_tokens: 0 } };
+                                yield StreamPart::Usage { usage: Usage { prompt_tokens, completion_tokens: 0, cache_hit_tokens: None, cache_miss_tokens: None } };
                             }
                             Ok(AnthropicStreamEvent::ContentBlockDelta { delta, .. }) => {
                                 match delta {
@@ -181,7 +183,7 @@ impl crate::core::LanguageModel for AnthropicModel {
                                 }
                             }
                             Ok(AnthropicStreamEvent::MessageDelta { delta, usage }) => {
-                                yield StreamPart::Usage { usage: Usage { prompt_tokens, completion_tokens: usage.output_tokens } };
+                                yield StreamPart::Usage { usage: Usage { prompt_tokens, completion_tokens: usage.output_tokens, cache_hit_tokens: None, cache_miss_tokens: None } };
                                 if let Some(reason) = delta.stop_reason {
                                     yield StreamPart::Finish { finish_reason: reason };
                                 }

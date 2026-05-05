@@ -86,6 +86,8 @@ impl crate::core::LanguageModel for GoogleModel {
         let mut usage = Usage {
             prompt_tokens: google_response.usage_metadata.prompt_token_count,
             completion_tokens: google_response.usage_metadata.candidates_token_count,
+            cache_hit_tokens: None,
+            cache_miss_tokens: None,
         };
 
         // Header extraction as fallback/supplement
@@ -165,7 +167,9 @@ impl crate::core::LanguageModel for GoogleModel {
                                 yield StreamPart::Usage {
                                     usage: Usage {
                                         prompt_tokens: google_response.usage_metadata.prompt_token_count,
-                                        completion_tokens: google_response.usage_metadata.candidates_token_count
+                                        completion_tokens: google_response.usage_metadata.candidates_token_count,
+                                        cache_hit_tokens: None,
+                                        cache_miss_tokens: None,
                                     }
                                 };
 

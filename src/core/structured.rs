@@ -413,7 +413,7 @@ pub async fn stream_object(
 
     let stream = async_stream::stream! {
         let mut accumulated = String::new();
-        let mut last_usage = Usage { prompt_tokens: 0, completion_tokens: 0 };
+        let mut last_usage = Usage { prompt_tokens: 0, completion_tokens: 0, cache_hit_tokens: None, cache_miss_tokens: None };
         let mut chunk_count: u32 = 0;
 
         while let Some(part) = inner_stream.next().await {

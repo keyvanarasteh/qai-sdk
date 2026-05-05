@@ -93,10 +93,20 @@ impl crate::core::LanguageModel for OpenAIModel {
         let mut usage = Usage {
             prompt_tokens: openai_response.usage.prompt_tokens,
             completion_tokens: openai_response.usage.completion_tokens,
+            cache_hit_tokens: openai_response.usage.prompt_cache_hit_tokens.or_else(|| {
+                openai_response
+                    .usage
+                    .prompt_tokens_details
+                    .as_ref()
+                    .and_then(|d| d.cached_tokens)
+            }),
+            cache_miss_tokens: openai_response.usage.prompt_cache_miss_tokens,
         };
 
         // Header extraction as fallback/supplement
-        if let Some(header_usage) = Usage::from_headers(&headers) {
+        if let Some(mut header_usage) = Usage::from_headers(&headers) {
+            header_usage.cache_hit_tokens = usage.cache_hit_tokens.or(header_usage.cache_hit_tokens);
+            header_usage.cache_miss_tokens = usage.cache_miss_tokens.or(header_usage.cache_miss_tokens);
             usage = header_usage;
         }
 
@@ -170,7 +180,11 @@ impl crate::core::LanguageModel for OpenAIModel {
                                     yield StreamPart::Usage {
                                         usage: Usage {
                                             prompt_tokens: usage.prompt_tokens,
-                                            completion_tokens: usage.completion_tokens
+                                            completion_tokens: usage.completion_tokens,
+                                            cache_hit_tokens: usage.prompt_cache_hit_tokens.or_else(|| {
+                                                usage.prompt_tokens_details.as_ref().and_then(|d| d.cached_tokens)
+                                            }),
+                                            cache_miss_tokens: usage.prompt_cache_miss_tokens,
                                         }
                                     };
                                 }

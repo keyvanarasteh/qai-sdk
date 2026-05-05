@@ -98,6 +98,8 @@ impl crate::core::CompletionModel for OpenAICompletionModel {
             usage: Usage {
                 prompt_tokens: completion_resp.usage.prompt_tokens,
                 completion_tokens: completion_resp.usage.completion_tokens,
+                cache_hit_tokens: None,
+                cache_miss_tokens: None,
             },
             finish_reason: choice
                 .finish_reason
