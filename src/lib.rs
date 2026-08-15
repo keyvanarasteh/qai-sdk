@@ -40,6 +40,9 @@ pub mod openai_compatible;
 #[cfg(feature = "groqcloud")]
 pub mod groqcloud;
 
+#[cfg(feature = "deepgram")]
+pub mod deepgram;
+
 #[cfg(feature = "mcp")]
 pub mod mcp;
 
@@ -52,30 +55,33 @@ pub use crate::core::*;
 pub mod prelude {
     pub use crate::core::types::*;
     pub use crate::core::*;
-    
+
     #[cfg(feature = "openai")]
     pub use crate::openai::{create_openai, OpenAIModel};
-    
+
     #[cfg(feature = "anthropic")]
     pub use crate::anthropic::{create_anthropic, AnthropicModel};
-    
+
     #[cfg(feature = "google")]
     pub use crate::google::{create_google, GoogleModel};
-    
+
     #[cfg(feature = "deepseek")]
     pub use crate::deepseek::{create_deepseek, DeepSeekModel};
-    
+
     #[cfg(feature = "xai")]
     pub use crate::xai::{create_xai, XAIModel};
-    
+
     #[cfg(feature = "ollama")]
     pub use crate::ollama::{create_ollama, OllamaModel};
-    
+
     #[cfg(feature = "openai-compatible")]
     pub use crate::openai_compatible::{create_openai_compatible, OpenAICompatibleModel};
-    
+
     #[cfg(feature = "groqcloud")]
     pub use crate::groqcloud::{create_groqcloud, GroqCloudModel};
+
+    #[cfg(feature = "deepgram")]
+    pub use crate::deepgram::create_deepgram;
 }
 
 // Export all providers if their features are enabled
@@ -102,6 +108,9 @@ pub use crate::openai_compatible::{create_openai_compatible, OpenAICompatiblePro
 
 #[cfg(feature = "groqcloud")]
 pub use crate::groqcloud::create_groqcloud;
+
+#[cfg(feature = "deepgram")]
+pub use crate::deepgram::create_deepgram;
 
 #[cfg(feature = "openai")]
 pub use crate::openai::OpenAIModel;

@@ -14,8 +14,9 @@
 //!
 //! All shared types live in the [`types`] module.
 
-pub mod error;
 pub mod agent;
+pub mod audio;
+pub mod error;
 pub mod middleware;
 pub mod registry;
 pub mod structured;
@@ -23,15 +24,20 @@ pub mod structured;
 mod tests;
 pub mod types;
 
+pub use audio::{
+    AudioChunk, AudioEncoding, AudioSpec, DetailedSpeechModel, DetailedSpeechResult,
+    DetailedTranscriptionModel, DetailedTranscriptionResult, ProviderCapabilities, SpeechRequest,
+    SpeechSession, StreamingSpeechModel, StreamingTranscriptionModel, TranscriptSegment,
+    TranscriptWord, TranscriptionEvent, TranscriptionRequest, TranscriptionSession,
+};
 pub use error::ProviderError;
 pub type Result<T> = std::result::Result<T, ProviderError>;
 
 use crate::core::types::{
     CompletionOptions, CompletionResult, EmbeddingOptions, EmbeddingResult, GenerateOptions,
-    GenerateResult, ImageGenerateOptions, ImageGenerateResult, Prompt, SpeechOptions, SpeechResult,
-    StreamPart, TranscriptionOptions, TranscriptionResult, VideoGenerateOptions, VideoGenerateResult,
-    MusicGenerateOptions, MusicGenerateResult,
-    RealtimeEvent,
+    GenerateResult, ImageGenerateOptions, ImageGenerateResult, MusicGenerateOptions,
+    MusicGenerateResult, Prompt, RealtimeEvent, SpeechOptions, SpeechResult, StreamPart,
+    TranscriptionOptions, TranscriptionResult, VideoGenerateOptions, VideoGenerateResult,
 };
 use async_trait::async_trait;
 use futures::stream::BoxStream;

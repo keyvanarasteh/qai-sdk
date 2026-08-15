@@ -15,17 +15,20 @@
 //! let result = model.generate(prompt, options).await?;
 //! ```
 
-use crate::core::{
-    CompletionModel, EmbeddingModel, ImageModel, LanguageModel, MusicModel, RealtimeModel, Result,
-    SpeechModel, TranscriptionModel, VideoModel,
-};
 use crate::core::error::ProviderError;
+use crate::core::{
+    CompletionModel, DetailedSpeechModel, DetailedTranscriptionModel, EmbeddingModel, ImageModel,
+    LanguageModel, MusicModel, ProviderCapabilities, RealtimeModel, Result, SpeechModel,
+    StreamingSpeechModel, StreamingTranscriptionModel, TranscriptionModel, VideoModel,
+};
 use std::collections::HashMap;
 
 /// A provider factory that can create model instances by ID.
 pub trait Provider: Send + Sync {
     /// Create a language model by model ID.
-    fn language_model(&self, model_id: &str) -> Option<Box<dyn LanguageModel>>;
+    fn language_model(&self, _model_id: &str) -> Option<Box<dyn LanguageModel>> {
+        None
+    }
 
     /// Create an embedding model by model ID. Optional.
     fn embedding_model(&self, _model_id: &str) -> Option<Box<dyn EmbeddingModel>> {
@@ -65,6 +68,32 @@ pub trait Provider: Send + Sync {
     /// Create a realtime model by model ID. Optional.
     fn realtime_model(&self, _model_id: &str) -> Option<Box<dyn RealtimeModel>> {
         None
+    }
+
+    fn detailed_transcription_model(
+        &self,
+        _model_id: &str,
+    ) -> Option<Box<dyn DetailedTranscriptionModel>> {
+        None
+    }
+
+    fn streaming_transcription_model(
+        &self,
+        _model_id: &str,
+    ) -> Option<Box<dyn StreamingTranscriptionModel>> {
+        None
+    }
+
+    fn detailed_speech_model(&self, _model_id: &str) -> Option<Box<dyn DetailedSpeechModel>> {
+        None
+    }
+
+    fn streaming_speech_model(&self, _model_id: &str) -> Option<Box<dyn StreamingSpeechModel>> {
+        None
+    }
+
+    fn capabilities(&self) -> ProviderCapabilities {
+        ProviderCapabilities::default()
     }
 }
 
@@ -133,9 +162,7 @@ impl ProviderRegistry {
     pub fn embedding_model(&self, id: &str) -> Result<Box<dyn EmbeddingModel>> {
         let (provider_id, model_id) = self.split_id(id)?;
         let provider = self.providers.get(&provider_id).ok_or_else(|| {
-            ProviderError::NotSupported(format!(
-                "No provider registered with name '{provider_id}'"
-            ))
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
         })?;
         provider.embedding_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
@@ -148,9 +175,7 @@ impl ProviderRegistry {
     pub fn image_model(&self, id: &str) -> Result<Box<dyn ImageModel>> {
         let (provider_id, model_id) = self.split_id(id)?;
         let provider = self.providers.get(&provider_id).ok_or_else(|| {
-            ProviderError::NotSupported(format!(
-                "No provider registered with name '{provider_id}'"
-            ))
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
         })?;
         provider.image_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
@@ -163,9 +188,7 @@ impl ProviderRegistry {
     pub fn transcription_model(&self, id: &str) -> Result<Box<dyn TranscriptionModel>> {
         let (provider_id, model_id) = self.split_id(id)?;
         let provider = self.providers.get(&provider_id).ok_or_else(|| {
-            ProviderError::NotSupported(format!(
-                "No provider registered with name '{provider_id}'"
-            ))
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
         })?;
         provider.transcription_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
@@ -178,9 +201,7 @@ impl ProviderRegistry {
     pub fn speech_model(&self, id: &str) -> Result<Box<dyn SpeechModel>> {
         let (provider_id, model_id) = self.split_id(id)?;
         let provider = self.providers.get(&provider_id).ok_or_else(|| {
-            ProviderError::NotSupported(format!(
-                "No provider registered with name '{provider_id}'"
-            ))
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
         })?;
         provider.speech_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
@@ -193,9 +214,7 @@ impl ProviderRegistry {
     pub fn completion_model(&self, id: &str) -> Result<Box<dyn CompletionModel>> {
         let (provider_id, model_id) = self.split_id(id)?;
         let provider = self.providers.get(&provider_id).ok_or_else(|| {
-            ProviderError::NotSupported(format!(
-                "No provider registered with name '{provider_id}'"
-            ))
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
         })?;
         provider.completion_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
@@ -208,9 +227,7 @@ impl ProviderRegistry {
     pub fn video_model(&self, id: &str) -> Result<Box<dyn VideoModel>> {
         let (provider_id, model_id) = self.split_id(id)?;
         let provider = self.providers.get(&provider_id).ok_or_else(|| {
-            ProviderError::NotSupported(format!(
-                "No provider registered with name '{provider_id}'"
-            ))
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
         })?;
         provider.video_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
@@ -223,9 +240,7 @@ impl ProviderRegistry {
     pub fn music_model(&self, id: &str) -> Result<Box<dyn MusicModel>> {
         let (provider_id, model_id) = self.split_id(id)?;
         let provider = self.providers.get(&provider_id).ok_or_else(|| {
-            ProviderError::NotSupported(format!(
-                "No provider registered with name '{provider_id}'"
-            ))
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
         })?;
         provider.music_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
@@ -238,15 +253,82 @@ impl ProviderRegistry {
     pub fn realtime_model(&self, id: &str) -> Result<Box<dyn RealtimeModel>> {
         let (provider_id, model_id) = self.split_id(id)?;
         let provider = self.providers.get(&provider_id).ok_or_else(|| {
-            ProviderError::NotSupported(format!(
-                "No provider registered with name '{provider_id}'"
-            ))
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
         })?;
         provider.realtime_model(&model_id).ok_or_else(|| {
             ProviderError::NotSupported(format!(
                 "Provider '{provider_id}' does not support realtime model '{model_id}'"
             ))
         })
+    }
+
+    pub fn detailed_transcription_model(
+        &self,
+        id: &str,
+    ) -> Result<Box<dyn DetailedTranscriptionModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
+        })?;
+        provider
+            .detailed_transcription_model(&model_id)
+            .ok_or_else(|| {
+                ProviderError::NotSupported(format!(
+                    "Provider '{provider_id}' does not support detailed STT"
+                ))
+            })
+    }
+
+    pub fn streaming_transcription_model(
+        &self,
+        id: &str,
+    ) -> Result<Box<dyn StreamingTranscriptionModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
+        })?;
+        provider
+            .streaming_transcription_model(&model_id)
+            .ok_or_else(|| {
+                ProviderError::NotSupported(format!(
+                    "Provider '{provider_id}' does not support streaming STT"
+                ))
+            })
+    }
+
+    pub fn detailed_speech_model(&self, id: &str) -> Result<Box<dyn DetailedSpeechModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
+        })?;
+        provider.detailed_speech_model(&model_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "Provider '{provider_id}' does not support detailed TTS"
+            ))
+        })
+    }
+
+    pub fn streaming_speech_model(&self, id: &str) -> Result<Box<dyn StreamingSpeechModel>> {
+        let (provider_id, model_id) = self.split_id(id)?;
+        let provider = self.providers.get(&provider_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!("No provider registered with name '{provider_id}'"))
+        })?;
+        provider.streaming_speech_model(&model_id).ok_or_else(|| {
+            ProviderError::NotSupported(format!(
+                "Provider '{provider_id}' does not support streaming TTS"
+            ))
+        })
+    }
+
+    pub fn capabilities(&self, provider_id: &str) -> Result<ProviderCapabilities> {
+        self.providers
+            .get(provider_id)
+            .map(|provider| provider.capabilities())
+            .ok_or_else(|| {
+                ProviderError::NotSupported(format!(
+                    "No provider registered with name '{provider_id}'"
+                ))
+            })
     }
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "qai-sdk"
-version = "0.1.26"
+version = "0.1.27"
 edition = "2021"
 description = "Universal Rust SDK for AI Providers"
 license = "MIT OR Apache-2.0"
@@ -16,10 +16,11 @@ openai = []
 anthropic = []
 google = []
 deepseek = ["openai"]
-xai = ["openai"]
+xai = ["openai", "tokio/time"]
 ollama = ["openai"]
 groqcloud = ["openai"]
 openai-compatible = ["openai"]
+deepgram = []
 mcp = ["tokio/process", "tokio/io-util", "tokio/sync", "tokio/rt"]
 
 [dependencies]

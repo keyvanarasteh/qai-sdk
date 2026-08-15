@@ -6,7 +6,7 @@ use crate::mcp::McpError;
 /// A monolithic LLM Agent execution loop embedded with automatic MCP Tool tracking.
 ///
 /// This loop accepts an instantiated `LanguageModel` and an active `McpClient`.
-/// It discovers tools exposed by the MCP server, provides them to the LLM, and 
+/// It discovers tools exposed by the MCP server, provides them to the LLM, and
 /// autonomously routes native `ToolCall` events from the LLM back to the MCP server.
 /// If an error occurs, it is returned; otherwise the final LLM string response is yielded.
 pub async fn run_mcp_agent<M: LanguageModel>(
@@ -16,7 +16,6 @@ pub async fn run_mcp_agent<M: LanguageModel>(
     mut options: GenerateOptions,
     max_turns: usize,
 ) -> Result<String, McpError> {
-    
     // 1. Auto-discover MCP tools
     let mut all_tools = Vec::new();
     let mut current_cursor = None;
@@ -62,14 +61,12 @@ pub async fn run_mcp_agent<M: LanguageModel>(
             });
         }
 
-        let mut call_idx = 1;
-        for tc in &result.tool_calls {
+        for (call_idx, tc) in result.tool_calls.iter().enumerate() {
             assistant_content.push(Content::ToolCall {
-                id: format!("call_{}", call_idx),
+                id: format!("call_{}", call_idx + 1),
                 name: tc.name.clone(),
                 arguments: tc.arguments.clone(),
             });
-            call_idx += 1;
         }
 
         messages.push(Message {
@@ -79,15 +76,13 @@ pub async fn run_mcp_agent<M: LanguageModel>(
 
         // 3. Resolve Tool Calls sequentially via MCP JSON-RPC
         let mut tool_results = vec![];
-        let mut resp_call_idx = 1;
-        for tc in result.tool_calls {
+        for (resp_call_idx, tc) in result.tool_calls.into_iter().enumerate() {
             let res = mcp_client.call_tool(&tc.name, tc.arguments).await?;
 
             tool_results.push(Content::ToolResult {
-                id: format!("call_{}", resp_call_idx),
+                id: format!("call_{}", resp_call_idx + 1),
                 result: res,
             });
-            resp_call_idx += 1;
         }
 
         // Append the execution results to the LLM Context

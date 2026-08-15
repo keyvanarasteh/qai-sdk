@@ -112,8 +112,10 @@ impl crate::core::LanguageModel for OpenAIModel {
 
         // Header extraction as fallback/supplement
         if let Some(mut header_usage) = Usage::from_headers(&headers) {
-            header_usage.cache_hit_tokens = usage.cache_hit_tokens.or(header_usage.cache_hit_tokens);
-            header_usage.cache_miss_tokens = usage.cache_miss_tokens.or(header_usage.cache_miss_tokens);
+            header_usage.cache_hit_tokens =
+                usage.cache_hit_tokens.or(header_usage.cache_hit_tokens);
+            header_usage.cache_miss_tokens =
+                usage.cache_miss_tokens.or(header_usage.cache_miss_tokens);
             usage = header_usage;
         }
 
@@ -163,10 +165,7 @@ impl crate::core::LanguageModel for OpenAIModel {
                 .clone()
                 .unwrap_or_default(),
             tool_calls,
-            reasoning: openai_response.choices[0]
-                .message
-                .reasoning_content
-                .clone(),
+            reasoning: openai_response.choices[0].message.reasoning_content.clone(),
             executed_tools: Vec::new(), // TODO: Parse server-side tool outputs if identifiable
             citations,
         })
@@ -410,9 +409,14 @@ impl OpenAIModel {
                     "code_execution" => openai_tools.push(OpenAITool::CodeExecution),
                     "collections_search" => {
                         if let Ok(config) = serde_json::from_value::<serde_json::Value>(st.config) {
-                            if let Some(uris) = config.get("collection_uris").and_then(|v| v.as_array()) {
+                            if let Some(uris) =
+                                config.get("collection_uris").and_then(|v| v.as_array())
+                            {
                                 openai_tools.push(OpenAITool::CollectionsSearch {
-                                    collection_uris: uris.iter().filter_map(|v| v.as_str().map(String::from)).collect(),
+                                    collection_uris: uris
+                                        .iter()
+                                        .filter_map(|v| v.as_str().map(String::from))
+                                        .collect(),
                                 });
                             }
                         }
@@ -420,9 +424,14 @@ impl OpenAIModel {
                     "remote_mcp" => {
                         if let Ok(config) = serde_json::from_value::<serde_json::Value>(st.config) {
                             if let Some(url) = config.get("server_url").and_then(|v| v.as_str()) {
-                                let allowed_tools = config.get("allowed_tools").and_then(|v| v.as_array()).map(|arr| {
-                                    arr.iter().filter_map(|v| v.as_str().map(String::from)).collect()
-                                });
+                                let allowed_tools = config
+                                    .get("allowed_tools")
+                                    .and_then(|v| v.as_array())
+                                    .map(|arr| {
+                                        arr.iter()
+                                            .filter_map(|v| v.as_str().map(String::from))
+                                            .collect()
+                                    });
                                 openai_tools.push(OpenAITool::RemoteMcp {
                                     server_url: url.to_string(),
                                     allowed_tools,
@@ -594,5 +603,51 @@ impl crate::core::registry::Provider for OpenAIProvider {
 
     fn image_model(&self, model_id: &str) -> Option<Box<dyn crate::core::ImageModel>> {
         Some(Box::new(self.image(model_id)))
+    }
+
+    fn speech_model(&self, model_id: &str) -> Option<Box<dyn crate::core::SpeechModel>> {
+        Some(Box::new(self.speech(model_id)))
+    }
+
+    fn transcription_model(
+        &self,
+        model_id: &str,
+    ) -> Option<Box<dyn crate::core::TranscriptionModel>> {
+        Some(Box::new(self.transcription(model_id)))
+    }
+
+    fn detailed_speech_model(
+        &self,
+        model_id: &str,
+    ) -> Option<Box<dyn crate::core::DetailedSpeechModel>> {
+        Some(Box::new(self.speech(model_id)))
+    }
+
+    fn detailed_transcription_model(
+        &self,
+        model_id: &str,
+    ) -> Option<Box<dyn crate::core::DetailedTranscriptionModel>> {
+        Some(Box::new(self.transcription(model_id)))
+    }
+
+    fn streaming_speech_model(
+        &self,
+        model_id: &str,
+    ) -> Option<Box<dyn crate::core::StreamingSpeechModel>> {
+        Some(Box::new(self.speech(model_id)))
+    }
+
+    fn capabilities(&self) -> crate::core::ProviderCapabilities {
+        crate::core::ProviderCapabilities {
+            llm: true,
+            batch_stt: true,
+            streaming_stt: false,
+            batch_tts: true,
+            streaming_tts: true,
+            diarization: true,
+            word_timestamps: true,
+            ssml: false,
+            pitch: false,
+        }
     }
 }

@@ -20,14 +20,17 @@
 
 pub mod error;
 pub mod image;
-pub mod responses;
-pub mod tools;
-pub mod types;
-pub mod speech;
-pub mod transcription;
-pub mod video;
 pub mod realtime;
+pub mod responses;
+pub mod speech;
+pub mod tools;
+pub mod transcription;
+pub mod types;
+pub mod video;
 
+use crate::core::audio::{
+    DetailedSpeechModel, DetailedTranscriptionModel, ProviderCapabilities, StreamingSpeechModel,
+};
 use crate::core::types::{GenerateOptions, GenerateResult, Prompt, ProviderSettings, StreamPart};
 use crate::openai::OpenAIModel;
 use async_trait::async_trait;
@@ -200,7 +203,39 @@ impl crate::core::registry::Provider for XAIProvider {
         Some(Box::new(self.speech(model_id)))
     }
 
-    fn transcription_model(&self, model_id: &str) -> Option<Box<dyn crate::core::TranscriptionModel>> {
+    fn transcription_model(
+        &self,
+        model_id: &str,
+    ) -> Option<Box<dyn crate::core::TranscriptionModel>> {
         Some(Box::new(self.transcription(model_id)))
+    }
+
+    fn detailed_speech_model(&self, model_id: &str) -> Option<Box<dyn DetailedSpeechModel>> {
+        Some(Box::new(self.speech(model_id)))
+    }
+
+    fn streaming_speech_model(&self, model_id: &str) -> Option<Box<dyn StreamingSpeechModel>> {
+        Some(Box::new(self.speech(model_id)))
+    }
+
+    fn detailed_transcription_model(
+        &self,
+        model_id: &str,
+    ) -> Option<Box<dyn DetailedTranscriptionModel>> {
+        Some(Box::new(self.transcription(model_id)))
+    }
+
+    fn capabilities(&self) -> ProviderCapabilities {
+        ProviderCapabilities {
+            llm: true,
+            batch_stt: true,
+            streaming_stt: false,
+            batch_tts: true,
+            streaming_tts: true,
+            diarization: true,
+            word_timestamps: true,
+            ssml: false,
+            pitch: false,
+        }
     }
 }
