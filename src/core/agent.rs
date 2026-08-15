@@ -28,11 +28,11 @@
 //! println!("{}", result.text);
 //! ```
 
+use crate::core::error::ProviderError;
 use crate::core::types::{
     Content, GenerateOptions, GenerateResult, Message, Prompt, Role, StreamPart, ToolDefinition,
 };
 use crate::core::{LanguageModel, Result};
-use crate::core::error::ProviderError;
 use futures::stream::BoxStream;
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
@@ -154,9 +154,7 @@ impl AgentBuilder {
         F: Fn(String, serde_json::Value) -> Fut + Send + Sync + 'static,
         Fut: Future<Output = anyhow::Result<serde_json::Value>> + Send + 'static,
     {
-        self.tool_handler = Some(Arc::new(move |name, args| {
-            Box::pin(handler(name, args))
-        }));
+        self.tool_handler = Some(Arc::new(move |name, args| Box::pin(handler(name, args))));
         self
     }
 
@@ -234,9 +232,7 @@ impl Agent {
         if let Some(ref sys) = self.system {
             messages.push(Message {
                 role: Role::System,
-                content: vec![Content::Text {
-                    text: sys.clone(),
-                }],
+                content: vec![Content::Text { text: sys.clone() }],
             });
         }
 
@@ -267,9 +263,15 @@ impl Agent {
                 } else {
                     Some(self.tools.clone())
                 },
-                response_format: None, reasoning_format: None, reasoning_effort: None,
-                tool_choice: None, parallel_tool_calls: None, extra_headers: None,
-                server_tools: None, include_citations: None, include_tool_outputs: None,
+                response_format: None,
+                reasoning_format: None,
+                reasoning_effort: None,
+                tool_choice: None,
+                parallel_tool_calls: None,
+                extra_headers: None,
+                server_tools: None,
+                include_citations: None,
+                include_tool_outputs: None,
             };
 
             let result = self.model.generate(prompt, options).await?;
@@ -309,11 +311,7 @@ impl Agent {
 
             // Execute tool calls
             for tc in &result.tool_calls {
-                let tool_result = (self.tool_handler)(
-                    tc.name.clone(),
-                    tc.arguments.clone(),
-                )
-                .await;
+                let tool_result = (self.tool_handler)(tc.name.clone(), tc.arguments.clone()).await;
 
                 let result_value = match tool_result {
                     Ok(v) => v,

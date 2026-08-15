@@ -36,8 +36,7 @@ async fn main() -> Result<()> {
         messages: vec![Message {
             role: Role::User,
             content: vec![Content::Text {
-                text: "What is the sum of the first 50 prime numbers? Show your reasoning."
-                    .into(),
+                text: "What is the sum of the first 50 prime numbers? Show your reasoning.".into(),
             }],
         }],
     };

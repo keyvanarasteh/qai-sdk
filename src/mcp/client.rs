@@ -1,4 +1,6 @@
 use crate::core::types::ToolDefinition;
+use eventsource_stream::Eventsource;
+use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::process::Stdio;
@@ -8,8 +10,6 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, ChildStdin, ChildStdout, Command};
 use tokio::sync::{broadcast, mpsc, oneshot, Mutex};
 use tracing::error;
-use eventsource_stream::Eventsource;
-use futures_util::StreamExt;
 
 #[derive(Debug, thiserror::Error)]
 pub enum McpError {
@@ -158,13 +158,18 @@ pub struct McpClient {
     _child: Option<Child>,
 }
 
-type PendingRequestsMap = Arc<Mutex<std::collections::HashMap<usize, oneshot::Sender<Result<Value, McpError>>>>>;
+type PendingRequestsMap =
+    Arc<Mutex<std::collections::HashMap<usize, oneshot::Sender<Result<Value, McpError>>>>>;
 
 impl McpClient {
     /// Connects to an MCP server using the specified transport and performs the initialization handshake.
     pub async fn connect(transport: McpTransport) -> Result<Self, McpError> {
         let client = match transport {
-            McpTransport::Stdio { command, args, envs } => {
+            McpTransport::Stdio {
+                command,
+                args,
+                envs,
+            } => {
                 let mut cmd = Command::new(&command);
                 cmd.args(&args)
                     .envs(&envs)
@@ -181,7 +186,13 @@ impl McpClient {
                 let (tx_resource_updated, _) = broadcast::channel(100);
                 let next_id = Arc::new(AtomicUsize::new(1));
 
-                Self::spawn_stdio_io_loops(stdin, stdout, rx_req, rx_notif, tx_resource_updated.clone());
+                Self::spawn_stdio_io_loops(
+                    stdin,
+                    stdout,
+                    rx_req,
+                    rx_notif,
+                    tx_resource_updated.clone(),
+                );
 
                 Self {
                     next_id,
@@ -197,10 +208,10 @@ impl McpClient {
                 for (k, v) in headers {
                     req = req.header(&k, &v);
                 }
-                
+
                 let resp = req.send().await?;
                 let mut stream = resp.bytes_stream().eventsource();
-                
+
                 // 1. Wait for "endpoint" event
                 let endpoint = loop {
                     match stream.next().await {
@@ -209,7 +220,11 @@ impl McpClient {
                                 break event.data;
                             }
                         }
-                        _ => return Err(McpError::Protocol("Failed to receive endpoint event from SSE server".to_string())),
+                        _ => {
+                            return Err(McpError::Protocol(
+                                "Failed to receive endpoint event from SSE server".to_string(),
+                            ))
+                        }
                     }
                 };
 
@@ -217,7 +232,12 @@ impl McpClient {
                     endpoint
                 } else if endpoint.starts_with('/') {
                     let parsed = reqwest::Url::parse(&url).unwrap();
-                    format!("{}://{}{}", parsed.scheme(), parsed.host_str().unwrap(), endpoint)
+                    format!(
+                        "{}://{}{}",
+                        parsed.scheme(),
+                        parsed.host_str().unwrap(),
+                        endpoint
+                    )
                 } else {
                     format!("{}/{}", url.trim_end_matches('/'), endpoint)
                 };
@@ -227,7 +247,14 @@ impl McpClient {
                 let (tx_resource_updated, _) = broadcast::channel(100);
                 let next_id = Arc::new(AtomicUsize::new(1));
 
-                Self::spawn_sse_io_loops(stream, rx_req, rx_notif, http_client, post_url, tx_resource_updated.clone());
+                Self::spawn_sse_io_loops(
+                    stream,
+                    rx_req,
+                    rx_notif,
+                    http_client,
+                    post_url,
+                    tx_resource_updated.clone(),
+                );
 
                 Self {
                     next_id,
@@ -250,7 +277,8 @@ impl McpClient {
         mut rx_notif: mpsc::Receiver<JsonRpcNotification>,
         tx_resource_updated: broadcast::Sender<String>,
     ) {
-        let pending_requests: PendingRequestsMap = Arc::new(Mutex::new(std::collections::HashMap::new()));
+        let pending_requests: PendingRequestsMap =
+            Arc::new(Mutex::new(std::collections::HashMap::new()));
         let pending_clone = pending_requests.clone();
 
         // Write Loop
@@ -308,10 +336,13 @@ impl McpClient {
                                 } else if let Some(res) = resp.result {
                                     let _ = reply_tx.send(Ok(res));
                                 } else {
-                                    let _ = reply_tx.send(Err(McpError::Protocol("Empty response result".to_string())));
+                                    let _ = reply_tx.send(Err(McpError::Protocol(
+                                        "Empty response result".to_string(),
+                                    )));
                                 }
                             }
-                        } else if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&line) {
+                        } else if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&line)
+                        {
                             if notif.method == "notifications/resources/updated" {
                                 if let Some(params) = notif.params {
                                     if let Some(uri) = params.get("uri").and_then(|v| v.as_str()) {
@@ -322,7 +353,10 @@ impl McpClient {
                         }
                     }
                     Err(e) => {
-                        error!("Failed to parse JSON-RPC response from server: {} (line: {})", e, line);
+                        error!(
+                            "Failed to parse JSON-RPC response from server: {} (line: {})",
+                            e, line
+                        );
                     }
                 }
             }
@@ -337,9 +371,17 @@ impl McpClient {
         post_url: String,
         tx_resource_updated: broadcast::Sender<String>,
     ) where
-        S: futures_util::Stream<Item = Result<eventsource_stream::Event, eventsource_stream::EventStreamError<reqwest::Error>>> + Unpin + Send + 'static,
+        S: futures_util::Stream<
+                Item = Result<
+                    eventsource_stream::Event,
+                    eventsource_stream::EventStreamError<reqwest::Error>,
+                >,
+            > + Unpin
+            + Send
+            + 'static,
     {
-        let pending_requests: PendingRequestsMap = Arc::new(Mutex::new(std::collections::HashMap::new()));
+        let pending_requests: PendingRequestsMap =
+            Arc::new(Mutex::new(std::collections::HashMap::new()));
         let pending_clone = pending_requests.clone();
 
         // Write Loop (HTTP POST)
@@ -393,10 +435,14 @@ impl McpClient {
                                 } else if let Some(res) = resp.result {
                                     let _ = reply_tx.send(Ok(res));
                                 } else {
-                                    let _ = reply_tx.send(Err(McpError::Protocol("Empty response result".to_string())));
+                                    let _ = reply_tx.send(Err(McpError::Protocol(
+                                        "Empty response result".to_string(),
+                                    )));
                                 }
                             }
-                        } else if let Ok(notif) = serde_json::from_str::<JsonRpcNotification>(&event.data) {
+                        } else if let Ok(notif) =
+                            serde_json::from_str::<JsonRpcNotification>(&event.data)
+                        {
                             if notif.method == "notifications/resources/updated" {
                                 if let Some(params) = notif.params {
                                     if let Some(uri) = params.get("uri").and_then(|v| v.as_str()) {
@@ -406,7 +452,10 @@ impl McpClient {
                             }
                         }
                     } else {
-                        tracing::error!("Failed to parse SSE JSON-RPC response from server: {}", event.data);
+                        tracing::error!(
+                            "Failed to parse SSE JSON-RPC response from server: {}",
+                            event.data
+                        );
                     }
                 }
             }
@@ -457,28 +506,44 @@ impl McpClient {
 
         // 1. Send Initialize Request
         let _init_res = self.send_request("initialize", Some(params)).await?;
-        
+
         // 2. Send Initialized Notification
-        self.send_notification("notifications/initialized", None).await?;
+        self.send_notification("notifications/initialized", None)
+            .await?;
         Ok(())
     }
 
     /// Fetches the list of tools available on the MCP server and converts them to QAI-SDK `ToolDefinition`s.
     /// Returns a tuple of `(tools, next_cursor)`.
-    pub async fn get_tools(&self, cursor: Option<String>) -> Result<(Vec<ToolDefinition>, Option<String>), McpError> {
+    pub async fn get_tools(
+        &self,
+        cursor: Option<String>,
+    ) -> Result<(Vec<ToolDefinition>, Option<String>), McpError> {
         let mut params = serde_json::Map::new();
         if let Some(c) = cursor {
             params.insert("cursor".to_string(), Value::String(c));
         }
-        let params_val = if params.is_empty() { None } else { Some(Value::Object(params)) };
+        let params_val = if params.is_empty() {
+            None
+        } else {
+            Some(Value::Object(params))
+        };
 
         let res = self.send_request("tools/list", params_val).await?;
-        
+
         let mut sdk_tools = Vec::new();
         if let Some(tools) = res.get("tools").and_then(|t| t.as_array()) {
             for t in tools {
-                let name = t.get("name").and_then(|v| v.as_str()).unwrap_or_default().to_string();
-                let description = t.get("description").and_then(|v| v.as_str()).unwrap_or_default().to_string();
+                let name = t
+                    .get("name")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string();
+                let description = t
+                    .get("description")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string();
                 let parameters = t.get("inputSchema").cloned().unwrap_or(serde_json::json!({
                     "type": "object",
                     "properties": {}
@@ -491,47 +556,72 @@ impl McpClient {
                 });
             }
         }
-        
-        let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
-        
+
+        let next_cursor = res
+            .get("nextCursor")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
         Ok((sdk_tools, next_cursor))
     }
 
     /// Fetches the list of resources available on the MCP server.
     /// Returns a tuple of `(resources, next_cursor)`.
-    pub async fn list_resources(&self, cursor: Option<String>) -> Result<(Vec<McpResource>, Option<String>), McpError> {
+    pub async fn list_resources(
+        &self,
+        cursor: Option<String>,
+    ) -> Result<(Vec<McpResource>, Option<String>), McpError> {
         let mut params = serde_json::Map::new();
         if let Some(c) = cursor {
             params.insert("cursor".to_string(), Value::String(c));
         }
-        let params_val = if params.is_empty() { None } else { Some(Value::Object(params)) };
-        
+        let params_val = if params.is_empty() {
+            None
+        } else {
+            Some(Value::Object(params))
+        };
+
         let res = self.send_request("resources/list", params_val).await?;
-        
+
         let resources_val = res.get("resources").unwrap_or(&Value::Null);
         let resources: Vec<McpResource> = serde_json::from_value(resources_val.clone())?;
-        
-        let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
-        
+
+        let next_cursor = res
+            .get("nextCursor")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
         Ok((resources, next_cursor))
     }
 
     /// Fetches the list of resource templates available on the MCP server.
     /// Returns a tuple of `(templates, next_cursor)`.
-    pub async fn list_resource_templates(&self, cursor: Option<String>) -> Result<(Vec<McpResourceTemplate>, Option<String>), McpError> {
+    pub async fn list_resource_templates(
+        &self,
+        cursor: Option<String>,
+    ) -> Result<(Vec<McpResourceTemplate>, Option<String>), McpError> {
         let mut params = serde_json::Map::new();
         if let Some(c) = cursor {
             params.insert("cursor".to_string(), Value::String(c));
         }
-        let params_val = if params.is_empty() { None } else { Some(Value::Object(params)) };
-        
-        let res = self.send_request("resources/templates/list", params_val).await?;
-        
+        let params_val = if params.is_empty() {
+            None
+        } else {
+            Some(Value::Object(params))
+        };
+
+        let res = self
+            .send_request("resources/templates/list", params_val)
+            .await?;
+
         let templates_val = res.get("resourceTemplates").unwrap_or(&Value::Null);
         let templates: Vec<McpResourceTemplate> = serde_json::from_value(templates_val.clone())?;
-        
-        let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
-        
+
+        let next_cursor = res
+            .get("nextCursor")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
         Ok((templates, next_cursor))
     }
 
@@ -539,12 +629,14 @@ impl McpClient {
     pub async fn read_resource(&self, uri: &str) -> Result<Vec<McpResourceContent>, McpError> {
         let mut params = serde_json::Map::new();
         params.insert("uri".to_string(), Value::String(uri.to_string()));
-        
-        let res = self.send_request("resources/read", Some(Value::Object(params))).await?;
-        
+
+        let res = self
+            .send_request("resources/read", Some(Value::Object(params)))
+            .await?;
+
         let contents_val = res.get("contents").unwrap_or(&Value::Null);
         let contents: Vec<McpResourceContent> = serde_json::from_value(contents_val.clone())?;
-        
+
         Ok(contents)
     }
 
@@ -560,20 +652,30 @@ impl McpClient {
 
     /// Fetches the list of prompts available on the MCP server.
     /// Returns a tuple of `(prompts, next_cursor)`.
-    pub async fn list_prompts(&self, cursor: Option<String>) -> Result<(Vec<McpPrompt>, Option<String>), McpError> {
+    pub async fn list_prompts(
+        &self,
+        cursor: Option<String>,
+    ) -> Result<(Vec<McpPrompt>, Option<String>), McpError> {
         let mut params = serde_json::Map::new();
         if let Some(c) = cursor {
             params.insert("cursor".to_string(), Value::String(c));
         }
-        let params_val = if params.is_empty() { None } else { Some(Value::Object(params)) };
-        
+        let params_val = if params.is_empty() {
+            None
+        } else {
+            Some(Value::Object(params))
+        };
+
         let res = self.send_request("prompts/list", params_val).await?;
-        
+
         let prompts_val = res.get("prompts").unwrap_or(&Value::Null);
         let prompts: Vec<McpPrompt> = serde_json::from_value(prompts_val.clone())?;
-        
-        let next_cursor = res.get("nextCursor").and_then(|v| v.as_str()).map(|s| s.to_string());
-        
+
+        let next_cursor = res
+            .get("nextCursor")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
         Ok((prompts, next_cursor))
     }
 
@@ -594,13 +696,19 @@ impl McpClient {
             params.insert("arguments".to_string(), Value::Object(args_map));
         }
 
-        let res = self.send_request("prompts/get", Some(Value::Object(params))).await?;
-        
-        let description = res.get("description").and_then(|v| v.as_str()).unwrap_or("").to_string();
-        
+        let res = self
+            .send_request("prompts/get", Some(Value::Object(params)))
+            .await?;
+
+        let description = res
+            .get("description")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+
         let messages_val = res.get("messages").unwrap_or(&Value::Null);
         let mcp_messages: Vec<McpPromptMessage> = serde_json::from_value(messages_val.clone())?;
-        
+
         let mut final_messages = Vec::new();
         for msg in mcp_messages {
             final_messages.push(crate::core::types::Message {
@@ -608,7 +716,7 @@ impl McpClient {
                 content: vec![msg.content],
             });
         }
-        
+
         Ok((description, final_messages))
     }
 
@@ -616,7 +724,9 @@ impl McpClient {
     pub async fn subscribe_resource(&self, uri: &str) -> Result<(), McpError> {
         let mut params = serde_json::Map::new();
         params.insert("uri".to_string(), Value::String(uri.to_string()));
-        let _ = self.send_request("resources/subscribe", Some(Value::Object(params))).await?;
+        let _ = self
+            .send_request("resources/subscribe", Some(Value::Object(params)))
+            .await?;
         Ok(())
     }
 
@@ -624,7 +734,9 @@ impl McpClient {
     pub async fn unsubscribe_resource(&self, uri: &str) -> Result<(), McpError> {
         let mut params = serde_json::Map::new();
         params.insert("uri".to_string(), Value::String(uri.to_string()));
-        let _ = self.send_request("resources/unsubscribe", Some(Value::Object(params))).await?;
+        let _ = self
+            .send_request("resources/unsubscribe", Some(Value::Object(params)))
+            .await?;
         Ok(())
     }
 

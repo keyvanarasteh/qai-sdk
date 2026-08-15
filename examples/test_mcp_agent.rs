@@ -15,7 +15,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         api_key: Some(api_key),
         ..Default::default()
     });
-    
+
     // For this example, if the API key is "dummy_key" we won't actually call the LLM
     if env::var("OPENAI_API_KEY").is_err() {
         println!("No OPENAI_API_KEY set. Cannot run full agent loop.");
@@ -44,8 +44,9 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         &mcp_client,
         initial_messages,
         options,
-        5 // max turns
-    ).await?;
+        5, // max turns
+    )
+    .await?;
 
     println!("Final Answer: {:?}", final_answer);
 

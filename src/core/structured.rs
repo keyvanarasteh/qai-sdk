@@ -124,7 +124,8 @@ pub async fn generate_object(
     let mut last_error: Option<String> = None;
 
     for attempt in 0..=max_retries {
-        let result = generate_object_once(model, prompt_text, &options, last_error.as_deref()).await;
+        let result =
+            generate_object_once(model, prompt_text, &options, last_error.as_deref()).await;
 
         match result {
             Ok(gen_result) => {
@@ -185,9 +186,7 @@ async fn generate_object_once(
 
     messages.push(Message {
         role: Role::System,
-        content: vec![Content::Text {
-            text: system_text,
-        }],
+        content: vec![Content::Text { text: system_text }],
     });
 
     messages.push(Message {
@@ -280,18 +279,21 @@ async fn generate_object_once(
                 top_p: None,
                 stop_sequences: None,
                 tools: Some(vec![tool]),
-                response_format: None, reasoning_format: None, reasoning_effort: None,
-                tool_choice: None, parallel_tool_calls: None, extra_headers: None,
-                server_tools: None, include_citations: None, include_tool_outputs: None,
+                response_format: None,
+                reasoning_format: None,
+                reasoning_effort: None,
+                tool_choice: None,
+                parallel_tool_calls: None,
+                extra_headers: None,
+                server_tools: None,
+                include_citations: None,
+                include_tool_outputs: None,
             };
 
             let result = model.generate(prompt, gen_options).await?;
 
             // Extract from tool calls first, fallback to text
-            let object = if let Some(tc) = result
-                .tool_calls
-                .iter()
-                .find(|tc| tc.name == tool_name)
+            let object = if let Some(tc) = result.tool_calls.iter().find(|tc| tc.name == tool_name)
             {
                 tc.arguments.clone()
             } else {
@@ -362,9 +364,7 @@ pub async fn stream_object(
 
     messages.push(Message {
         role: Role::System,
-        content: vec![Content::Text {
-            text: system_text,
-        }],
+        content: vec![Content::Text { text: system_text }],
     });
 
     messages.push(Message {
@@ -424,9 +424,15 @@ pub async fn stream_object(
                 top_p: None,
                 stop_sequences: None,
                 tools: Some(vec![tool]),
-                response_format: None, reasoning_format: None, reasoning_effort: None,
-                tool_choice: None, parallel_tool_calls: None, extra_headers: None,
-                server_tools: None, include_citations: None, include_tool_outputs: None,
+                response_format: None,
+                reasoning_format: None,
+                reasoning_effort: None,
+                tool_choice: None,
+                parallel_tool_calls: None,
+                extra_headers: None,
+                server_tools: None,
+                include_citations: None,
+                include_tool_outputs: None,
             }
         }
     };
@@ -522,9 +528,8 @@ fn validate_schema(
     value: &serde_json::Value,
     schema: &serde_json::Value,
 ) -> std::result::Result<(), String> {
-    let validator = jsonschema::validator_for(schema).map_err(|e| {
-        format!("Invalid JSON Schema: {e}")
-    })?;
+    let validator =
+        jsonschema::validator_for(schema).map_err(|e| format!("Invalid JSON Schema: {e}"))?;
 
     let errors: Vec<String> = validator
         .iter_errors(value)

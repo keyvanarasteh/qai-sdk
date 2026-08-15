@@ -50,12 +50,19 @@ impl crate::core::RealtimeModel for GoogleRealtimeModel {
                 Ok(WsMessage::Text(text)) => {
                     // Map Gemini JSON to RealtimeEvent
                     if let Ok(val) = serde_json::from_str::<serde_json::Value>(&text) {
-                        if let Some(text_val) = val.pointer("/serverContent/modelTurn/parts/0/text") {
-                            return Some(RealtimeEvent::Text { text: text_val.as_str()?.to_string() });
+                        if let Some(text_val) = val.pointer("/serverContent/modelTurn/parts/0/text")
+                        {
+                            return Some(RealtimeEvent::Text {
+                                text: text_val.as_str()?.to_string(),
+                            });
                         }
-                        if let Some(audio_val) = val.pointer("/serverContent/modelTurn/parts/0/inlineData/data") {
+                        if let Some(audio_val) =
+                            val.pointer("/serverContent/modelTurn/parts/0/inlineData/data")
+                        {
                             use base64::Engine as _;
-                            let data = base64::engine::general_purpose::STANDARD.decode(audio_val.as_str()?).ok()?;
+                            let data = base64::engine::general_purpose::STANDARD
+                                .decode(audio_val.as_str()?)
+                                .ok()?;
                             return Some(RealtimeEvent::Audio { data });
                         }
                     }
@@ -72,6 +79,8 @@ impl crate::core::RealtimeModel for GoogleRealtimeModel {
         // In a real implementation, we'd need to maintain the write half of the WebSocket.
         // For the trait to be useful, it probably needs a handle to the connection.
         // This is a simplified version.
-        Err(crate::core::error::ProviderError::NotSupported("Send not implemented in this simplified trait".to_string()))
+        Err(crate::core::error::ProviderError::NotSupported(
+            "Send not implemented in this simplified trait".to_string(),
+        ))
     }
 }

@@ -15,7 +15,8 @@ async fn main() -> anyhow::Result<()> {
 
     println!("🧠 Testing Anthropic Extended Thinking...");
 
-    let prompt = Prompt::from_user("Explain the Riemann Hypothesis and how it relates to prime numbers.");
+    let prompt =
+        Prompt::from_user("Explain the Riemann Hypothesis and how it relates to prime numbers.");
 
     let mut options = GenerateOptions::default();
     options.model_id = "claude-3-7-sonnet-20250219".to_string();

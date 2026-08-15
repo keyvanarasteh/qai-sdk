@@ -11,9 +11,9 @@
 //! cargo run --example anthropic_computer_use --features anthropic
 //! ```
 
+use qai_sdk::anthropic::create_anthropic;
 use qai_sdk::core::types::{GenerateOptions, Prompt, ToolDefinition};
 use qai_sdk::core::LanguageModel;
-use qai_sdk::anthropic::create_anthropic;
 use serde_json::json;
 
 #[tokio::main]
@@ -31,7 +31,8 @@ async fn main() -> anyhow::Result<()> {
         messages: vec![qai_sdk::core::types::Message {
             role: qai_sdk::core::types::Role::User,
             content: vec![qai_sdk::core::types::Content::Text {
-                text: "Please look at my screen and tell me what you see, then run 'ls' in bash.".to_string(),
+                text: "Please look at my screen and tell me what you see, then run 'ls' in bash."
+                    .to_string(),
             }],
         }],
     };

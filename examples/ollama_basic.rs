@@ -7,8 +7,7 @@
 use qai_sdk::{
     core::types::{Content, GenerateOptions, Message, Prompt, ProviderSettings, Role},
     ollama::create_ollama,
-    LanguageModel,
-    Result,
+    LanguageModel, Result,
 };
 
 #[tokio::main]
@@ -48,7 +47,10 @@ async fn main() -> Result<()> {
 
     println!("Response:\n{}", result.text);
 
-    println!("\nTokens -> Prompt: {}, Completion: {}", result.usage.prompt_tokens, result.usage.completion_tokens);
+    println!(
+        "\nTokens -> Prompt: {}, Completion: {}",
+        result.usage.prompt_tokens, result.usage.completion_tokens
+    );
 
     Ok(())
 }

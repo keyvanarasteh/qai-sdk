@@ -142,7 +142,8 @@ impl crate::core::LanguageModel for GoogleModel {
                 GooglePart::CodeExecutionResult { outcome, output } => {
                     if let Some(last_tool) = executed_tools.last_mut() {
                         if last_tool.tool_type == "code_execution" {
-                            last_tool.output = Some(json!({ "outcome": outcome, "output": output }));
+                            last_tool.output =
+                                Some(json!({ "outcome": outcome, "output": output }));
                         }
                     }
                 }
@@ -311,7 +312,10 @@ impl GoogleModel {
                     let mut parts = Vec::new();
                     for content in msg.content {
                         if let Content::Text { text } = content {
-                            parts.push(GooglePart::Text { text, thought: None });
+                            parts.push(GooglePart::Text {
+                                text,
+                                thought: None,
+                            });
                         }
                     }
                     system_instruction = Some(GoogleContent {
@@ -329,7 +333,10 @@ impl GoogleModel {
             for content in msg.content {
                 match content {
                     Content::Text { text } => {
-                        parts.push(GooglePart::Text { text, thought: None });
+                        parts.push(GooglePart::Text {
+                            text,
+                            thought: None,
+                        });
                     }
                     Content::Image { source } => {
                         let (mime_type, data) = match source {
@@ -363,9 +370,15 @@ impl GoogleModel {
                         let mut text_boxes = Vec::new();
                         for b in boxes {
                             let label_str = b.label.as_deref().unwrap_or("object");
-                            text_boxes.push(format!("[{}, {}, {}, {}] {}", b.y_min, b.x_min, b.y_max, b.x_max, label_str));
+                            text_boxes.push(format!(
+                                "[{}, {}, {}, {}] {}",
+                                b.y_min, b.x_min, b.y_max, b.x_max, label_str
+                            ));
                         }
-                        parts.push(GooglePart::Text { text: text_boxes.join("\n"), thought: None });
+                        parts.push(GooglePart::Text {
+                            text: text_boxes.join("\n"),
+                            thought: None,
+                        });
                     }
                 }
             }
@@ -444,52 +457,51 @@ impl GoogleModel {
         }
 
         // Build thinking config from GenerateOptions
-        let thinking_config = if options.reasoning_format.is_some()
-            || options.reasoning_effort.is_some()
-        {
-            let mut tc = GoogleThinkingConfig {
-                include_thoughts: None,
-                thinking_level: None,
-                thinking_budget: None,
-            };
+        let thinking_config =
+            if options.reasoning_format.is_some() || options.reasoning_effort.is_some() {
+                let mut tc = GoogleThinkingConfig {
+                    include_thoughts: None,
+                    thinking_level: None,
+                    thinking_budget: None,
+                };
 
-            // "parsed" format → include thought summaries in response
-            if options
-                .reasoning_format
-                .as_deref()
-                .is_some_and(|f| f == "parsed" || f == "raw")
-            {
-                tc.include_thoughts = Some(true);
-            }
+                // "parsed" format → include thought summaries in response
+                if options
+                    .reasoning_format
+                    .as_deref()
+                    .is_some_and(|f| f == "parsed" || f == "raw")
+                {
+                    tc.include_thoughts = Some(true);
+                }
 
-            // Map reasoning_effort to thinking_level (Gemini 3) or thinking_budget (Gemini 2.5)
-            if let Some(ref effort) = options.reasoning_effort {
-                let effort_lower = effort.to_lowercase();
-                match effort_lower.as_str() {
-                    "minimal" | "low" | "medium" | "high" => {
-                        tc.thinking_level = Some(effort_lower);
-                    }
-                    "off" | "none" => {
-                        tc.thinking_budget = Some(0);
-                    }
-                    "dynamic" => {
-                        tc.thinking_budget = Some(-1);
-                    }
-                    _ => {
-                        // Try to parse as integer for thinking_budget
-                        if let Ok(budget) = effort.parse::<i32>() {
-                            tc.thinking_budget = Some(budget);
-                        } else {
+                // Map reasoning_effort to thinking_level (Gemini 3) or thinking_budget (Gemini 2.5)
+                if let Some(ref effort) = options.reasoning_effort {
+                    let effort_lower = effort.to_lowercase();
+                    match effort_lower.as_str() {
+                        "minimal" | "low" | "medium" | "high" => {
                             tc.thinking_level = Some(effort_lower);
+                        }
+                        "off" | "none" => {
+                            tc.thinking_budget = Some(0);
+                        }
+                        "dynamic" => {
+                            tc.thinking_budget = Some(-1);
+                        }
+                        _ => {
+                            // Try to parse as integer for thinking_budget
+                            if let Ok(budget) = effort.parse::<i32>() {
+                                tc.thinking_budget = Some(budget);
+                            } else {
+                                tc.thinking_level = Some(effort_lower);
+                            }
                         }
                     }
                 }
-            }
 
-            Some(tc)
-        } else {
-            None
-        };
+                Some(tc)
+            } else {
+                None
+            };
 
         Ok(GoogleRequest {
             system_instruction,
@@ -649,10 +661,7 @@ impl crate::core::registry::Provider for GoogleProvider {
     fn language_model(&self, model_id: &str) -> Option<Box<dyn crate::core::LanguageModel>> {
         Some(Box::new(self.chat(model_id)))
     }
-    fn embedding_model(
-        &self,
-        model_id: &str,
-    ) -> Option<Box<dyn crate::core::EmbeddingModel>> {
+    fn embedding_model(&self, model_id: &str) -> Option<Box<dyn crate::core::EmbeddingModel>> {
         Some(Box::new(self.embedding(model_id)))
     }
     fn image_model(&self, model_id: &str) -> Option<Box<dyn crate::core::ImageModel>> {

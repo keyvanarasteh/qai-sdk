@@ -14,12 +14,15 @@ async fn main() -> anyhow::Result<()> {
     let video_model = provider.video("grok-imagine-video");
 
     println!("🚀 Launching xAI Video Generation...");
-    
-    let result = video_model.generate(VideoGenerateOptions {
-        model_id: "grok-imagine-video".to_string(),
-        prompt: "A futuristic cyberpunk city with neon lights and flying cars, cinematic 4k".to_string(),
-        ..Default::default()
-    }).await?;
+
+    let result = video_model
+        .generate(VideoGenerateOptions {
+            model_id: "grok-imagine-video".to_string(),
+            prompt: "A futuristic cyberpunk city with neon lights and flying cars, cinematic 4k"
+                .to_string(),
+            ..Default::default()
+        })
+        .await?;
 
     if let Some(url) = result.url {
         println!("✅ Video ready: {}", url);

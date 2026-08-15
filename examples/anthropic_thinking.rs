@@ -42,8 +42,7 @@ async fn main() -> Result<()> {
         messages: vec![Message {
             role: Role::User,
             content: vec![Content::Text {
-                text: "What is the greatest common divisor of 1071 and 462? Show your work."
-                    .into(),
+                text: "What is the greatest common divisor of 1071 and 462? Show your work.".into(),
             }],
         }],
     };

@@ -18,7 +18,9 @@ impl XaiRealtimeModel {
     #[must_use]
     pub fn new(api_key: String, base_url: String) -> Self {
         // Convert https to wss for real-time
-        let wss_url = base_url.replace("https://", "wss://").replace("http://", "ws://");
+        let wss_url = base_url
+            .replace("https://", "wss://")
+            .replace("http://", "ws://");
         Self {
             api_key,
             base_url: format!("{}/realtime", wss_url),
@@ -28,7 +30,9 @@ impl XaiRealtimeModel {
 
 #[async_trait]
 impl crate::core::RealtimeModel for XaiRealtimeModel {
-    async fn connect(&self) -> crate::core::Result<futures::stream::BoxStream<'static, RealtimeEvent>> {
+    async fn connect(
+        &self,
+    ) -> crate::core::Result<futures::stream::BoxStream<'static, RealtimeEvent>> {
         let request = http::Request::builder()
             .uri(&self.base_url)
             .header("Authorization", format!("Bearer {}", self.api_key))
@@ -64,9 +68,12 @@ impl crate::core::RealtimeModel for XaiRealtimeModel {
     }
 
     async fn send(&self, _event: RealtimeEvent) -> crate::core::Result<()> {
-        // This is a simplified implementation. 
+        // This is a simplified implementation.
         // Real-time bidirectional communication usually requires keeping the connection open in a stateful object.
         // For the sake of this trait, we might need to rethink the design if 'send' is called independently.
-        Err(anyhow!("Independent 'send' not supported yet. Use the stream for bidirectional flow.").into())
+        Err(
+            anyhow!("Independent 'send' not supported yet. Use the stream for bidirectional flow.")
+                .into(),
+        )
     }
 }

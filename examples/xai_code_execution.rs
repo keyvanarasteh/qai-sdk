@@ -19,21 +19,23 @@ async fn main() -> anyhow::Result<()> {
 
     // 3. Generate a response with code execution
     let prompt = Prompt::from_user("Calculate the first 10 prime numbers using Python.");
-    
+
     println!("Asking Grok with Code Execution...");
-    
-    let result = model.generate(
-        prompt,
-        GenerateOptions {
-            model_id: "grok-2".to_string(),
-            server_tools: Some(server_tools),
-            ..Default::default()
-        },
-    ).await?;
+
+    let result = model
+        .generate(
+            prompt,
+            GenerateOptions {
+                model_id: "grok-2".to_string(),
+                server_tools: Some(server_tools),
+                ..Default::default()
+            },
+        )
+        .await?;
 
     println!("\nResponse:\n{}", result.text);
 
-    // Note: Built-in tool outputs for code execution currently appear within the text response 
+    // Note: Built-in tool outputs for code execution currently appear within the text response
     // or as executed_tools metadata if identifying patterns are matched.
 
     Ok(())

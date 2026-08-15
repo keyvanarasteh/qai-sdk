@@ -343,9 +343,14 @@ impl AnthropicModel {
                                 let mut text_boxes = Vec::new();
                                 for b in boxes {
                                     let label_str = b.label.as_deref().unwrap_or("object");
-                                    text_boxes.push(format!("[{}, {}, {}, {}] {}", b.y_min, b.x_min, b.y_max, b.x_max, label_str));
+                                    text_boxes.push(format!(
+                                        "[{}, {}, {}, {}] {}",
+                                        b.y_min, b.x_min, b.y_max, b.x_max, label_str
+                                    ));
                                 }
-                                anthropic_contents.push(AnthropicContent::Text { text: text_boxes.join("\n") });
+                                anthropic_contents.push(AnthropicContent::Text {
+                                    text: text_boxes.join("\n"),
+                                });
                             }
                         }
                     }
@@ -369,9 +374,21 @@ impl AnthropicModel {
                     .into_iter()
                     .map(|t| {
                         if t.name == "computer_20241022" {
-                            let width = t.parameters.get("display_width_px").and_then(|v| v.as_u64()).unwrap_or(1024) as u32;
-                            let height = t.parameters.get("display_height_px").and_then(|v| v.as_u64()).unwrap_or(768) as u32;
-                            let display_number = t.parameters.get("display_number").and_then(|v| v.as_u64()).map(|v| v as u32);
+                            let width = t
+                                .parameters
+                                .get("display_width_px")
+                                .and_then(|v| v.as_u64())
+                                .unwrap_or(1024) as u32;
+                            let height = t
+                                .parameters
+                                .get("display_height_px")
+                                .and_then(|v| v.as_u64())
+                                .unwrap_or(768) as u32;
+                            let display_number = t
+                                .parameters
+                                .get("display_number")
+                                .and_then(|v| v.as_u64())
+                                .map(|v| v as u32);
                             AnthropicTool::ComputerUse {
                                 tool_type: "computer_20241022".to_string(),
                                 name: "computer".to_string(),
@@ -404,9 +421,7 @@ impl AnthropicModel {
         };
 
         // Build thinking config from GenerateOptions
-        let thinking = if options.reasoning_format.is_some()
-            || options.reasoning_effort.is_some()
-        {
+        let thinking = if options.reasoning_format.is_some() || options.reasoning_effort.is_some() {
             let effort = options.reasoning_effort.as_deref().unwrap_or("high");
             let effort_lower = effort.to_lowercase();
 
@@ -454,8 +469,16 @@ impl AnthropicModel {
                 Some(system_content)
             },
             max_tokens: options.max_tokens.unwrap_or(1024),
-            temperature: if thinking.is_some() { None } else { options.temperature },
-            top_p: if thinking.is_some() { None } else { options.top_p },
+            temperature: if thinking.is_some() {
+                None
+            } else {
+                options.temperature
+            },
+            top_p: if thinking.is_some() {
+                None
+            } else {
+                options.top_p
+            },
             top_k: None,
             stop_sequences: options.stop_sequences,
             stream: None,

@@ -75,10 +75,11 @@ impl OllamaOptionsBuilder {
 
     /// Sets how strongly to penalize repetitions. A higher value (e.g., 1.5) will penalize repetitions more strongly, while a lower value (e.g., 0.9) will be more lenient. (Default: 1.1)
     pub fn repeat_penalty(mut self, val: f32) -> Self {
-        self.options.insert("repeat_penalty".to_string(), val.into());
+        self.options
+            .insert("repeat_penalty".to_string(), val.into());
         self
     }
-    
+
     /// Sets how far back for the model to look back to prevent repetition. (Default: 64, 0 = disabled, -1 = num_ctx)
     pub fn repeat_last_n(mut self, val: i32) -> Self {
         self.options.insert("repeat_last_n".to_string(), val.into());

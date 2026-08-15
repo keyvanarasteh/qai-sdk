@@ -17,9 +17,7 @@ impl Prompt {
         Self {
             messages: vec![Message {
                 role: Role::User,
-                content: vec![Content::Text {
-                    text: text.into(),
-                }],
+                content: vec![Content::Text { text: text.into() }],
             }],
         }
     }
@@ -464,10 +462,20 @@ pub struct MusicGenerateResult {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum RealtimeEvent {
-    Text { text: String },
-    Audio { data: Vec<u8> },
-    ToolCall { id: String, name: String, arguments: serde_json::Value },
-    Error { message: String },
+    Text {
+        text: String,
+    },
+    Audio {
+        data: Vec<u8>,
+    },
+    ToolCall {
+        id: String,
+        name: String,
+        arguments: serde_json::Value,
+    },
+    Error {
+        message: String,
+    },
     SessionStarted,
     SessionEnded,
 }

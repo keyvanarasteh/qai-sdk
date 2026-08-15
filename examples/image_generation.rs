@@ -6,7 +6,6 @@
 use qai_sdk::types::{ImageGenerateOptions, ProviderSettings};
 use qai_sdk::ImageModel;
 
-
 #[tokio::main]
 async fn main() -> qai_sdk::Result<()> {
     dotenvy::dotenv().ok();

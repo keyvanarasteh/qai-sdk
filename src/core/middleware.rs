@@ -31,10 +31,7 @@ use futures::stream::BoxStream;
 pub trait LanguageModelMiddleware: Send + Sync {
     /// Transform the generation options before the model call.
     /// Default: passes through unmodified.
-    async fn transform_params(
-        &self,
-        options: GenerateOptions,
-    ) -> Result<GenerateOptions> {
+    async fn transform_params(&self, options: GenerateOptions) -> Result<GenerateOptions> {
         Ok(options)
     }
 
@@ -88,11 +85,7 @@ struct WrappedModel {
 
 #[async_trait]
 impl LanguageModel for WrappedModel {
-    async fn generate(
-        &self,
-        prompt: Prompt,
-        options: GenerateOptions,
-    ) -> Result<GenerateResult> {
+    async fn generate(&self, prompt: Prompt, options: GenerateOptions) -> Result<GenerateResult> {
         let transformed = self.middleware.transform_params(options).await?;
 
         // Check if middleware wants to fully handle the call
@@ -143,10 +136,7 @@ pub struct DefaultSettingsMiddleware {
 
 #[async_trait]
 impl LanguageModelMiddleware for DefaultSettingsMiddleware {
-    async fn transform_params(
-        &self,
-        mut options: GenerateOptions,
-    ) -> Result<GenerateOptions> {
+    async fn transform_params(&self, mut options: GenerateOptions) -> Result<GenerateOptions> {
         if options.temperature.is_none() {
             options.temperature = self.temperature;
         }
@@ -189,11 +179,8 @@ impl LanguageModelMiddleware for ExtractReasoningMiddleware {
         let result = model.generate(prompt.clone(), options.clone()).await;
         match result {
             Ok(mut gen_result) => {
-                gen_result.text = extract_reasoning(
-                    &gen_result.text,
-                    &self.open_tag,
-                    &self.close_tag,
-                );
+                gen_result.text =
+                    extract_reasoning(&gen_result.text, &self.open_tag, &self.close_tag);
                 Some(Ok(gen_result))
             }
             Err(e) => Some(Err(e)),

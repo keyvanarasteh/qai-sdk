@@ -29,10 +29,7 @@ async fn main() -> Result<()> {
     println!("=== GroqCloud Remote MCP Integration ===\n");
 
     // Simple MCP tool (no auth required)
-    let public_mcp = GroqTool::mcp(
-        "deepseek-docs",
-        "https://mcp.deepseek.example.com/sse",
-    );
+    let public_mcp = GroqTool::mcp("deepseek-docs", "https://mcp.deepseek.example.com/sse");
     println!(
         "Public MCP config:\n{}\n",
         serde_json::to_string_pretty(&public_mcp).unwrap_or_default()
@@ -52,9 +49,7 @@ async fn main() -> Result<()> {
         server_label: "huggingface".to_string(),
         server_url: "https://huggingface.co/mcp".to_string(),
         headers: Some(auth_headers),
-        server_description: Some(
-            "Search HuggingFace for models, datasets, and papers".to_string(),
-        ),
+        server_description: Some("Search HuggingFace for models, datasets, and papers".to_string()),
         require_approval: Some("never".to_string()),
         allowed_tools: Some(vec![
             GroqMcpAllowedTool {

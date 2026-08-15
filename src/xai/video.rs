@@ -52,7 +52,10 @@ struct XaiVideoDetail {
 
 #[async_trait]
 impl crate::core::VideoModel for XaiVideoModel {
-    async fn generate(&self, options: VideoGenerateOptions) -> crate::core::Result<VideoGenerateResult> {
+    async fn generate(
+        &self,
+        options: VideoGenerateOptions,
+    ) -> crate::core::Result<VideoGenerateResult> {
         let request = XaiVideoRequest {
             model: options.model_id,
             prompt: options.prompt,

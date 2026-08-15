@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     let balance_response = provider.get_balance().await?;
 
     println!("Account Available: {}", balance_response.is_available);
-    
+
     for info in balance_response.balance_infos {
         println!("---");
         println!("Currency: {}", info.currency);

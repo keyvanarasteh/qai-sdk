@@ -14,7 +14,7 @@ async fn main() -> Result<()> {
         println!("Warning: DEEPSEEK_API_KEY not set.");
         String::new()
     });
-    
+
     if api_key.is_empty() {
         println!("Please set DEEPSEEK_API_KEY to run this example.");
         return Ok(());
@@ -28,14 +28,12 @@ async fn main() -> Result<()> {
     println!("============================================================\n");
 
     // The context vector to hold our multi-round conversation
-    let mut messages = vec![
-        Message {
-            role: Role::System,
-            content: vec![Content::Text {
-                text: "You are a helpful and concise assistant. Always respond in english.".to_string(),
-            }],
-        }
-    ];
+    let mut messages = vec![Message {
+        role: Role::System,
+        content: vec![Content::Text {
+            text: "You are a helpful and concise assistant. Always respond in english.".to_string(),
+        }],
+    }];
 
     loop {
         print!("You: ");
@@ -73,23 +71,24 @@ async fn main() -> Result<()> {
                     ..Default::default()
                 },
             )
-            .await {
-                Ok(r) => r,
-                Err(e) => {
-                    println!("\nError generating response: {}", e);
-                    // Remove the failed user message from history
-                    messages.pop();
-                    continue;
-                }
-            };
+            .await
+        {
+            Ok(r) => r,
+            Err(e) => {
+                println!("\nError generating response: {}", e);
+                // Remove the failed user message from history
+                messages.pop();
+                continue;
+            }
+        };
 
         println!("\nDeepSeek: {}", response.text.trim());
-        
+
         // Print cache metrics
         println!("\n--- Usage Stats ---");
         println!("Prompt tokens: {}", response.usage.prompt_tokens);
         println!("Completion tokens: {}", response.usage.completion_tokens);
-        
+
         if let Some(hit) = response.usage.cache_hit_tokens {
             println!("KV Cache Hit tokens: {}", hit);
         }

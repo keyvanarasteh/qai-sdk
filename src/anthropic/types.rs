@@ -52,7 +52,7 @@ pub enum AnthropicTool {
     ComputerUse {
         #[serde(rename = "type")]
         tool_type: String, // "computer_20241022"
-        name: String,      // "computer"
+        name: String, // "computer"
         display_width_px: u32,
         display_height_px: u32,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -61,7 +61,7 @@ pub enum AnthropicTool {
     BashOrTextEditor {
         #[serde(rename = "type")]
         tool_type: String, // "bash_20241022" or "text_editor_20241022"
-        name: String,      // "bash" or "str_replace_editor"
+        name: String, // "bash" or "str_replace_editor"
     },
     Custom {
         name: String,
@@ -179,12 +179,20 @@ pub enum AnthropicStreamEvent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AnthropicDelta {
-    TextDelta { text: String },
-    InputJsonDelta { partial_json: String },
+    TextDelta {
+        text: String,
+    },
+    InputJsonDelta {
+        partial_json: String,
+    },
     /// Thinking delta streamed during extended thinking.
-    ThinkingDelta { thinking: String },
+    ThinkingDelta {
+        thinking: String,
+    },
     /// Signature delta for thinking block finalization.
-    SignatureDelta { signature: String },
+    SignatureDelta {
+        signature: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -27,9 +27,7 @@ use std::collections::HashMap;
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum GroqTool {
     /// Standard function tool (same as OpenAI function calling).
-    Function {
-        function: GroqFunctionDefinition,
-    },
+    Function { function: GroqFunctionDefinition },
     /// Built-in web search tool — executed server-side by Groq's compound models.
     /// Requires `groq/compound` or `groq/compound-mini`.
     #[serde(rename = "web_search_preview")]

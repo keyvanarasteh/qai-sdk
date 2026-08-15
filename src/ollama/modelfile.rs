@@ -31,13 +31,15 @@ impl ModelfileBuilder {
     /// Set the `TEMPLATE` instruction. Defines the prompt template.
     /// The template usually spans multiple lines, so it is wrapped in triple quotes automatically.
     pub fn template(mut self, template: &str) -> Self {
-        self.lines.push(format!("TEMPLATE \"\"\"{}\"\"\"", template));
+        self.lines
+            .push(format!("TEMPLATE \"\"\"{}\"\"\"", template));
         self
     }
 
     /// Set the `SYSTEM` instruction. Sets the custom system message.
     pub fn system(mut self, system_message: &str) -> Self {
-        self.lines.push(format!("SYSTEM \"\"\"{}\"\"\"", system_message));
+        self.lines
+            .push(format!("SYSTEM \"\"\"{}\"\"\"", system_message));
         self
     }
 
@@ -49,7 +51,8 @@ impl ModelfileBuilder {
 
     /// Set the `LICENSE` instruction. Includes legal license text.
     pub fn license(mut self, license_text: &str) -> Self {
-        self.lines.push(format!("LICENSE \"\"\"{}\"\"\"", license_text));
+        self.lines
+            .push(format!("LICENSE \"\"\"{}\"\"\"", license_text));
         self
     }
 
@@ -59,7 +62,7 @@ impl ModelfileBuilder {
         self.lines.push(format!("MESSAGE {} {}", role, content));
         self
     }
-    
+
     /// Set the `REQUIRES` instruction. Specifies the required Ollama version.
     pub fn requires(mut self, version: &str) -> Self {
         self.lines.push(format!("REQUIRES {}", version));

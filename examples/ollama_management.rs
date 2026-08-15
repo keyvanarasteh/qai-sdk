@@ -5,7 +5,11 @@
 //!
 //! Make sure your local Ollama server is running before executing this.
 
-use qai_sdk::{core::types::ProviderSettings, ollama::{create_ollama, types::OllamaShowRequest}, Result};
+use qai_sdk::{
+    core::types::ProviderSettings,
+    ollama::{create_ollama, types::OllamaShowRequest},
+    Result,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -43,11 +47,13 @@ async fn main() -> Result<()> {
     // 4. Show specific model details (if we have any installed)
     if let Some(first_model) = models.models.first() {
         println!("\n🔍 Details for '{}':", first_model.name);
-        
-        let details = provider.show_model_info(OllamaShowRequest {
-            model: first_model.name.clone(),
-            verbose: Some(false),
-        }).await?;
+
+        let details = provider
+            .show_model_info(OllamaShowRequest {
+                model: first_model.name.clone(),
+                verbose: Some(false),
+            })
+            .await?;
 
         if let Some(d) = details.details {
             println!("  Family: {:?}", d.family);

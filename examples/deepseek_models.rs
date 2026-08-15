@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
 
     println!("Response Object: {}", models_response.object);
     println!("Total Models: {}", models_response.data.len());
-    
+
     for model in models_response.data {
         println!("---");
         println!("ID:       {}", model.id);
